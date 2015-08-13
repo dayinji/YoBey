@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.SeekBar;
 
 import com.badprinter.yobey.R;
 
@@ -32,6 +33,8 @@ public class MusicBar extends View {
     private float indicatorRadis;
     private float barRadius;
     private ValueAnimator indicatorAnim;
+    private int dif = 3;
+    public OnProgessChange onProgessChange;
 
     public MusicBar(Context context) {
         this(context, null);
@@ -54,6 +57,7 @@ public class MusicBar extends View {
         backgroundColor = mTypedArray.getColor(R.styleable.MusicBar_backgroundColor, 0);
         havePlayedColor = mTypedArray.getColor(R.styleable.MusicBar_havePlayedColor, 0);
         barHeight = mTypedArray.getDimension(R.styleable.MusicBar_barHeight, 0);
+        if(barHeight < 2*dif + 1) barHeight = 2*dif + 1;
         indicatorRadis = mTypedArray.getDimension(R.styleable.MusicBar_indicatorRadius, 0);
         indicatorColor = mTypedArray.getColor(R.styleable.MusicBar_indicatorColor, 0);
         barRadius = (float)barHeight/2;
@@ -66,6 +70,7 @@ public class MusicBar extends View {
         super.onDraw(canvas);
 
         barWidth = getWidth();
+
         /**
          * background
          */
@@ -80,7 +85,7 @@ public class MusicBar extends View {
          * havePlayed
          */
         paint.setColor(havePlayedColor);
-        RectF rect1 = new RectF(0, 0+indicatorRadis-barHeight/2, barWidth*((float)progress/max), barHeight);
+        RectF rect1 = new RectF(0+dif, 0+indicatorRadis-barHeight/2+dif, barWidth*((float)progress/max)-dif, barHeight-dif);
         canvas.drawRoundRect(rect1, barRadius, barRadius, paint);
 
         /**
@@ -139,6 +144,7 @@ public class MusicBar extends View {
             float x = me.getX();
             int toPoint = (int)((x/getWidth())*max);
             startIndicatorAnim(toPoint);
+            onProgessChange.OnProgessChangeCall(toPoint);
         }
         return false;
     }
@@ -148,7 +154,6 @@ public class MusicBar extends View {
             indicatorAnim.cancel();
         indicatorAnim = ValueAnimator.ofInt(progress, endValue);
         float duration = Math.abs((float)progress - (float)endValue)/max*600;
-        System.out.println(duration);
         indicatorAnim.setDuration((int)duration);
         indicatorAnim.setInterpolator(new DecelerateInterpolator());
         indicatorAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -158,6 +163,10 @@ public class MusicBar extends View {
             }
         });
         indicatorAnim.start();
+    }
+
+    public interface OnProgessChange {
+        void OnProgessChangeCall(int toPoint);
     }
 }
 

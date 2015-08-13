@@ -10,8 +10,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.badprinter.yobey.R;
@@ -38,6 +40,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
     private Button nextBt;
     private boolean isPlay = false;
     private int current = 0;
+    private int currentTime;
     private boolean isFirstTime = true;
     private HomeReceiver homeReceiver;
 
@@ -59,9 +62,32 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
         songProvider = new SongProvider(Home.this);
         songList = songProvider.getSongList();
         songListView.setAdapter(new SongListAdapter(Home.this, songList));
+        songListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+                intent.putExtra("controlMsg", Constants.PlayerControl.PLAYING_MSG);
+                intent.putExtra("current", position);
+                isFirstTime = false;
+                startService(intent);
+            }
+        });
+        bar.setMax(songList.get(current).getDuration());
+        /*
+         * A Callback for Chaneging CurrentTime
+         */
+        bar.onProgessChange = new MusicBar.OnProgessChange() {
+            public void OnProgessChangeCall(int toPoint) {
+                Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+                intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_CURRENTTIME);
+                intent.putExtra("currentTime", toPoint);
+                startService(intent);
+            }
+        };
         homeReceiver = new HomeReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.UiControl.UPDATE_UI);
+        filter.addAction(Constants.UiControl.UPDATE_CURRENT);
         registerReceiver(homeReceiver, filter);
 
     }
@@ -132,6 +158,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                 if (isPlay == false) {
                     if (isFirstTime) {
                         intent.putExtra("controlMsg", Constants.PlayerControl.PLAYING_MSG);
+                        intent.putExtra("current", current);
                         isFirstTime = false;
                     } else {
                         intent.putExtra("controlMsg", Constants.PlayerControl.CONTINUE_PLAYING_MSG);
@@ -146,6 +173,8 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                 startService(intent);
                 isFirstTime = false;
                 break;
+            case R.id.musicBar:
+
         }
 
     }
@@ -156,18 +185,29 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
     private class HomeReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "Recrive from Service");
-            boolean isPlay = intent.getBooleanExtra("isPlay", false); // Play or Pause
-            int current = intent.getIntExtra("current", -1); // Current Song Id
-            Home.this.isPlay = isPlay;
-            Home.this.current = current;
-            musicInfo.setText(songList.get(current).getName() + " " + songList.get(current).getArtist());
-            if (isPlay) {
-                playBt.setText("Pause");
-            } else {
-                playBt.setText("Play");
+            switch (intent.getAction()) {
+                case Constants.UiControl.UPDATE_UI:
+                    boolean isPlay = intent.getBooleanExtra("isPlay", false); // Play or Pause
+                    int current = intent.getIntExtra("current", -1); // Current Song Id
+                    Home.this.isPlay = isPlay;
+                    Home.this.current = current;
+                    bar.setMax(songList.get(current).getDuration());
+                    musicInfo.setText(songList.get(current).getName() + " " + songList.get(current).getArtist());
+                    if (isPlay) {
+                        playBt.setText("Pause");
+                    } else {
+                        playBt.setText("Play");
+                    }
+                    break;
+                case Constants.UiControl.UPDATE_CURRENT:
+                    updateBar(intent.getExtras().getInt("currentTime"));
             }
 
+
         }
+    }
+
+    private void updateBar(int currentTime) {
+        bar.setProgress(currentTime);
     }
 }

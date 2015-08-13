@@ -3,7 +3,9 @@ package com.badprinter.yobey.service;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 
 import com.badprinter.yobey.commom.Constants;
@@ -13,6 +15,8 @@ import com.badprinter.yobey.utils.SongProvider;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by root on 15-8-12.
@@ -21,6 +25,7 @@ public class PlayerService extends Service {
     private final String TAG = "PlayerService";
     private int duration;
     private int current = 0;
+    private int currentTime = 0;
     private boolean isPlay = false;
     /*
      * 0 = LoopPlaying
@@ -31,15 +36,37 @@ public class PlayerService extends Service {
     private MediaPlayer player;
     private ArrayList<SongNoPhoto> songList;
     private SongProvider songProvider;
+    private Handler handler;
+    private Timer timer;
+
 
     @Override
     public void onCreate() {
         super.onCreate();
-        player = new MediaPlayer();
         isPlay = false;
         songList = new ArrayList<SongNoPhoto>();
         songProvider = new SongProvider(PlayerService.this);
         songList = songProvider.getSongNoPhotoList();
+        player = new MediaPlayer();
+        init();
+        handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                if (msg.what == 1) {
+                    Intent sendIntent = new Intent(Constants.UiControl.UPDATE_CURRENT);
+                    currentTime = player.getCurrentPosition();
+                    sendIntent.putExtra("currentTime", currentTime);
+                    sendBroadcast(sendIntent);
+                }
+            }
+        };
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                handler.sendEmptyMessage(1);
+            }
+        }, 0, 1000);
 
         System.out.println("Service Create");
     }
@@ -66,7 +93,13 @@ public class PlayerService extends Service {
                 resum();
                 break;
             case Constants.PlayerControl.PLAYING_MSG:
-                play(0);
+                current = intent.getExtras().getInt("current");
+                play(currentTime);
+                break;
+            case Constants.PlayerControl.UPDATE_CURRENTTIME:
+                //currentTime = intent.getExtras().getInt("currentTime");
+                //play(currentTime);
+                updateCurrentTime(intent.getExtras().getInt("currentTime"));
                 break;
         }
         Intent sendIntent = new Intent(Constants.UiControl.UPDATE_UI);
@@ -89,6 +122,15 @@ public class PlayerService extends Service {
         }
     }
 
+    private void init() {
+        try {
+            player.setDataSource(songList.get(current).getFileName());
+            player.prepare();
+            duration = songList.get(current).getDuration();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     private void play(int seekPos) {
         try {
             if (player.isPlaying())
@@ -170,6 +212,14 @@ public class PlayerService extends Service {
             player.start();
         }
         isPlay = true;
+    }
+
+    /*
+     * Update CurrentTime
+     */
+    private void updateCurrentTime(int currentTime) {
+        this.currentTime = currentTime;
+        player.seekTo(currentTime);
     }
 
     /*

@@ -25,10 +25,10 @@
             android:layout_height="0dp"
             android:layout_weight="1"
 
-            app:backgroundColor="@color/qianhui"
-            app:havePlayedColor="@color/qingse"
+            app:backgroundColor="@color/musicBarBg"
+            app:havePlayedColor="@color/havePlayed"
             app:barHeight = "8dp"
-            app:indicatorColor = "@color/fense"
+            app:indicatorColor = "@color/indicator"
             app:indicatorRadius = "6dp"
             app:max = "200"
             app:progress = "20"
