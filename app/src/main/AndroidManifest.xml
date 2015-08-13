@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.badprinter.yobey" >
 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -20,6 +22,11 @@
             android:name=".activities.Player"
             android:label="@string/title_activity_player" >
         </activity>
+        <service android:name=".service.PlayerService">
+            <intent-filter>
+                <action android:name="com.badprinter.yobey.service.PLAYER_SERVICE"></action>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
