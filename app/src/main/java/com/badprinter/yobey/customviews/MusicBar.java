@@ -22,6 +22,7 @@ import com.badprinter.yobey.R;
  * Created by root on 15-8-11.
  */
 public class MusicBar extends View {
+    private final String TAG = "MusicBar";
     private Paint paint;
     private int max;
     private int progress;
@@ -140,13 +141,22 @@ public class MusicBar extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent me) {
-        if (me.getAction() == MotionEvent.ACTION_DOWN) {
+        if (me.getAction() == MotionEvent.ACTION_MOVE) {
+            Log.d(TAG, "Action_Move");
+            float x = me.getX();
+            int toPoint = (int)((x/getWidth())*max);
+            //startIndicatorAnim(toPoint);
+            setProgress(toPoint);
+            onProgessChange.OnProgessChangeCall(toPoint);
+        }
+        else if (me.getAction() == MotionEvent.ACTION_DOWN) {
+            Log.d(TAG, "Action_down");
             float x = me.getX();
             int toPoint = (int)((x/getWidth())*max);
             startIndicatorAnim(toPoint);
             onProgessChange.OnProgessChangeCall(toPoint);
         }
-        return false;
+        return true;
     }
 
     private void startIndicatorAnim(int endValue) {

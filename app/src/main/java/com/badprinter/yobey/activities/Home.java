@@ -43,6 +43,13 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
     private int currentTime;
     private boolean isFirstTime = true;
     private HomeReceiver homeReceiver;
+    private SongListAdapter mySongListAdapter;
+    /*
+     * 0 = LoopPlaying
+     * 1 = SingPlaying
+     * 2 = RandomPlaying
+     */
+    private int mode = 0;
 
     //private SongListAdapter songListAdapter;
     private ArrayList<Song> songList = new ArrayList<Song>();
@@ -61,13 +68,15 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
         setClickListener();
         songProvider = new SongProvider(Home.this);
         songList = songProvider.getSongList();
-        songListView.setAdapter(new SongListAdapter(Home.this, songList));
+        mySongListAdapter = new SongListAdapter(Home.this, songList);
+        songListView.setAdapter(mySongListAdapter);
         songListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
                 intent.putExtra("controlMsg", Constants.PlayerControl.PLAYING_MSG);
                 intent.putExtra("current", position);
+                intent.putExtra("currenTime", 0);
                 isFirstTime = false;
                 startService(intent);
             }
@@ -159,6 +168,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                     if (isFirstTime) {
                         intent.putExtra("controlMsg", Constants.PlayerControl.PLAYING_MSG);
                         intent.putExtra("current", current);
+                        intent.putExtra("currenTime", currentTime);
                         isFirstTime = false;
                     } else {
                         intent.putExtra("controlMsg", Constants.PlayerControl.CONTINUE_PLAYING_MSG);
@@ -189,6 +199,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                 case Constants.UiControl.UPDATE_UI:
                     boolean isPlay = intent.getBooleanExtra("isPlay", false); // Play or Pause
                     int current = intent.getIntExtra("current", -1); // Current Song Id
+                    mySongListAdapter.updateItem(current);
                     Home.this.isPlay = isPlay;
                     Home.this.current = current;
                     bar.setMax(songList.get(current).getDuration());
@@ -208,6 +219,8 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
     }
 
     private void updateBar(int currentTime) {
+        this.currentTime = currentTime;
         bar.setProgress(currentTime);
+        mySongListAdapter.updateBar(currentTime);
     }
 }

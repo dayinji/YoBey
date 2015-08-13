@@ -66,7 +66,7 @@ public class PlayerService extends Service {
             public void run() {
                 handler.sendEmptyMessage(1);
             }
-        }, 0, 1000);
+        }, 0, 500);
 
         System.out.println("Service Create");
     }
@@ -94,11 +94,10 @@ public class PlayerService extends Service {
                 break;
             case Constants.PlayerControl.PLAYING_MSG:
                 current = intent.getExtras().getInt("current");
+                currentTime = intent.getExtras().getInt("currenTime");
                 play(currentTime);
                 break;
             case Constants.PlayerControl.UPDATE_CURRENTTIME:
-                //currentTime = intent.getExtras().getInt("currentTime");
-                //play(currentTime);
                 updateCurrentTime(intent.getExtras().getInt("currentTime"));
                 break;
         }

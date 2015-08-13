@@ -1,32 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="8dp">
-
-    <ImageView
-        android:id="@+id/songPhoto"
-        android:layout_width="@dimen/image_medium"
-        android:layout_height="@dimen/image_medium" />
-
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+     android:layout_width="match_parent"
+    android:layout_height="76dp">
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:paddingLeft="40dp">
+        android:id="@+id/normalLayout"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp"
+        android:background="@color/qianbai">
 
-        <TextView
-            android:id="@+id/songName"
-            android:textSize="@dimen/font_large"
+        <ImageView
+            android:id="@+id/songPhoto"
+            android:layout_width="@dimen/image_medium"
+            android:layout_height="@dimen/image_medium" />
+
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:paddingLeft="40dp">
 
-        <TextView
-            android:id="@+id/songArtist"
-            android:textSize="@dimen/font_small"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/songName"
+                android:textSize="@dimen/font_large"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
+            <TextView
+                android:id="@+id/songArtist"
+                android:textSize="@dimen/font_small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
     </LinearLayout>
 
-</LinearLayout>
+    <FrameLayout
+        android:alpha="0"
+        android:id="@+id/playingLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/playingPhoto"
+            android:layout_width="match_parent"
+            android:layout_height="76dp"
+            android:scaleType="centerCrop"/>
+
+        <ImageView
+            android:id="@+id/blackBar"
+            android:layout_width="match_parent"
+            android:layout_height="76dp"
+            android:background="@color/translucent_black"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="40dp"
+            android:padding="3dp"
+            android:background="@drawable/round_bg">
+
+            <TextView
+                android:id="@+id/playingName"
+                android:textSize="@dimen/font_large"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/playingArtist"
+                android:textSize="@dimen/font_small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+    </FrameLayout>
+
+</FrameLayout>

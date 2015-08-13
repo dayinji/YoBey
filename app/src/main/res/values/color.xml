@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--Useful-->
     <color name="fense">#ffffb7a9</color>
     <color name="qingse">#ff79bba4</color>
     <color name="qianhui">#ffD1D1D1</color>
+    <color name="qianbai">#fff3f3f3</color>
 
     <!--Music Bar Color-->
     <color name="musicBarBg">#55000000</color>
     <color name="indicator">#ffffffff</color>
     <color name="havePlayed">#ffffffff</color>
+
+    <!--Translucent Color-->
+    <color name="translucent_white">#55ffffff</color>
+    <color name="translucent_black">#aa000000</color>
 </resources>
