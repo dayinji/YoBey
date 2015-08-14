@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -221,6 +222,10 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                     Home.this.current = current;
                     Song temp = songList.get(current);
                     bar.setMax(temp.getDuration());
+                    /*
+                     * Recycle the Bitmap before
+                     */
+                    //((BitmapDrawable)playingPhoto.getDrawable()).getBitmap().recycle();
                     playingPhoto.setImageBitmap(SongProvider.getArtwork(Home.this, temp.getId(), temp.getAlbumId(), false, true));
                     playingArtist.setText(temp.getArtist());
                     playingName.setText(temp.getName());

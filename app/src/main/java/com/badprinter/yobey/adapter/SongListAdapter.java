@@ -5,6 +5,9 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,6 +43,7 @@ public class SongListAdapter extends BaseAdapter {
     private int current = 0;
     private Map<View, Integer> viewsPosition = new HashMap<>();
     private ArrayList<View> views;
+    private Bitmap replace = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
 
     public SongListAdapter(Context context, List<Song> songList) {
         this.context = context;
@@ -93,6 +97,13 @@ public class SongListAdapter extends BaseAdapter {
             holder = (ListItemViewHolder) convertView.getTag();
         }
 
+        /*
+         * Once you click a item and slide up or dowm very quickly,
+         * The same convertView carries different songInfo may play the animation not belongs to it!
+         * The below statement deals with it!
+         */
+        clearAnim(holder);
+        
         Song temp = songList.get(position);
         holder.songName.setText(temp.getName());
         holder.songArtist.setText(temp.getArtist());
@@ -174,10 +185,23 @@ public class SongListAdapter extends BaseAdapter {
                 holder.playingLayout.setAlpha(1 - (float) animation.getAnimatedValue());
             }
         });
+        /*
+         * When PlayingLayout's Alpha trun to 0, recycle the Bitmap
+         */
+        holder.normalAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                Bitmap temp = ((BitmapDrawable) holder.playingPhoto.getDrawable()).getBitmap();
+                holder.playingPhoto.setImageBitmap(replace);
+                if (!temp.isRecycled())
+                    temp.recycle();
+            }
+        });
         holder.normalAnim.start();
     }
 
     private void turnToPlaying(final ListItemViewHolder holder) {
+
         Song temp = songList.get(current);
         holder.playingPhoto.setImageBitmap(SongProvider.getArtwork(context, temp.getId(), temp.getAlbumId(), false, false));
         //Log.d(TAG, "y = " + holder.normalLayout.getRotationY());
