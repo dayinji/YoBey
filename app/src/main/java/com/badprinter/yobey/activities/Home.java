@@ -29,6 +29,7 @@ import com.badprinter.yobey.utils.SongProvider;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class Home extends ActionBarActivity implements View.OnClickListener {
@@ -36,7 +37,6 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
     private final String TAG = "HomeActivity";
     private ListView songListView;
     private MusicBar bar;
-    private TextView musicInfo;
     private ImageView preBt;
     private ImageView playBt;
     private ImageView nextBt;
@@ -63,8 +63,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
     private int mode = 0;
 
     //private SongListAdapter songListAdapter;
-    private ArrayList<Song> songList = new ArrayList<Song>();
-    private SongProvider songProvider;
+    private List<Song> songList = new ArrayList<Song>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,11 +73,10 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
         /*
          * Find All Views
          */
-
         findViewsById();
         setClickListener();
-        songProvider = new SongProvider(Home.this);
-        songList = songProvider.getSongList();
+
+        songList = SongProvider.getSongList(Home.this);
         mySongListAdapter = new SongListAdapter(Home.this, songList);
         songListView.setAdapter(mySongListAdapter);
         songListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -92,6 +90,10 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                 startService(intent);
             }
         });
+
+        Song temp = songList.get(current);
+        playingPhoto.setImageBitmap(SongProvider.getArtwork(Home.this, temp.getId(), temp.getAlbumId(), false, true));
+
         bar.setMax(songList.get(current).getDuration());
         /*
          * A Callback for Chaneging CurrentTime
@@ -150,7 +152,6 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
         nextBt = (ImageView)findViewById(R.id.nextBt);
         playBt = (ImageView)findViewById(R.id.playBt);
         bar = (MusicBar)findViewById(R.id.musicBar);
-        musicInfo = (TextView)findViewById(R.id.musicInfo);
         playingPhoto = (ImageView)findViewById(R.id.playingPhoto);
         playingName = (TextView)findViewById(R.id.playingName);
         playingArtist = (TextView)findViewById(R.id.playingArtist);
@@ -220,10 +221,9 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                     Home.this.current = current;
                     Song temp = songList.get(current);
                     bar.setMax(temp.getDuration());
-                    playingPhoto.setImageBitmap(temp.getPhoto());
+                    playingPhoto.setImageBitmap(SongProvider.getArtwork(Home.this, temp.getId(), temp.getAlbumId(), false, true));
                     playingArtist.setText(temp.getArtist());
                     playingName.setText(temp.getName());
-                    musicInfo.setText(temp.getName() + " " + temp.getArtist());
                     if (isPlay) {
                         playDrawableAnim(playBt, 0, animPlay);
                     } else {

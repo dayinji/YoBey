@@ -30,15 +30,7 @@
             app:indicatorColor = "@color/indicator"
             app:indicatorRadius = "6dp"
             app:max = "200"
-            app:progress = "20"
-            />
-        <TextView
-            android:id="@+id/musicInfo"
-            android:layout_marginTop="5dp"
-            android:textSize="@dimen/font_small"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
+            app:progress = "20" />
     </LinearLayout>
     <RelativeLayout
         android:layout_marginTop="10dp"

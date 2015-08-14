@@ -15,6 +15,7 @@ import com.badprinter.yobey.utils.SongProvider;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -34,8 +35,7 @@ public class PlayerService extends Service {
      */
     private int mode = 0;
     private MediaPlayer player;
-    private ArrayList<SongNoPhoto> songList;
-    private SongProvider songProvider;
+    private List<Song> songList;
     private Handler handler;
     private Timer timer;
 
@@ -44,9 +44,9 @@ public class PlayerService extends Service {
     public void onCreate() {
         super.onCreate();
         isPlay = false;
-        songList = new ArrayList<SongNoPhoto>();
-        songProvider = new SongProvider(PlayerService.this);
-        songList = songProvider.getSongNoPhotoList();
+        songList = new ArrayList<Song>();
+        songList = SongProvider.getSongList(this);
+
         player = new MediaPlayer();
         init();
         handler = new Handler() {
@@ -161,7 +161,7 @@ public class PlayerService extends Service {
      * Play Pre Song
      */
     private void playPre() {
-        Log.d(TAG, "Play Pre!");
+        //Log.d(TAG, "Play Pre!");
         if (mode == 0) {
             current--;
             current = current < 0 ? songList.size() - 1 : current;  // current trun to max position if current < 0
@@ -178,7 +178,7 @@ public class PlayerService extends Service {
      * Play Next Song
      */
     private void playNext() {
-        Log.d(TAG, "Play Next!");
+        //Log.d(TAG, "Play Next!");
         if (mode == 0) {
             current++;
             current = current > (songList.size() - 1) ? 0 : current;  // current trun to 0 position if current > max
@@ -195,7 +195,7 @@ public class PlayerService extends Service {
      * Pause Music
      */
     private void pause() {
-        Log.d(TAG, "Pause!");
+        //Log.d(TAG, "Pause!");
         if (isPlay) {
             player.pause();
         }
@@ -206,7 +206,7 @@ public class PlayerService extends Service {
      * Resum Music
      */
     private void resum() {
-        Log.d(TAG, "Resum!");
+        //Log.d(TAG, "Resum!");
         if (!isPlay) {
             player.start();
         }

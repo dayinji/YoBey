@@ -9,24 +9,31 @@ public class Song {
     /*
      *
      */
+    private long id;
     private String name;
     private String fileName;
     private int size;
     private String album;
     private String artist;
     private int duration;
-    private Bitmap photo;
+    private long albumId;
+    //private Bitmap photo;
 
-    public Song(String name, String fileName, int size, String album,
-                String artist, int duration, Bitmap photo) {
+    public Song(long id, String name, String fileName, int size, String album,
+                String artist, int duration, long albumId) {
         this.name = name;
         this.fileName = fileName;
         this.size = size;
         this.album = album;
         this.artist =  artist;
         this.duration = duration;
-        this.photo = photo;
+        this.id = id;
+        this.albumId = albumId;
+       // this.photo = photo;
     }
+
+    public long getId() { return id; }
+    public void setId(long id) { this.id = id; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -46,6 +53,9 @@ public class Song {
     public int getDuration() { return duration; }
     public void setDuration(int duration) { this.duration = duration; }
 
-    public Bitmap getPhoto() { return photo; }
-    public void setPhoto(Bitmap photo) { this.photo = photo; }
+    public long getAlbumId() { return albumId; }
+    public void setAlbumId(long albumId) { this.albumId = albumId; }
+
+   /* public Bitmap getPhoto() { return photo; }
+    public void setPhoto(Bitmap photo) { this.photo = photo; }*/
 }

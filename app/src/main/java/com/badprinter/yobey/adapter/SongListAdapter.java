@@ -20,10 +20,13 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.badprinter.yobey.R;
 import com.badprinter.yobey.models.Song;
 import com.badprinter.yobey.utils.MyEvalucator;
+import com.badprinter.yobey.utils.SongProvider;
 
 
 /**
@@ -33,15 +36,21 @@ public class SongListAdapter extends BaseAdapter {
 
     private final String TAG = "SongListAdapter";
     private Context context;
-    private ArrayList<Song> songList;
+    private List<Song> songList;
     private int current = 0;
-    private HashMap<View, Integer> viewsPosition = new HashMap<>();
+    private Map<View, Integer> viewsPosition = new HashMap<>();
     private ArrayList<View> views;
 
-    public SongListAdapter(Context context, ArrayList<Song> songList) {
+    public SongListAdapter(Context context, List<Song> songList) {
         this.context = context;
         this.songList = songList;
         views = new ArrayList<View>();
+
+
+        /*
+         * Test the memory
+         */
+        System.out.println(TAG + " List : " + this.songList);
     }
 
     @Override
@@ -87,12 +96,15 @@ public class SongListAdapter extends BaseAdapter {
         Song temp = songList.get(position);
         holder.songName.setText(temp.getName());
         holder.songArtist.setText(temp.getArtist());
-        holder.songPhoto.setImageBitmap(temp.getPhoto());
+        //holder.songPhoto.setImageBitmap(temp.getPhoto());
+        //holder.songPhoto.setImageBitmap(SongProvider.getArtwork(context, temp.getId(), temp.getAlbumId(), false, true));
         holder.playingName.setText(temp.getName());
         holder.playingArtist.setText(temp.getArtist());
-        holder.playingPhoto.setImageBitmap(temp.getPhoto());
+        //holder.playingPhoto.setImageBitmap(temp.getPhoto());
+        //holder.playingPhoto.setImageBitmap(SongProvider.getArtwork(context, temp.getId(), temp.getAlbumId(), false, false));
 
         if (position == current) {
+            holder.playingPhoto.setImageBitmap(SongProvider.getArtwork(context, temp.getId(), temp.getAlbumId(), false, false));
             LinearLayout normal = (LinearLayout) convertView.findViewById(R.id.normalLayout);
             normal.setAlpha(0);
             FrameLayout playing = (FrameLayout) convertView.findViewById(R.id.playingLayout);
@@ -132,11 +144,13 @@ public class SongListAdapter extends BaseAdapter {
     }
 
     public void updateItem(int current) {
-        if (current != this.current) {
+        int last = this.current;
+        this.current = current;
+        if (current != last) {
             for (int i = 0; i < views.size(); i++) {
                 View temp = views.get(i);
                 int position = viewsPosition.get(temp);
-                if (position == this.current) {
+                if (position == last) {
                     ListItemViewHolder holder = (ListItemViewHolder) temp.getTag();
                     turnToNormal(holder);
                 }
@@ -145,7 +159,6 @@ public class SongListAdapter extends BaseAdapter {
                     turnToPlaying(holder);
                 }
             }
-            this.current = current;
         }
     }
 
@@ -165,7 +178,9 @@ public class SongListAdapter extends BaseAdapter {
     }
 
     private void turnToPlaying(final ListItemViewHolder holder) {
-        Log.d(TAG, "y = " + holder.normalLayout.getRotationY());
+        Song temp = songList.get(current);
+        holder.playingPhoto.setImageBitmap(SongProvider.getArtwork(context, temp.getId(), temp.getAlbumId(), false, false));
+        //Log.d(TAG, "y = " + holder.normalLayout.getRotationY());
         holder.playingLayout.setRotationY(-90f);
         clearAnim(holder);
         holder.playingAnim1 = ValueAnimator.ofFloat(0f, 1f);
