@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
      android:layout_width="match_parent"
-    android:layout_height="76dp">
+    android:layout_height="56dp">
     <LinearLayout
         android:id="@+id/normalLayout"
         android:orientation="horizontal"
@@ -12,14 +12,14 @@
 
         <ImageView
             android:id="@+id/songPhoto"
-            android:layout_width="@dimen/image_medium"
-            android:layout_height="@dimen/image_medium" />
+            android:layout_width="@dimen/image_small"
+            android:layout_height="@dimen/image_small" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:paddingLeft="40dp">
+            android:paddingLeft="20dp">
 
             <TextView
                 android:id="@+id/songName"
@@ -30,6 +30,7 @@
             <TextView
                 android:id="@+id/songArtist"
                 android:textSize="@dimen/font_small"
+                android:layout_marginLeft="5dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
@@ -45,13 +46,13 @@
         <ImageView
             android:id="@+id/playingPhoto"
             android:layout_width="match_parent"
-            android:layout_height="76dp"
+            android:layout_height="56dp"
             android:scaleType="centerCrop"/>
 
         <ImageView
             android:id="@+id/blackBar"
             android:layout_width="match_parent"
-            android:layout_height="76dp"
+            android:layout_height="56dp"
             android:background="@color/translucent_black"/>
 
         <LinearLayout

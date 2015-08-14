@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.AnimationDrawable;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -35,15 +37,24 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
     private ListView songListView;
     private MusicBar bar;
     private TextView musicInfo;
-    private Button preBt;
-    private Button playBt;
-    private Button nextBt;
+    private ImageView preBt;
+    private ImageView playBt;
+    private ImageView nextBt;
+    private ImageView playingPhoto;
+    private TextView playingName;
+    private TextView playingArtist;
     private boolean isPlay = false;
     private int current = 0;
     private int currentTime;
     private boolean isFirstTime = true;
     private HomeReceiver homeReceiver;
     private SongListAdapter mySongListAdapter;
+    private AnimationDrawable animPlay;
+    private AnimationDrawable animNext;
+    private AnimationDrawable animPre;
+    private int[] animId = new int[] {
+            R.drawable.playtopause, R.drawable.pausetoplay, R.drawable.playnext, R.drawable.playpre
+    };
     /*
      * 0 = LoopPlaying
      * 1 = SingPlaying
@@ -135,11 +146,14 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
      */
     private void findViewsById() {
         songListView = (ListView)findViewById(R.id.songList);
-        preBt = (Button)findViewById(R.id.preBt);
-        nextBt = (Button)findViewById(R.id.nextBt);
-        playBt = (Button)findViewById(R.id.playBt);
+        preBt = (ImageView)findViewById(R.id.preBt);
+        nextBt = (ImageView)findViewById(R.id.nextBt);
+        playBt = (ImageView)findViewById(R.id.playBt);
         bar = (MusicBar)findViewById(R.id.musicBar);
         musicInfo = (TextView)findViewById(R.id.musicInfo);
+        playingPhoto = (ImageView)findViewById(R.id.playingPhoto);
+        playingName = (TextView)findViewById(R.id.playingName);
+        playingArtist = (TextView)findViewById(R.id.playingArtist);
     }
 
     /*
@@ -161,6 +175,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
             case R.id.preBt:
                 intent.putExtra("controlMsg", Constants.PlayerControl.PRE_SONG_MSG);
                 startService(intent);
+                playDrawableAnim(preBt, 3, animPre);
                 isFirstTime = false;
                 break;
             case R.id.playBt:
@@ -181,6 +196,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
             case R.id.nextBt:
                 intent.putExtra("controlMsg", Constants.PlayerControl.NEXT_SONG_MSG);
                 startService(intent);
+                playDrawableAnim(nextBt, 2, animNext);
                 isFirstTime = false;
                 break;
             case R.id.musicBar:
@@ -202,12 +218,16 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                     mySongListAdapter.updateItem(current);
                     Home.this.isPlay = isPlay;
                     Home.this.current = current;
-                    bar.setMax(songList.get(current).getDuration());
-                    musicInfo.setText(songList.get(current).getName() + " " + songList.get(current).getArtist());
+                    Song temp = songList.get(current);
+                    bar.setMax(temp.getDuration());
+                    playingPhoto.setImageBitmap(temp.getPhoto());
+                    playingArtist.setText(temp.getArtist());
+                    playingName.setText(temp.getName());
+                    musicInfo.setText(temp.getName() + " " + temp.getArtist());
                     if (isPlay) {
-                        playBt.setText("Pause");
+                        playDrawableAnim(playBt, 0, animPlay);
                     } else {
-                        playBt.setText("Play");
+                        playDrawableAnim(playBt, 1, animPlay);
                     }
                     break;
                 case Constants.UiControl.UPDATE_CURRENT:
@@ -222,5 +242,18 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
         this.currentTime = currentTime;
         bar.setProgress(currentTime);
         mySongListAdapter.updateBar(currentTime);
+    }
+
+    private void playDrawableAnim(ImageView view, int id, AnimationDrawable animDrawable) {
+        if (animDrawable != null && animDrawable.isRunning())
+            animDrawable.stop();
+        if (id == 2)
+            view.setBackgroundResource(R.drawable.playnext00);
+        else if (id == 3)
+            view.setBackgroundResource(R.drawable.playpre00);
+        view.setBackgroundResource(animId[id]);
+        animDrawable = (AnimationDrawable) view.getBackground();
+        animDrawable.setOneShot(true);
+        animDrawable.start();
     }
 }

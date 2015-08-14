@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:oneshot="false">
+
+    <item android:drawable="@drawable/pausetoplay00" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay01" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay02" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay03" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay04" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay05" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay06" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay07" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay08" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay09" android:duration="30"/>
+
+    <item android:drawable="@drawable/pausetoplay10" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay11" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay12" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay13" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay14" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay15" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay16" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay17" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay18" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay19" android:duration="30"/>
+
+    <item android:drawable="@drawable/pausetoplay20" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay21" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay22" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay23" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay24" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay25" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay26" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay27" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay28" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay29" android:duration="30"/>
+
+    <item android:drawable="@drawable/pausetoplay30" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay31" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay32" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay33" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay34" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay35" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay36" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay37" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay38" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay39" android:duration="30"/>
+
+    <item android:drawable="@drawable/pausetoplay40" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay41" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay42" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay43" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay44" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay45" android:duration="30"/>
+    <item android:drawable="@drawable/pausetoplay46" android:duration="30"/>
+
+</animation-list>

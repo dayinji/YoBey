@@ -15,4 +15,8 @@
     <dimen name="image_large">10dp</dimen>
     <dimen name="image_xlarge">200dp</dimen>
 
+    <!--Music Control-->
+    <dimen name="music_control_small">25dp</dimen>
+    <dimen name="music_control_medium">40dp</dimen>
+
 </resources>

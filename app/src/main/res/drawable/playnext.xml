@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:oneshot="false">
+
+    <item android:drawable="@drawable/playnext00" android:duration="40"/>
+    <item android:drawable="@drawable/playnext01" android:duration="40"/>
+    <item android:drawable="@drawable/playnext02" android:duration="40"/>
+    <item android:drawable="@drawable/playnext03" android:duration="40"/>
+    <item android:drawable="@drawable/playnext04" android:duration="40"/>
+    <item android:drawable="@drawable/playnext05" android:duration="40"/>
+    <item android:drawable="@drawable/playnext06" android:duration="40"/>
+    <item android:drawable="@drawable/playnext07" android:duration="40"/>
+    <item android:drawable="@drawable/playnext08" android:duration="40"/>
+    <item android:drawable="@drawable/playnext09" android:duration="40"/>
+
+    <item android:drawable="@drawable/playnext10" android:duration="40"/>
+    <item android:drawable="@drawable/playnext11" android:duration="40"/>
+    <item android:drawable="@drawable/playnext12" android:duration="40"/>
+    <item android:drawable="@drawable/playnext13" android:duration="40"/>
+    <item android:drawable="@drawable/playnext14" android:duration="40"/>
+    <item android:drawable="@drawable/playnext15" android:duration="40"/>
+    <item android:drawable="@drawable/playnext16" android:duration="40"/>
+    <item android:drawable="@drawable/playnext17" android:duration="40"/>
+    <item android:drawable="@drawable/playnext18" android:duration="40"/>
+    <item android:drawable="@drawable/playnext19" android:duration="40"/>
+
+    <item android:drawable="@drawable/playnext20" android:duration="40"/>
+    <item android:drawable="@drawable/playnext21" android:duration="40"/>
+    <item android:drawable="@drawable/playnext22" android:duration="40"/>
+    <item android:drawable="@drawable/playnext23" android:duration="40"/>
+    <item android:drawable="@drawable/playnext24" android:duration="40"/>
+    <item android:drawable="@drawable/playnext25" android:duration="40"/>
+    <item android:drawable="@drawable/playnext26" android:duration="40"/>
+    <item android:drawable="@drawable/playnext27" android:duration="40"/>
+    <item android:drawable="@drawable/playnext28" android:duration="40"/>
+    <item android:drawable="@drawable/playnext29" android:duration="40"/>
+
+    <item android:drawable="@drawable/playnext30" android:duration="40"/>
+    <item android:drawable="@drawable/playnext31" android:duration="40"/>
+    <item android:drawable="@drawable/playnext32" android:duration="40"/>
+    <item android:drawable="@drawable/playnext33" android:duration="40"/>
+    <item android:drawable="@drawable/playnext34" android:duration="40"/>
+    <item android:drawable="@drawable/playnext35" android:duration="40"/>
+    <item android:drawable="@drawable/playnext36" android:duration="40"/>
+    <item android:drawable="@drawable/playnext37" android:duration="40"/>
+    <item android:drawable="@drawable/playnext38" android:duration="40"/>
+    <item android:drawable="@drawable/playnext39" android:duration="40"/>
+
+    <item android:drawable="@drawable/playnext40" android:duration="40"/>
+    <item android:drawable="@drawable/playnext41" android:duration="40"/>
+    <item android:drawable="@drawable/playnext42" android:duration="40"/>
+    <item android:drawable="@drawable/playnext43" android:duration="40"/>
+    <item android:drawable="@drawable/playnext44" android:duration="40"/>
+    <item android:drawable="@drawable/playnext45" android:duration="40"/>
+    <item android:drawable="@drawable/playnext46" android:duration="40"/>
+
+</animation-list>
