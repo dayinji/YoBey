@@ -11,7 +11,7 @@
         android:layout_weight="10"
         android:background="@color/qianhui"></ListView>
 
-    <LinearLayout
+    <!--<LinearLayout
         android:layout_marginTop="10dp"
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -21,8 +21,7 @@
             android:id="@+id/musicBar"
             xmlns:app="http://schemas.android.com/apk/res/com.badprinter.yobey"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="match_parent"
 
             app:backgroundColor="@color/musicBarBg"
             app:havePlayedColor="@color/havePlayed"
@@ -31,10 +30,10 @@
             app:indicatorRadius = "6dp"
             app:max = "200"
             app:progress = "20" />
-    </LinearLayout>
+    </LinearLayout>-->
     <RelativeLayout
         android:layout_marginTop="10dp"
-        android:id="@+id/buttonLayout"
+        android:id="@+id/bottomLayout"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="@color/translucent_black">

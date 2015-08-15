@@ -29,14 +29,17 @@ import java.util.List;
 public class SongProvider {
     private final static String TAG = "SongProvider";
     private static final Uri albumArtUri = Uri.parse("content://media/external/audio/albumart");
+    /*
+     * Save the songList for saving time for starting PlayerService.
+     */
+    private static List<Song> songList = null;
 
     public static List<Song> getSongList(Context context) {
-        List<Song> songList = new ArrayList<>();
-        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        if (songList.size() == 0) {
+        if (songList == null) {
+            songList = new ArrayList<>();
+            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
             Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     null, null, null, null);
-
             while (cursor.moveToNext()) {
                 long id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
                 byte[] data = cursor.getBlob(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
@@ -52,7 +55,6 @@ public class SongProvider {
             }
             cursor.close();
         }
-
         return songList;
     }
 

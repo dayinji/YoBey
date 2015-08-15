@@ -3,8 +3,11 @@ package com.badprinter.yobey.customviews;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -34,7 +37,6 @@ public class MusicBar extends View {
     private float indicatorRadis;
     private float barRadius;
     private ValueAnimator indicatorAnim;
-    private int dif = 3;
     public OnProgessChange onProgessChange;
 
     public MusicBar(Context context) {
@@ -58,7 +60,7 @@ public class MusicBar extends View {
         backgroundColor = mTypedArray.getColor(R.styleable.MusicBar_backgroundColor, 0);
         havePlayedColor = mTypedArray.getColor(R.styleable.MusicBar_havePlayedColor, 0);
         barHeight = mTypedArray.getDimension(R.styleable.MusicBar_barHeight, 0);
-        if(barHeight < 2*dif + 1) barHeight = 2*dif + 1;
+        //if(barHeight < 2*dif + 1) barHeight = 2*dif + 1;
         indicatorRadis = mTypedArray.getDimension(R.styleable.MusicBar_indicatorRadius, 0);
         indicatorColor = mTypedArray.getColor(R.styleable.MusicBar_indicatorColor, 0);
         barRadius = (float)barHeight/2;
@@ -73,30 +75,45 @@ public class MusicBar extends View {
         barWidth = getWidth();
 
         /**
-         * background
+         * background, Top = 10 For Train Indicator
          */
-        RectF rect = new RectF(0, 0+indicatorRadis-barHeight/2, barWidth, barHeight);
+        RectF rect = new RectF(0, 40, barWidth, barHeight+40);
         paint.setColor(backgroundColor);
         paint.setStyle(Paint.Style.FILL);
         paint.setAntiAlias(true);  //消除锯齿
-        canvas.drawRoundRect(rect, barRadius, barRadius, paint);
+        canvas.drawRect(rect, paint);
 
 
         /**
          * havePlayed
          */
         paint.setColor(havePlayedColor);
-        RectF rect1 = new RectF(0+dif, 0+indicatorRadis-barHeight/2+dif, barWidth*((float)progress/max)-dif, barHeight-dif);
-        canvas.drawRoundRect(rect1, barRadius, barRadius, paint);
+        RectF rect1 = new RectF(0, 40, barWidth*((float)progress/max), barHeight+40);
+        canvas.drawRect(rect1, paint);
 
         /**
-         * indicator
+         * indicator (Train)
          */
-
-        paint.setColor(indicatorColor);
+        Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.train);
+        float scale = 40.0f / bmp.getHeight();
+        float trainLong = bmp.getWidth()*scale;
+        Matrix matrix = new Matrix();
+        matrix.postScale(scale, scale);
+        Bitmap bmp1 = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
+        if (!bmp.isRecycled())
+            bmp.recycle();
+        canvas.drawBitmap(bmp1, barWidth * ((float) progress / max) - trainLong, 0, null);
+        /*paint.setColor(indicatorColor);
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
         float indicatorCentre = barWidth*((float)progress/max);
-        canvas.drawCircle(indicatorCentre, indicatorRadis, indicatorRadis, paint);
+        canvas.drawCircle(indicatorCentre, indicatorRadis, indicatorRadis, paint);*/
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), 48);
+        //this.setLayoutParams(new ParentLayoutType.LayoutParams(parentWidth/2,parentHeight));
+        //super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     public synchronized int getMax() { return max; }

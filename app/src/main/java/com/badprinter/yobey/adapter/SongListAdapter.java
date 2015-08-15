@@ -103,7 +103,7 @@ public class SongListAdapter extends BaseAdapter {
          * The below statement deals with it!
          */
         clearAnim(holder);
-        
+
         Song temp = songList.get(position);
         holder.songName.setText(temp.getName());
         holder.songArtist.setText(temp.getArtist());

@@ -68,7 +68,6 @@ public class PlayerService extends Service {
             }
         }, 0, 500);
 
-        System.out.println("Service Create");
     }
     @Override
     public IBinder onBind(Intent arg0) {
@@ -77,7 +76,6 @@ public class PlayerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags,  int startId) {
-        //System.out.println("onStartCommand StartID :" + Integer.toString(startId));
 
         switch (intent.getExtras().getString("controlMsg")) {
             case Constants.PlayerControl.PRE_SONG_MSG:
@@ -119,6 +117,7 @@ public class PlayerService extends Service {
             player.release();
             player = null;
         }
+        timer.cancel();
     }
 
     private void init() {

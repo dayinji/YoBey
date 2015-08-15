@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -37,13 +38,14 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
 
     private final String TAG = "HomeActivity";
     private ListView songListView;
-    private MusicBar bar;
+    //private MusicBar bar;
     private ImageView preBt;
     private ImageView playBt;
     private ImageView nextBt;
     private ImageView playingPhoto;
     private TextView playingName;
     private TextView playingArtist;
+    private RelativeLayout bottomLayout;
     private boolean isPlay = false;
     private int current = 0;
     private int currentTime;
@@ -95,18 +97,18 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
         Song temp = songList.get(current);
         playingPhoto.setImageBitmap(SongProvider.getArtwork(Home.this, temp.getId(), temp.getAlbumId(), false, true));
 
-        bar.setMax(songList.get(current).getDuration());
+        //bar.setMax(songList.get(current).getDuration());
         /*
          * A Callback for Chaneging CurrentTime
          */
-        bar.onProgessChange = new MusicBar.OnProgessChange() {
+        /*bar.onProgessChange = new MusicBar.OnProgessChange() {
             public void OnProgessChangeCall(int toPoint) {
                 Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
                 intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_CURRENTTIME);
                 intent.putExtra("currentTime", toPoint);
                 startService(intent);
             }
-        };
+        };*/
         homeReceiver = new HomeReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.UiControl.UPDATE_UI);
@@ -119,6 +121,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
     public void onDestroy() {
         Intent intent = new Intent(Home.this, PlayerService.class);
         stopService(intent);
+        unregisterReceiver(homeReceiver);
         super.onStop();
     }
 
@@ -152,10 +155,11 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
         preBt = (ImageView)findViewById(R.id.preBt);
         nextBt = (ImageView)findViewById(R.id.nextBt);
         playBt = (ImageView)findViewById(R.id.playBt);
-        bar = (MusicBar)findViewById(R.id.musicBar);
+        //bar = (MusicBar)findViewById(R.id.musicBar);
         playingPhoto = (ImageView)findViewById(R.id.playingPhoto);
         playingName = (TextView)findViewById(R.id.playingName);
         playingArtist = (TextView)findViewById(R.id.playingArtist);
+        bottomLayout = (RelativeLayout)findViewById(R.id.bottomLayout);
     }
 
     /*
@@ -165,7 +169,8 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
         preBt.setOnClickListener(this);
         nextBt.setOnClickListener(this);
         playBt.setOnClickListener(this);
-        bar.setOnClickListener(this);
+        //bar.setOnClickListener(this);
+        bottomLayout.setOnClickListener(this);
     }
 
     @Override
@@ -201,7 +206,12 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                 playDrawableAnim(nextBt, 2, animNext);
                 isFirstTime = false;
                 break;
-            case R.id.musicBar:
+            case R.id.bottomLayout:
+                Intent trunToPlayerIntent = new Intent(Home.this, Player.class);
+                trunToPlayerIntent.putExtra("current", current);
+                trunToPlayerIntent.putExtra("isPlay", isPlay);
+                trunToPlayerIntent.putExtra("isFirstTime", isFirstTime);
+                startActivity(trunToPlayerIntent);
 
         }
 
@@ -221,7 +231,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                     Home.this.isPlay = isPlay;
                     Home.this.current = current;
                     Song temp = songList.get(current);
-                    bar.setMax(temp.getDuration());
+                    //bar.setMax(temp.getDuration());
                     /*
                      * Recycle the Bitmap before
                      */
@@ -245,7 +255,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
 
     private void updateBar(int currentTime) {
         this.currentTime = currentTime;
-        bar.setProgress(currentTime);
+        //bar.setProgress(currentTime);
         mySongListAdapter.updateBar(currentTime);
     }
 
