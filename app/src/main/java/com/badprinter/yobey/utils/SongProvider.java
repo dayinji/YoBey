@@ -51,7 +51,9 @@ public class SongProvider {
                 int duration = Integer.parseInt(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
                 int size = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
                 long albumId = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
-                songList.add(new Song(id, name, fileName, size, album, author, duration, albumId));
+                String url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+
+                songList.add(new Song(id, name, fileName, size, album, author, duration, albumId, url));
             }
             cursor.close();
         }

@@ -211,6 +211,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                 trunToPlayerIntent.putExtra("current", current);
                 trunToPlayerIntent.putExtra("isPlay", isPlay);
                 trunToPlayerIntent.putExtra("isFirstTime", isFirstTime);
+                trunToPlayerIntent.putExtra("currentTime", currentTime);
                 startActivity(trunToPlayerIntent);
 
         }

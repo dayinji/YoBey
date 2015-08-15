@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import com.badprinter.yobey.R;
 import com.badprinter.yobey.commom.Constants;
+import com.badprinter.yobey.customviews.Lyric;
 import com.badprinter.yobey.customviews.MusicBar;
 import com.badprinter.yobey.models.Song;
 import com.badprinter.yobey.utils.SongProvider;
@@ -57,6 +58,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
     private AnimationDrawable animNext;
     private AnimationDrawable animPre;
     private AnimationDrawable smakeAnimDrawable;
+    private Lyric lyricView;
 
     private ValueAnimator changeBlurBg = null;
     private int[] animId = new int[] {
@@ -82,12 +84,17 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
             current = intent.getIntExtra("current", 0);
             isPlay = intent.getBooleanExtra("isPlay", false);
             isFirstTime = intent.getBooleanExtra("isFirstTime", false);
+            currentTime = intent.getIntExtra("currentTime", 0);
+
 
             if (isPlay) {
                 playBt.setBackgroundResource(R.drawable.pausetoplay00);
             }
 
             Song temp = songList.get(current);
+
+            lyricView.setFile(temp.getUrl());
+
             bar.setMax(temp.getDuration());
             /*
              * A Callback for Chaneging CurrentTime
@@ -118,6 +125,13 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                             .async()
                             .capture(findViewById(R.id.blurBg))
                             .into((ImageView) findViewById(R.id.blurBg));
+                }
+            });
+            ViewTreeObserver vto1 = smoke.getViewTreeObserver();
+            vto1.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    updateBar(currentTime);
                 }
             });
         }
@@ -169,6 +183,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         playBt = (ImageView)findViewById(R.id.playBt);
         bar = (MusicBar)findViewById(R.id.musicBar);
         smoke = (ImageView)findViewById(R.id.smoke);
+        lyricView = (Lyric)findViewById(R.id.lyricView);
     }
 
     private void setClickListener() {

@@ -17,6 +17,14 @@
         android:layout_height="match_parent"
         android:background="@color/translucent_black"
         />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <com.badprinter.yobey.customviews.Lyric
+            android:id="@+id/lyricView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </ScrollView>
 
     <RelativeLayout
         android:layout_width="match_parent"

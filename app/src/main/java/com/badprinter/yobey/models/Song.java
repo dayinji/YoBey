@@ -17,10 +17,11 @@ public class Song {
     private String artist;
     private int duration;
     private long albumId;
+    private String url;
     //private Bitmap photo;
 
     public Song(long id, String name, String fileName, int size, String album,
-                String artist, int duration, long albumId) {
+                String artist, int duration, long albumId, String url) {
         this.name = name;
         this.fileName = fileName;
         this.size = size;
@@ -29,6 +30,7 @@ public class Song {
         this.duration = duration;
         this.id = id;
         this.albumId = albumId;
+        this.url = url;
        // this.photo = photo;
     }
 
@@ -55,6 +57,9 @@ public class Song {
 
     public long getAlbumId() { return albumId; }
     public void setAlbumId(long albumId) { this.albumId = albumId; }
+
+    public String getUrl() { return url; }
+    public void setUrl(String url) { this.url = url; }
 
    /* public Bitmap getPhoto() { return photo; }
     public void setPhoto(Bitmap photo) { this.photo = photo; }*/
