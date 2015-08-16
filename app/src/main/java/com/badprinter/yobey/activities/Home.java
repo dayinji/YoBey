@@ -264,9 +264,9 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
         if (animDrawable != null && animDrawable.isRunning())
             animDrawable.stop();
         if (id == 2)
-            view.setBackgroundResource(R.drawable.playnext00);
+            view.setBackgroundResource(R.drawable.playnext_00000);
         else if (id == 3)
-            view.setBackgroundResource(R.drawable.playpre00);
+            view.setBackgroundResource(R.drawable.playpre_00000);
         view.setBackgroundResource(animId[id]);
         animDrawable = (AnimationDrawable) view.getBackground();
         animDrawable.setOneShot(true);

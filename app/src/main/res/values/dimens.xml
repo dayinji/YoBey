@@ -18,5 +18,6 @@
     <!--Music Control-->
     <dimen name="music_control_small">25dp</dimen>
     <dimen name="music_control_medium">40dp</dimen>
+    <dimen name="music_control_large">60dp</dimen>
 
 </resources>

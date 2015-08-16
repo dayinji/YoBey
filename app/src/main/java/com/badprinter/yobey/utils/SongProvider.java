@@ -64,9 +64,9 @@ public class SongProvider {
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inPreferredConfig = Bitmap.Config.RGB_565;
         if(small){
-            return BitmapFactory.decodeResource(context.getResources(), R.drawable.playnext00);
+            return BitmapFactory.decodeResource(context.getResources(), R.drawable.playnext_00000);
         }
-        return BitmapFactory.decodeResource(context.getResources(), R.drawable.playnext00);
+        return BitmapFactory.decodeResource(context.getResources(), R.drawable.playnext_00000);
     }
 
 

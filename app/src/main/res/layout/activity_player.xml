@@ -82,31 +82,31 @@
                     android:id="@+id/musicControlLayout"
                     android:orientation="horizontal"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="wrapgit_content"
                     android:gravity="center_vertical"
                     android:paddingTop="16dp"
                     android:paddingBottom="20dp">
 
                     <ImageView
                         android:id="@+id/preBt"
-                        android:layout_width="@dimen/music_control_medium"
-                        android:layout_height="@dimen/music_control_medium"
-                        android:background="@drawable/playpre00"
+                        android:layout_width="@dimen/music_control_large"
+                        android:layout_height="@dimen/music_control_large"
+                        android:background="@drawable/playpre_00000"
                         android:clickable="true"
-                        android:layout_marginRight="30dp"/>
+                        android:layout_marginRight="15dp"/>
                     <ImageView
                         android:id="@+id/playBt"
-                        android:layout_width="@dimen/music_control_medium"
-                        android:layout_height="@dimen/music_control_medium"
-                        android:background="@drawable/playtopause00"
+                        android:layout_width="@dimen/music_control_large"
+                        android:layout_height="@dimen/music_control_large"
+                        android:background="@drawable/playtopause_00000"
                         android:clickable="true"/>
                     <ImageView
                         android:id="@+id/nextBt"
-                        android:layout_width="@dimen/music_control_medium"
-                        android:layout_height="@dimen/music_control_medium"
-                        android:background="@drawable/playnext00"
+                        android:layout_width="@dimen/music_control_large"
+                        android:layout_height="@dimen/music_control_large"
+                        android:background="@drawable/playnext_00000"
                         android:clickable="true"
-                        android:layout_marginLeft="30dp" />
+                        android:layout_marginLeft="15dp" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

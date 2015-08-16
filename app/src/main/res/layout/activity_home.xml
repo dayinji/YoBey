@@ -73,24 +73,24 @@
 
             <ImageView
                 android:id="@+id/preBt"
-                android:layout_width="@dimen/music_control_small"
-                android:layout_height="@dimen/music_control_small"
-                android:background="@drawable/playpre00"
+                android:layout_width="@dimen/music_control_medium"
+                android:layout_height="@dimen/music_control_medium"
+                android:background="@drawable/playpre_00000"
                 android:clickable="true"
-                android:layout_marginRight="30dp"/>
+                android:layout_marginRight="10dp"/>
             <ImageView
                 android:id="@+id/playBt"
-                android:layout_width="@dimen/music_control_small"
-                android:layout_height="@dimen/music_control_small"
-                android:background="@drawable/playtopause00"
+                android:layout_width="@dimen/music_control_medium"
+                android:layout_height="@dimen/music_control_medium"
+                android:background="@drawable/playtopause_00000"
                 android:clickable="true"/>
             <ImageView
                 android:id="@+id/nextBt"
-                android:layout_width="@dimen/music_control_small"
-                android:layout_height="@dimen/music_control_small"
-                android:background="@drawable/playnext00"
+                android:layout_width="@dimen/music_control_medium"
+                android:layout_height="@dimen/music_control_medium"
+                android:background="@drawable/playnext_00000"
                 android:clickable="true"
-                android:layout_marginLeft="30dp" />
+                android:layout_marginLeft="10dp" />
         </LinearLayout>
 
     </RelativeLayout>

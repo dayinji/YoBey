@@ -37,9 +37,9 @@ public class Lyric extends TextView {
         super(context, attrs, defStyle);
     }
 
-    public void setFile(String url) {
+    public void setFile(String url, String name, String artist) {
         filePath = url.replace(".mp3", ".lrc");
-        lyricUtil.inti(filePath);
+        lyricUtil.inti(filePath, name, artist);
         lyricList = lyricUtil.getLyricList();
         timeList = lyricUtil.getTimeList();
     }
