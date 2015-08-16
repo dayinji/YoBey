@@ -37,7 +37,7 @@ public class MusicBar extends View {
     private float indicatorRadis;
     private float barRadius;
     private ValueAnimator indicatorAnim;
-    public OnProgessChange onProgessChange;
+    public OnProgressChange onProgressChange;
 
     public MusicBar(Context context) {
         this(context, null);
@@ -162,13 +162,13 @@ public class MusicBar extends View {
             float x = me.getX();
             int toPoint = (int)((x/getWidth())*max);
             setProgress(toPoint);
-            onProgessChange.OnProgessChangeCall(toPoint);
+            onProgressChange.onProgressChangeCall(toPoint);
         }
         else if (me.getAction() == MotionEvent.ACTION_DOWN) {
             float x = me.getX();
             int toPoint = (int)((x/getWidth())*max);
             startIndicatorAnim(toPoint);
-            onProgessChange.OnProgessChangeCall(toPoint);
+            onProgressChange.onProgressChangeCall(toPoint);
         }
         return true;
     }
@@ -177,20 +177,23 @@ public class MusicBar extends View {
         if (indicatorAnim != null)
             indicatorAnim.cancel();
         indicatorAnim = ValueAnimator.ofInt(progress, endValue);
-        float duration = Math.abs((float)progress - (float)endValue)/max*600;
+        float duration = Math.abs((float)progress - (float)endValue)/max*1000 + 300;
         indicatorAnim.setDuration((int)duration);
-        indicatorAnim.setInterpolator(new DecelerateInterpolator());
+        indicatorAnim.setInterpolator(new DecelerateInterpolator(4f));
         indicatorAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                setProgress((int)animation.getAnimatedValue());
+                int point = (int)animation.getAnimatedValue();
+                setProgress(point);
+                onProgressChange.onProgressAnimCall(point);
             }
         });
         indicatorAnim.start();
     }
 
-    public interface OnProgessChange {
-        void OnProgessChangeCall(int toPoint);
+    public interface OnProgressChange {
+        void onProgressChangeCall(int toPoint);
+        void onProgressAnimCall(int point);
     }
 }
 

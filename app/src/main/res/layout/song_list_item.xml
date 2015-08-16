@@ -1,40 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
      android:layout_width="match_parent"
-    android:layout_height="56dp">
+    android:layout_height="60dp">
     <LinearLayout
         android:id="@+id/normalLayout"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="40dp"
         android:background="@color/qianbai">
 
-        <ImageView
-            android:id="@+id/songPhoto"
-            android:layout_width="@dimen/image_small"
-            android:layout_height="@dimen/image_small" />
-
-        <LinearLayout
+        <TextView
+            android:id="@+id/songName"
+            android:textSize="@dimen/font_medium"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:paddingLeft="20dp">
+            android:layout_height="wrap_content" />
 
-            <TextView
-                android:id="@+id/songName"
-                android:textSize="@dimen/font_large"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/songArtist"
+            android:textSize="@dimen/font_small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
-            <TextView
-                android:id="@+id/songArtist"
-                android:textSize="@dimen/font_small"
-                android:layout_marginLeft="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-        </LinearLayout>
     </LinearLayout>
 
     <FrameLayout
@@ -46,13 +34,13 @@
         <ImageView
             android:id="@+id/playingPhoto"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="60dp"
             android:scaleType="centerCrop"/>
 
         <ImageView
             android:id="@+id/blackBar"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="60dp"
             android:background="@color/translucent_black"/>
 
         <LinearLayout

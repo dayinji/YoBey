@@ -63,10 +63,12 @@ public class LyricUtil {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             lyricList.add("没有歌词文件");
+            timeList.add(0);
             //loadLyricFromWeb(name);
         } catch (IOException e) {
             e.printStackTrace();
             lyricList.add("没有读取到歌词");
+            timeList.add(0);
         }
     }
 

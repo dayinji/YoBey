@@ -61,7 +61,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
     private AnimationDrawable animPlay;
     private AnimationDrawable animNext;
     private AnimationDrawable animPre;
-    private AnimationDrawable smakeAnimDrawable;
+    private AnimationDrawable smokeAnimDrawable;
     private Lyric lyricView;
     private MyScrollView scrollLyric;
     private int lyricId = -1;
@@ -80,46 +80,67 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         findViewsById();
         setClickListener();
 
-        songList = SongProvider.getSongList(Player.this);
-
-        /*
-         * Set something accroding to intent
-         */
         Intent intent = getIntent();
+        init(intent);
+
+    }
+
+    private void init(Intent intent) {
+        songList = SongProvider.getSongList(Player.this);
         if (intent != null) {
             current = intent.getIntExtra("current", 0);
             isPlay = intent.getBooleanExtra("isPlay", false);
-            isFirstTime = intent.getBooleanExtra("isFirstTime", false);
+            isFirstTime = intent.getBooleanExtra("isFirstTime", true);
             currentTime = intent.getIntExtra("currentTime", 0);
 
-
+            /*
+             * Init the playButton
+             */
             if (isPlay) {
                 playBt.setBackgroundResource(R.drawable.pausetoplay_00000);
+            } else {
+                playBt.setBackgroundResource(R.drawable.playtopause_00000);
             }
 
             Song temp = songList.get(current);
 
+            /*
+             * Init the lyricView
+             */
             lyricView.inti(temp.getUrl(), temp.getName(), temp.getArtist());
 
-            bar.setMax(temp.getDuration());
             /*
+             * Init the bar
              * A Callback for Chaneging CurrentTime
              */
-            bar.onProgessChange = new MusicBar.OnProgessChange() {
-                public void OnProgessChangeCall(int toPoint) {
+            bar.setMax(temp.getDuration());
+            bar.onProgressChange = new MusicBar.OnProgressChange() {
+                public void onProgressChangeCall(int toPoint) {
                     Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
                     intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_CURRENTTIME);
                     intent.putExtra("currentTime", toPoint);
                     startService(intent);
+                }
+                public void onProgressAnimCall(int point) {
                     smoke.setX(((float)bar.getProgress()/songList.get(current).getDuration())*bar.getMeasuredWidth()
                             - smoke.getMeasuredWidth() - 4);
-
                 }
             };
-            blurBg.setImageBitmap(SongProvider.getArtwork(Player.this, temp.getId(), temp.getAlbumId(), false, true));
-            songName.setText(temp.getName());
-            songArtist.setText(temp.getArtist());
-
+            /*
+             * Init the smoke
+             */
+            ViewTreeObserver vto1 = smoke.getViewTreeObserver();
+            vto1.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    updateBar(currentTime);
+                }
+            });
+            /*
+             * Init the blurBackground
+             */
+            blurBg.setImageBitmap(SongProvider.getArtwork(Player.this, temp.getId(),
+                    temp.getAlbumId(), false, true));
             ViewTreeObserver vto2 = blurBg.getViewTreeObserver();
             vto2.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -133,31 +154,37 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                             .into((ImageView) findViewById(R.id.blurBg));
                 }
             });
-            ViewTreeObserver vto1 = smoke.getViewTreeObserver();
-            vto1.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    updateBar(currentTime);
-                }
-            });
+            /*
+             * Init the songInfo
+             */
+            songName.setText(temp.getName());
+            songArtist.setText(temp.getArtist());
         }
+        /*
+         * Init the scrollLyric View
+         */
         scrollLyric.setOverScrollMode(ScrollView.OVER_SCROLL_NEVER);
         scrollLyric.setHorizontalScrollBarEnabled(false);
-
+        /*
+         * Init the playerReceiver
+         */
         PlayerReceiver playerReceiver = new PlayerReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.UiControl.UPDATE_UI);
         filter.addAction(Constants.UiControl.UPDATE_CURRENT);
         registerReceiver(playerReceiver, filter);
-
+        /*
+         * Init the SwipeBack effect
+         */
         mSwipeBackLayout = getSwipeBackLayout();
         mSwipeBackLayout.setEdgeSize(200);
         mSwipeBackLayout.setEdgeTrackingEnabled(SwipeBackLayout.EDGE_LEFT);
-
-        smakeAnimDrawable = (AnimationDrawable) smoke.getBackground();
-        smakeAnimDrawable.setOneShot(false);
-        smakeAnimDrawable.start();
-
+        /*
+         * Init the smoke anim
+         */
+        smokeAnimDrawable = (AnimationDrawable) smoke.getBackground();
+        smokeAnimDrawable.setOneShot(false);
+        smokeAnimDrawable.start();
     }
 
     @Override
@@ -260,33 +287,25 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
             switch (intent.getAction()) {
                 case Constants.UiControl.UPDATE_UI:
                     boolean isPlay = intent.getBooleanExtra("isPlay", false); // Play or Pause
-                    int current = intent.getIntExtra("current", -1); // Current Song Id
-                    if (current == Player.this.current) {
-                        Player.this.isPlay = isPlay;
-                        if (isPlay) {
-                            playDrawableAnim(playBt, 0, animPlay);
-                        } else {
-                            playDrawableAnim(playBt, 1, animPlay);
-                        }
+                    int current = intent.getIntExtra("current", 0); // Current Song Id
 
-                    } else {
-                        Player.this.isPlay = isPlay;
+                    if (current != Player.this.current) {
                         Player.this.current = current;
                         Song temp = songList.get(current);
                         bar.setMax(temp.getDuration());
                         changeBlurBg(temp.getId(), temp.getAlbumId());
                         songArtist.setText(temp.getArtist());
                         songName.setText(temp.getName());
-                        if (isPlay) {
-                            playDrawableAnim(playBt, 0, animPlay);
-                        } else {
-                            playDrawableAnim(playBt, 1, animPlay);
-                        }
                     }
-
+                    if (Player.this.isPlay != isPlay) {
+                        int animId = isPlay ? 0 : 1;
+                        playDrawableAnim(playBt, animId, animPlay);
+                    }
+                    Player.this.isPlay = isPlay;
                     break;
                 case Constants.UiControl.UPDATE_CURRENT:
                     updateBar(intent.getExtras().getInt("currentTime"));
+                    break;
             }
 
 

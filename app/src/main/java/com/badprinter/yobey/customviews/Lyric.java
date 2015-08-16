@@ -65,15 +65,22 @@ public class Lyric extends TextView {
         paint.setAntiAlias(true);  //消除锯齿
         paint.setTextAlign(Paint.Align.CENTER);
         int y = 0;
-        boolean isCurrentLyricDrawed = false;
-        for (int i = 0; i < lyricList.size() - 1; i++) {
-            if (id == i) {
-                paint.setColor(Color.GREEN);
-            } else {
-                paint.setColor(Color.GRAY);
+        /*
+         * If there is no lyric
+         */
+        if (lyricList.size() == 1 && timeList.size() == 1 && timeList.get(0) == 0) {
+            paint.setColor(Color.GRAY);
+            canvas.drawText(lyricList.get(0), getWidth()/2, y + screenH/2, paint);
+        } else {
+            for (int i = 0; i < lyricList.size(); i++) {
+                if (id == i) {
+                    paint.setColor(Color.GREEN);
+                } else {
+                    paint.setColor(Color.GRAY);
+                }
+                canvas.drawText(lyricList.get(i), getWidth()/2, y + screenH/2, paint);
+                y += dy;
             }
-            canvas.drawText(lyricList.get(i), getWidth()/2, y + screenH/2, paint);
-            y += dy;
         }
     }
 
@@ -88,12 +95,15 @@ public class Lyric extends TextView {
          * Must looping to check with currentTime which lyric id is
          * Because user may drap the bar forward or aferward!
          */
-        for (int i = 0; i < lyricList.size() - 1; i++) {
-            if (currentTime < timeList.get(i+1) && currentTime >= timeList.get(i)) {
-                if (id != i) {
+        for (int i = 0; i < lyricList.size(); i++) {
+            if (i == lyricList.size() - 1) {
+                if (id != i &&  currentTime >= timeList.get(i)) {
                     id = i;
                     invalidate();
                 }
+            } else if (currentTime < timeList.get(i+1) && currentTime >= timeList.get(i) && id != i) {
+                id = i;
+                invalidate();
             }
         }
     }

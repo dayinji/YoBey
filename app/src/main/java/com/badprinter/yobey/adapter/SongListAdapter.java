@@ -79,7 +79,7 @@ public class SongListAdapter extends BaseAdapter {
             convertView = LayoutInflater.from(context).inflate(R.layout.song_list_item, null);
             holder = new ListItemViewHolder();
 
-            holder.songPhoto = (ImageView) convertView.findViewById(R.id.songPhoto);
+            //.songPhoto = (ImageView) convertView.findViewById(R.id.songPhoto);
             holder.songName = (TextView) convertView.findViewById(R.id.songName);
             holder.songArtist = (TextView) convertView.findViewById(R.id.songArtist);
             holder.playingLayout = (FrameLayout) convertView.findViewById(R.id.playingLayout);
@@ -139,7 +139,7 @@ public class SongListAdapter extends BaseAdapter {
      * For Holder the Views of ListItem
      */
     public class ListItemViewHolder {
-        public ImageView songPhoto;    // Album photo
+        //public ImageView songPhoto;    // Album photo
         public TextView songName;        // Song name
         public TextView songArtist;    // Song Artist
         public FrameLayout playingLayout;
