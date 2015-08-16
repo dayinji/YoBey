@@ -62,8 +62,8 @@ public class LyricUtil {
             fileInputStream.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            //lyricList.add("没有歌词文件");
-            loadLyricFromWeb(name);
+            lyricList.add("没有歌词文件");
+            //loadLyricFromWeb(name);
         } catch (IOException e) {
             e.printStackTrace();
             lyricList.add("没有读取到歌词");

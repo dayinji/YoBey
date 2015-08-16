@@ -11,6 +11,7 @@ import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,12 +19,14 @@ import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.badprinter.yobey.R;
 import com.badprinter.yobey.commom.Constants;
 import com.badprinter.yobey.customviews.Lyric;
 import com.badprinter.yobey.customviews.MusicBar;
+import com.badprinter.yobey.customviews.MyScrollView;
 import com.badprinter.yobey.models.Song;
 import com.badprinter.yobey.utils.SongProvider;
 
@@ -38,6 +41,7 @@ import me.imid.swipebacklayout.lib.app.SwipeBackActivity;
 
 public class Player extends SwipeBackActivity implements View.OnClickListener {
 
+    private String TAG = "Player";
     private SwipeBackLayout mSwipeBackLayout;
     private ImageView blurBg;
     private TextView songName;
@@ -59,6 +63,8 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
     private AnimationDrawable animPre;
     private AnimationDrawable smakeAnimDrawable;
     private Lyric lyricView;
+    private MyScrollView scrollLyric;
+    private int lyricId = -1;
 
     private ValueAnimator changeBlurBg = null;
     private int[] animId = new int[] {
@@ -93,7 +99,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
 
             Song temp = songList.get(current);
 
-            lyricView.setFile(temp.getUrl(), temp.getName(), temp.getArtist());
+            lyricView.inti(temp.getUrl(), temp.getName(), temp.getArtist());
 
             bar.setMax(temp.getDuration());
             /*
@@ -135,6 +141,8 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                 }
             });
         }
+        scrollLyric.setOverScrollMode(ScrollView.OVER_SCROLL_NEVER);
+        scrollLyric.setHorizontalScrollBarEnabled(false);
 
         PlayerReceiver playerReceiver = new PlayerReceiver();
         IntentFilter filter = new IntentFilter();
@@ -184,6 +192,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         bar = (MusicBar)findViewById(R.id.musicBar);
         smoke = (ImageView)findViewById(R.id.smoke);
         lyricView = (Lyric)findViewById(R.id.lyricView);
+        scrollLyric = (MyScrollView)findViewById(R.id.scrollLyric);
     }
 
     private void setClickListener() {
@@ -287,8 +296,15 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
     private void updateBar(int currentTime) {
         this.currentTime = currentTime;
         bar.setProgress(currentTime);
-        smoke.setX(((float)currentTime/songList.get(current).getDuration())*bar.getMeasuredWidth()
+        smoke.setX(((float) currentTime / songList.get(current).getDuration()) * bar.getMeasuredWidth()
                 - smoke.getMeasuredWidth() - 4);
+
+        lyricView.setCurrentTime(currentTime);
+        if (lyricId != lyricView.getId()) {
+            lyricId = lyricView.getId();
+            scrollLyric.slowScrollTo(0, lyricView.getId()*lyricView.getDy());
+        }
+
     }
 
     private void changeBlurBg(long songId, long albumId) {
