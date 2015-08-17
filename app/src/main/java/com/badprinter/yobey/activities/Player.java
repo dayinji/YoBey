@@ -65,6 +65,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
     private Lyric lyricView;
     private MyScrollView scrollLyric;
     private int lyricId = -1;
+    private PlayerReceiver playerReceiver;
 
     private ValueAnimator changeBlurBg = null;
     private int[] animId = new int[] {
@@ -103,7 +104,24 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
             }
 
             Song temp = songList.get(current);
-
+            /*
+             * Init the blurBackground
+             */
+            blurBg.setImageBitmap(SongProvider.getArtwork(Player.this, temp.getId(),
+                    temp.getAlbumId(), false, true));
+            ViewTreeObserver vto2 = blurBg.getViewTreeObserver();
+            vto2.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    blurBg.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                    Blurry.with(Player.this)
+                            .radius(25)
+                            .sampling(6)
+                            .async()
+                            .capture(findViewById(R.id.blurBg))
+                            .into((ImageView) findViewById(R.id.blurBg));
+                }
+            });
             /*
              * Init the lyricView
              */
@@ -137,24 +155,6 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                 }
             });
             /*
-             * Init the blurBackground
-             */
-            blurBg.setImageBitmap(SongProvider.getArtwork(Player.this, temp.getId(),
-                    temp.getAlbumId(), false, true));
-            ViewTreeObserver vto2 = blurBg.getViewTreeObserver();
-            vto2.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    blurBg.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                    Blurry.with(Player.this)
-                            .radius(25)
-                            .sampling(6)
-                            .async()
-                            .capture(findViewById(R.id.blurBg))
-                            .into((ImageView) findViewById(R.id.blurBg));
-                }
-            });
-            /*
              * Init the songInfo
              */
             songName.setText(temp.getName());
@@ -168,7 +168,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         /*
          * Init the playerReceiver
          */
-        PlayerReceiver playerReceiver = new PlayerReceiver();
+        playerReceiver = new PlayerReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.UiControl.UPDATE_UI);
         filter.addAction(Constants.UiControl.UPDATE_CURRENT);
@@ -185,6 +185,11 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         smokeAnimDrawable = (AnimationDrawable) smoke.getBackground();
         smokeAnimDrawable.setOneShot(false);
         smokeAnimDrawable.start();
+    }
+    @Override
+    public void onDestroy() {
+        unregisterReceiver(playerReceiver);
+        super.onDestroy();
     }
 
     @Override

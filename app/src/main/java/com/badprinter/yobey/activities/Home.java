@@ -122,7 +122,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
         Intent intent = new Intent(Home.this, PlayerService.class);
         stopService(intent);
         unregisterReceiver(homeReceiver);
-        super.onStop();
+        super.onDestroy();
     }
 
     @Override

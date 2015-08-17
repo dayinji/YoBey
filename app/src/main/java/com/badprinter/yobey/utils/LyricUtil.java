@@ -3,23 +3,31 @@ package com.badprinter.yobey.utils;
 import android.net.Uri;
 import android.nfc.Tag;
 import android.os.AsyncTask;
+import android.renderscript.Element;
 import android.util.Log;
+import android.widget.Toast;
 
 
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -35,6 +43,7 @@ public class LyricUtil {
     private String artist;
     private List<String> lyricList = new ArrayList<String>();
     private List<Integer> timeList =  new ArrayList<Integer>();
+
     public void inti(String path, String name, String artist) {
 
         filePath = path;
@@ -45,16 +54,51 @@ public class LyricUtil {
 
         try {
             FileInputStream fileInputStream = new FileInputStream(file);
-            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, "utf-8");
+            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, "GBK");
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             String s = "";
+            List<String> lyricFile = new ArrayList<String>();
+            /*
+             * Save every lyric begin with [min:s.ms]
+             * Every item only can exist a [min:s.ms]
+             */
             while ((s = bufferedReader.readLine()) != null) {
-                if (Pattern.matches("^\\[\\d\\d\\:\\d\\d\\.\\d\\d\\].*", s)) {
-                    addTimeToList(s);
-                    String ss = s.substring(s.indexOf("["), s.indexOf("]") + 1);
-                    s = s.replace(ss, "");
-                    lyricList.add(s);
-
+                Pattern p=Pattern.compile("\\[\\d\\d\\:\\d\\d\\.\\d\\d\\]");
+                Matcher m=p.matcher(s);
+                int count = 0;
+                List<Integer>start = new ArrayList<Integer>();
+                while(m.find()) {
+                    count++;
+                    start.add(m.start());
+                }
+                start.add(s.length());
+                for (int i = 0 ; i < count ; i++) {
+                    lyricFile.add(s.substring(start.get(i), start.get(i+1)));
+                }
+            }
+            /*
+             * Turn lyricFile to lyricList and timeList
+             */
+            for (int i = 0 ; i < lyricFile.size() ; i++) {
+                String str = lyricFile.get(i);
+                if (i == lyricFile.size() - 1) {
+                    timeList.add(getTimeFromString(str));
+                    for (int j = lyricList.size() ; j < timeList.size() ; j++)
+                        lyricList.add(getLyricFromString(str));
+                } else {
+                    if (Pattern.matches("^\\[\\d\\d\\:\\d\\d\\.\\d\\d\\]", str)) {
+                        if (getTimeFromString(str) > getTimeFromString(lyricFile.get(i+1))) {
+                            timeList.add(getTimeFromString(str));
+                        } else {
+                            timeList.add(getTimeFromString(str));
+                            for (int j = lyricList.size() ; j < timeList.size() ; j++)
+                                lyricList.add(getLyricFromString(str));
+                        }
+                    } else {
+                        timeList.add(getTimeFromString(str));
+                        for (int j = lyricList.size() ; j < timeList.size() ; j++)
+                            lyricList.add(getLyricFromString(str));
+                    }
                 }
             }
             bufferedReader.close();
@@ -62,23 +106,27 @@ public class LyricUtil {
             fileInputStream.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            lyricList.add("没有歌词文件");
-            timeList.add(0);
-            //loadLyricFromWeb(name);
+            Log.d(TAG, "no found lyric file, I am trying to connect the net fro it!");
+            loadLyricFromWeb(name);
         } catch (IOException e) {
             e.printStackTrace();
             lyricList.add("没有读取到歌词");
             timeList.add(0);
         }
+        sortList();
     }
 
-    private void addTimeToList(String str) {
+    private int getTimeFromString(String str) {
         int min = Integer.parseInt(str.substring(1, 3));
         int s = Integer.parseInt(str.substring(4, 6));
         int ms = Integer.parseInt(str.substring(7, 9));
         int time = (min*60 + s)*1000 + ms*10;
-        timeList.add(time);
-        Log.e("LyricUtil", str);
+        return time;
+    }
+    private String getLyricFromString(String str) {
+        String ss = str.substring(str.indexOf("["), str.indexOf("]") + 1);
+        str = str.replace(ss, "");
+        return str;
     }
 
     public List<String> getLyricList() {
@@ -90,29 +138,40 @@ public class LyricUtil {
 
     private void loadLyricFromWeb(String name) {
         String url = "http://box.zhangmen.baidu.com/x?op=12&count=1&title=" + name + "$$" + artist + "$$$$";
-        //String url = "http://box.zhangmen.baidu.com/bdlrc/86/8654.lrc";
-        /*try {
-            Log.e(TAG, "OK");
-            Document doc = Jsoup.connect("http://www.badprinter.com/").get();
-            //String title = doc.title();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-        Log.e(TAG, "OK");
-
-        Log.d(TAG, url);
         new DownloadTask().execute(url);
-
     }
 
-    private class DownloadTask extends AsyncTask<String, Void, String> {
+    private class DownloadTask extends AsyncTask<String, Void, byte[]> {
         @Override
-        protected String doInBackground(String... urls) {
+        protected byte[] doInBackground(String... urls) {
             try {
-                return loadFromNetwork(urls[0]);
+                /*
+                 * Get songId for getting lyric
+                 */
+                String name = BytesUtil.bytesToHex(LyricUtil.this.name.getBytes("utf-8"));
+                String artist = BytesUtil.bytesToHex(LyricUtil.this.artist.getBytes("utf-8"));
+                String url =
+                        "http://box.zhangmen.baidu.com/x?op=12&count=1&title="+name+"$$"+artist+"$$$$";
+                Document doc = Jsoup.connect(url).get();
+                Elements eles = doc.getElementsByTag("lrcid");
+                if (eles.size() == 0) {
+                    byte[] nullBytes = {};
+                    return nullBytes;
+                }
+                String id = eles.get(0).text();
+                /*
+                 * Get lyric and save as file for next time to fetch
+                 */
+                String url1 = "http://box.zhangmen.baidu.com/bdlrc/" + Integer.toString(Integer.parseInt(id)/100) +
+                        "/" + id + ".lrc";
+                Connection.Response resultImageResponse = Jsoup.connect(url1).ignoreContentType(true).execute();
+                byte[] bytes = resultImageResponse.bodyAsBytes();
+                return bytes;
             } catch (IOException e) {
-                return "IOException";
+                e.printStackTrace();
             }
+            byte[] nullBytes = {};
+            return nullBytes;
         }
 
         /**
@@ -120,49 +179,52 @@ public class LyricUtil {
          * operation in the log fragment.
          */
         @Override
-        protected void onPostExecute(String result) {
-            Log.i(TAG, result);
-            System.out.println(result);
-        }
-    }
-
-
-    private String loadFromNetwork(String urlString) throws IOException {
-        InputStream stream = null;
-        String str ="";
-
-        try {
-            stream = downloadUrl(urlString);
-            str = readIt(stream, 5000);
-        } finally {
-            if (stream != null) {
-                stream.close();
+        protected void onPostExecute(byte[] result) {
+            if (result.length == 0) {
+                Log.d(TAG, "connct failed! Cannot find lyric file in the net");
+                lyricList.add("没有找到可下载的歌词文件");
+                timeList.add(0);
+                return;
+            }
+            FileOutputStream out = null;
+            try {
+                out = new FileOutputStream(filePath);
+                OutputStreamWriter writer = new OutputStreamWriter(out, "GBK");
+                /*out.write(result, 0, result.length-1);
+                out.flush();
+                out.close();*/
+                String outStr = new String(result, 0, result.length-1, "GBK");
+                writer.write(outStr, 0, outStr.length()-1);
+                writer.flush();
+                Log.d(TAG, outStr);
+               /* writer.close();
+                out.close();*/
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                Log.d(TAG, "download lyric of " + name + " successful!");
+                inti(filePath, name, artist);
             }
         }
-        return str;
     }
 
-    private InputStream downloadUrl(String urlString) throws IOException {
-        // BEGIN_INCLUDE(get_inputstream)
-        URL url = new URL(urlString);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setReadTimeout(10000 /* milliseconds */);
-        conn.setConnectTimeout(15000 /* milliseconds */);
-        conn.setRequestMethod("GET");
-        conn.setDoInput(true);
-        // Start the query
-        conn.connect();
-        InputStream stream = conn.getInputStream();
-        return stream;
-        // END_INCLUDE(get_inputstream)
+    private void sortList() {
+        for (int i = 1 ; i < timeList.size() ; i++) {
+            for (int j = 0 ; j < i ; j++) {
+                if (timeList.get(i) < timeList.get(j)) {
+                    int temp = timeList.get(i);
+                    String str = lyricList.get(i);
+                    timeList.set(i, timeList.get(j));
+                    lyricList.set(i, lyricList.get(j));
+                    timeList.set(j, temp);
+                    lyricList.set(j, str);
+
+                }
+            }
+        }
     }
 
-    private String readIt(InputStream stream, int len) throws IOException, UnsupportedEncodingException {
-        Reader reader = null;
-        reader = new InputStreamReader(stream, "ASCII");
-        char[] buffer = new char[len];
-        reader.read(buffer);
-        return new String(buffer);
-    }
 
 }
