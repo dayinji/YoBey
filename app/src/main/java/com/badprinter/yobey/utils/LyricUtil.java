@@ -26,6 +26,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -66,39 +67,14 @@ public class LyricUtil {
                 Pattern p=Pattern.compile("\\[\\d\\d\\:\\d\\d\\.\\d\\d\\]");
                 Matcher m=p.matcher(s);
                 int count = 0;
-                List<Integer>start = new ArrayList<Integer>();
+                int endPos = 0;
                 while(m.find()) {
                     count++;
-                    start.add(m.start());
+                    timeList.add(getTimeFromString(s.substring(m.start(), m.end())));
+                    endPos = m.end();
                 }
-                start.add(s.length());
                 for (int i = 0 ; i < count ; i++) {
-                    lyricFile.add(s.substring(start.get(i), start.get(i+1)));
-                }
-            }
-            /*
-             * Turn lyricFile to lyricList and timeList
-             */
-            for (int i = 0 ; i < lyricFile.size() ; i++) {
-                String str = lyricFile.get(i);
-                if (i == lyricFile.size() - 1) {
-                    timeList.add(getTimeFromString(str));
-                    for (int j = lyricList.size() ; j < timeList.size() ; j++)
-                        lyricList.add(getLyricFromString(str));
-                } else {
-                    if (Pattern.matches("^\\[\\d\\d\\:\\d\\d\\.\\d\\d\\]", str)) {
-                        if (getTimeFromString(str) > getTimeFromString(lyricFile.get(i+1))) {
-                            timeList.add(getTimeFromString(str));
-                        } else {
-                            timeList.add(getTimeFromString(str));
-                            for (int j = lyricList.size() ; j < timeList.size() ; j++)
-                                lyricList.add(getLyricFromString(str));
-                        }
-                    } else {
-                        timeList.add(getTimeFromString(str));
-                        for (int j = lyricList.size() ; j < timeList.size() ; j++)
-                            lyricList.add(getLyricFromString(str));
-                    }
+                    lyricList.add(s.substring(endPos, s.length()));
                 }
             }
             bufferedReader.close();
@@ -152,21 +128,22 @@ public class LyricUtil {
                 String artist = BytesUtil.bytesToHex(LyricUtil.this.artist.getBytes("utf-8"));
                 String url =
                         "http://box.zhangmen.baidu.com/x?op=12&count=1&title="+name+"$$"+artist+"$$$$";
-                Document doc = Jsoup.connect(url).get();
+                /*Document doc = Jsoup.connect(url).get();
                 Elements eles = doc.getElementsByTag("lrcid");
                 if (eles.size() == 0) {
                     byte[] nullBytes = {};
                     return nullBytes;
                 }
-                String id = eles.get(0).text();
+                String id = eles.get(0).text();*/
                 /*
                  * Get lyric and save as file for next time to fetch
                  */
-                String url1 = "http://box.zhangmen.baidu.com/bdlrc/" + Integer.toString(Integer.parseInt(id)/100) +
+                /*String url1 = "http://box.zhangmen.baidu.com/bdlrc/" + Integer.toString(Integer.parseInt(id)/100) +
                         "/" + id + ".lrc";
                 Connection.Response resultImageResponse = Jsoup.connect(url1).ignoreContentType(true).execute();
                 byte[] bytes = resultImageResponse.bodyAsBytes();
-                return bytes;
+                return bytes;*/
+                return test();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -224,6 +201,42 @@ public class LyricUtil {
                 }
             }
         }
+    }
+    private byte[] test() throws IOException{
+        Log.e("geciceshi!!! : " , "has test!!");
+        String searchDownLoadUrl = "http://www.lrc123.com/?keyword="+ URLEncoder.encode(name,"utf-8")+"+"+
+                URLEncoder.encode(artist,"utf-8")+"&field=all";
+        String url = "http://www.lrc123.com";
+        boolean hasfound = false;
+        Document doc = Jsoup.connect(searchDownLoadUrl).get();
+        Elements eles = doc.getElementsByTag("a");
+        if (eles.size() == 0) {
+            byte[] nullBytes = {};
+            return nullBytes;
+        }
+        //String id = eles.get(0).text();
+        for (int i = 0 ; i < eles.size() ; i++) {
+            Pattern pattern = Pattern.compile("^/download/lrc/\\d+-\\d+\\.aspx$");
+            //Elements hrefs = eles.get(i).getElementsByAttribute("href");
+            if (eles.get(i).attr("href") != "") {
+                String str = eles.get(i).attr("href");
+                Matcher matcher = pattern.matcher(str);
+                if (matcher.matches()) {
+                    Log.e("geciceshi!!! : " , "has match!");
+                    url += str;
+                    hasfound = true;
+                    break;
+                }
+            }
+        }
+        if (!hasfound) {
+            Log.e("geciceshi!!! : " , "has not found!");
+            byte[] nullBytes = {};
+            return nullBytes;
+        }
+        Connection.Response resultImageResponse = Jsoup.connect(url).ignoreContentType(true).execute();
+        byte[] bytes = resultImageResponse.bodyAsBytes();
+        return bytes;
     }
 
 
