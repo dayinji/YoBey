@@ -38,7 +38,6 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
 
     private final String TAG = "HomeActivity";
     private ListView songListView;
-    //private MusicBar bar;
     private ImageView preBt;
     private ImageView playBt;
     private ImageView nextBt;
@@ -213,6 +212,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                 trunToPlayerIntent.putExtra("isFirstTime", isFirstTime);
                 trunToPlayerIntent.putExtra("currentTime", currentTime);
                 startActivity(trunToPlayerIntent);
+                overridePendingTransition(R.anim.activity_slide_in,R.anim.activity_null);
 
         }
 
@@ -257,7 +257,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
     private void updateBar(int currentTime) {
         this.currentTime = currentTime;
         //bar.setProgress(currentTime);
-        mySongListAdapter.updateBar(currentTime);
+        //mySongListAdapter.updateBar(currentTime);
     }
 
     private void playDrawableAnim(ImageView view, int id, AnimationDrawable animDrawable) {

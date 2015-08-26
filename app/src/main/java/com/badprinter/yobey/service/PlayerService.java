@@ -6,11 +6,9 @@ import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.util.Log;
 
 import com.badprinter.yobey.commom.Constants;
 import com.badprinter.yobey.models.Song;
-import com.badprinter.yobey.models.SongNoPhoto;
 import com.badprinter.yobey.utils.SongProvider;
 
 import java.io.IOException;
@@ -67,7 +65,6 @@ public class PlayerService extends Service {
                 handler.sendEmptyMessage(1);
             }
         }, 0, 500);
-
     }
     @Override
     public IBinder onBind(Intent arg0) {
@@ -102,6 +99,8 @@ public class PlayerService extends Service {
         Intent sendIntent = new Intent(Constants.UiControl.UPDATE_UI);
         sendIntent.putExtra("current", current);
         sendIntent.putExtra("isPlay", isPlay);
+        currentTime = player.getCurrentPosition();
+        sendIntent.putExtra("currentTime", currentTime);
         sendBroadcast(sendIntent);
 
         /*

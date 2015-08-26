@@ -1,6 +1,5 @@
 package com.badprinter.yobey.utils;
 
-import android.app.Application;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
@@ -11,16 +10,17 @@ import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import com.badprinter.yobey.R;
 import com.badprinter.yobey.models.Song;
-import com.badprinter.yobey.models.SongNoPhoto;
 
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -46,6 +46,9 @@ public class SongProvider {
                 String fileName = new String(data, 0, data.length-1);
                 mmr.setDataSource(fileName);
                 String name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+                // test
+                String pinyin = PinYinUtil.getPinYinFromHanYu(name, PinYinUtil.UPPER_CASE,
+                        PinYinUtil.WITH_TONE_NUMBER, PinYinUtil.WITH_V);
                 String author = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
                 String album = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
                 int duration = Integer.parseInt(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
@@ -53,11 +56,16 @@ public class SongProvider {
                 long albumId = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
                 String url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
 
-                songList.add(new Song(id, name, fileName, size, album, author, duration, albumId, url));
+                songList.add(new Song(id, name, fileName, size, album, author, duration, albumId, url, pinyin));
             }
             cursor.close();
+            sortByPinyin(songList);
         }
         return songList;
+    }
+
+    public static void sortByPinyin(List<Song> list) {
+        Collections.sort(list);
     }
 
     public static Bitmap getDefaultArtwork(Context context,boolean small) {

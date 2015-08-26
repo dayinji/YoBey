@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 /**
  * Created by root on 15-8-12.
  */
-public class Song {
+public class Song implements Comparable<Song>{
     /*
      *
      */
@@ -18,10 +18,10 @@ public class Song {
     private int duration;
     private long albumId;
     private String url;
-    //private Bitmap photo;
+    private String pinyin;
 
     public Song(long id, String name, String fileName, int size, String album,
-                String artist, int duration, long albumId, String url) {
+                String artist, int duration, long albumId, String url, String pinyin) {
         this.name = name;
         this.fileName = fileName;
         this.size = size;
@@ -31,7 +31,20 @@ public class Song {
         this.id = id;
         this.albumId = albumId;
         this.url = url;
-       // this.photo = photo;
+        this.pinyin = pinyin;
+    }
+
+    public int compareTo(Song other) {
+        char[] otherPinyin = other.getPinyin().toCharArray();
+        char[] thisPinyin = pinyin.toCharArray();
+        int length = otherPinyin.length > thisPinyin.length ? thisPinyin.length : otherPinyin.length;
+        for (int i = 0 ; i < length ; i++) {
+            if (thisPinyin[i] < otherPinyin[i])
+                return -1;
+            else if (thisPinyin[i] > otherPinyin[i])
+                return 1;
+        }
+        return 0;
     }
 
     public long getId() { return id; }
@@ -61,6 +74,7 @@ public class Song {
     public String getUrl() { return url; }
     public void setUrl(String url) { this.url = url; }
 
-   /* public Bitmap getPhoto() { return photo; }
-    public void setPhoto(Bitmap photo) { this.photo = photo; }*/
+    public String getPinyin() { return pinyin; }
+    public void setPinyin(String pinyin) { this.pinyin = pinyin; }
+
 }

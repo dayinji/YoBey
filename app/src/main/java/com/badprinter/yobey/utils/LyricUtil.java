@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.renderscript.Element;
+import android.text.BoringLayout;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -44,12 +45,20 @@ public class LyricUtil {
     private String artist;
     private List<String> lyricList = new ArrayList<String>();
     private List<Integer> timeList =  new ArrayList<Integer>();
+    private DownloadTask myTask = new DownloadTask();
 
     public void inti(String path, String name, String artist) {
+        Log.e(TAG, "init called");
 
-        filePath = path;
+        this.filePath = path;
         this.name = name;
         this.artist = artist;
+        if (!myTask.isCancelled()) {
+            myTask.cancel(true);
+        }
+        lyricList.clear();
+        timeList.clear();
+
 
         File file = new File(path);
 
@@ -58,7 +67,6 @@ public class LyricUtil {
             InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, "GBK");
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             String s = "";
-            List<String> lyricFile = new ArrayList<String>();
             /*
              * Save every lyric begin with [min:s.ms]
              * Every item only can exist a [min:s.ms]
@@ -77,12 +85,16 @@ public class LyricUtil {
                     lyricList.add(s.substring(endPos, s.length()));
                 }
             }
+
+            Log.e(TAG, "lyricList 's size == 0 ? " + Boolean.toString(lyricList.size()==0));
+            for (int i = 0 ; i < lyricList.size() ; i++)
+                Log.e(TAG, lyricList.get(i));
             bufferedReader.close();
             inputStreamReader.close();
             fileInputStream.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            Log.d(TAG, "no found lyric file, I am trying to connect the net fro it!");
+            Log.e(TAG, "no found lyric file, I am trying to connect the net fro it!");
             loadLyricFromWeb(name);
         } catch (IOException e) {
             e.printStackTrace();
@@ -99,11 +111,6 @@ public class LyricUtil {
         int time = (min*60 + s)*1000 + ms*10;
         return time;
     }
-    private String getLyricFromString(String str) {
-        String ss = str.substring(str.indexOf("["), str.indexOf("]") + 1);
-        str = str.replace(ss, "");
-        return str;
-    }
 
     public List<String> getLyricList() {
         return lyricList;
@@ -114,36 +121,16 @@ public class LyricUtil {
 
     private void loadLyricFromWeb(String name) {
         String url = "http://box.zhangmen.baidu.com/x?op=12&count=1&title=" + name + "$$" + artist + "$$$$";
-        new DownloadTask().execute(url);
+        //new DownloadTask().execute(url);
+        myTask = new DownloadTask();
+        myTask.execute(url);
     }
 
     private class DownloadTask extends AsyncTask<String, Void, byte[]> {
         @Override
         protected byte[] doInBackground(String... urls) {
             try {
-                /*
-                 * Get songId for getting lyric
-                 */
-                String name = BytesUtil.bytesToHex(LyricUtil.this.name.getBytes("utf-8"));
-                String artist = BytesUtil.bytesToHex(LyricUtil.this.artist.getBytes("utf-8"));
-                String url =
-                        "http://box.zhangmen.baidu.com/x?op=12&count=1&title="+name+"$$"+artist+"$$$$";
-                /*Document doc = Jsoup.connect(url).get();
-                Elements eles = doc.getElementsByTag("lrcid");
-                if (eles.size() == 0) {
-                    byte[] nullBytes = {};
-                    return nullBytes;
-                }
-                String id = eles.get(0).text();*/
-                /*
-                 * Get lyric and save as file for next time to fetch
-                 */
-                /*String url1 = "http://box.zhangmen.baidu.com/bdlrc/" + Integer.toString(Integer.parseInt(id)/100) +
-                        "/" + id + ".lrc";
-                Connection.Response resultImageResponse = Jsoup.connect(url1).ignoreContentType(true).execute();
-                byte[] bytes = resultImageResponse.bodyAsBytes();
-                return bytes;*/
-                return test();
+                return downLoadLryic();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -167,15 +154,12 @@ public class LyricUtil {
             try {
                 out = new FileOutputStream(filePath);
                 OutputStreamWriter writer = new OutputStreamWriter(out, "GBK");
-                /*out.write(result, 0, result.length-1);
-                out.flush();
-                out.close();*/
                 String outStr = new String(result, 0, result.length-1, "GBK");
                 writer.write(outStr, 0, outStr.length()-1);
                 writer.flush();
                 Log.d(TAG, outStr);
-               /* writer.close();
-                out.close();*/
+                writer.close();
+                out.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -183,6 +167,7 @@ public class LyricUtil {
             } finally {
                 Log.d(TAG, "download lyric of " + name + " successful!");
                 inti(filePath, name, artist);
+                Log.e(TAG, "call init again after downloading");
             }
         }
     }
@@ -202,38 +187,49 @@ public class LyricUtil {
             }
         }
     }
-    private byte[] test() throws IOException{
-        Log.e("geciceshi!!! : " , "has test!!");
-        String searchDownLoadUrl = "http://www.lrc123.com/?keyword="+ URLEncoder.encode(name,"utf-8")+"+"+
-                URLEncoder.encode(artist,"utf-8")+"&field=all";
-        String url = "http://www.lrc123.com";
-        boolean hasfound = false;
-        Document doc = Jsoup.connect(searchDownLoadUrl).get();
-        Elements eles = doc.getElementsByTag("a");
-        if (eles.size() == 0) {
+
+    /*
+     * Download lyric from lrc123.com
+     */
+    private byte[] downLoadLryic() throws IOException{
+        String searchDownLoadUrl;
+        if (!name.equals("") && artist == null) {
+            searchDownLoadUrl = "http://www.lrc123.com/?keyword=" + URLEncoder.encode(name, "utf-8") + "&field=all";
+        } else if (!name.equals("") && !artist.equals("")) {
+            searchDownLoadUrl = "http://www.lrc123.com/?keyword=" + URLEncoder.encode(name, "utf-8") + "+" +
+                    URLEncoder.encode(artist, "utf-8") + "&field=all";
+        } else {
             byte[] nullBytes = {};
             return nullBytes;
         }
-        //String id = eles.get(0).text();
+        String url = "http://www.lrc123.com";
+        boolean hasfound = false;
+
+        Log.e(TAG, "the url = " + searchDownLoadUrl);
+        Document doc = Jsoup.connect(searchDownLoadUrl).timeout(5000).get();
+        Elements eles = doc.getElementsByTag("a");
         for (int i = 0 ; i < eles.size() ; i++) {
             Pattern pattern = Pattern.compile("^/download/lrc/\\d+-\\d+\\.aspx$");
-            //Elements hrefs = eles.get(i).getElementsByAttribute("href");
             if (eles.get(i).attr("href") != "") {
                 String str = eles.get(i).attr("href");
                 Matcher matcher = pattern.matcher(str);
                 if (matcher.matches()) {
-                    Log.e("geciceshi!!! : " , "has match!");
                     url += str;
                     hasfound = true;
                     break;
                 }
+
             }
         }
+        /*
+         * If no found lyric, return null
+         */
         if (!hasfound) {
-            Log.e("geciceshi!!! : " , "has not found!");
             byte[] nullBytes = {};
             return nullBytes;
         }
+
+        Log.e(TAG, "the download url = " + url);
         Connection.Response resultImageResponse = Jsoup.connect(url).ignoreContentType(true).execute();
         byte[] bytes = resultImageResponse.bodyAsBytes();
         return bytes;

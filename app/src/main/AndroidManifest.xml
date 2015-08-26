@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.badprinter.yobey" >
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
@@ -24,11 +24,13 @@
             android:name=".activities.Player"
             android:label="@string/title_activity_player" >
         </activity>
-        <service android:name=".service.PlayerService">
+
+        <service android:name=".service.PlayerService" >
             <intent-filter>
-                <action android:name="com.badprinter.yobey.service.PLAYER_SERVICE"></action>
+                <action android:name="com.badprinter.yobey.service.PLAYER_SERVICE" />
             </intent-filter>
         </service>
+
     </application>
 
 </manifest>

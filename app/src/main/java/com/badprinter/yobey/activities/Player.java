@@ -113,13 +113,15 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
             vto2.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
+                    long startMs = System.currentTimeMillis();
                     blurBg.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                     Blurry.with(Player.this)
-                            .radius(25)
-                            .sampling(6)
-                            .async()
+                            .radius(20)
+                            .sampling(5)
+                            //.async()
                             .capture(findViewById(R.id.blurBg))
                             .into((ImageView) findViewById(R.id.blurBg));
+                    //Log.e(TAG, "BLUR TIME:"+Long.toString(System.currentTimeMillis() - startMs) + "ms");
                 }
             });
             /*
@@ -299,6 +301,11 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                         Song temp = songList.get(current);
                         bar.setMax(temp.getDuration());
                         changeBlurBg(temp.getId(), temp.getAlbumId());
+                        lyricView.inti(temp.getUrl(), temp.getName(), temp.getArtist());
+                        Player.this.currentTime = intent.getExtras().getInt("currentTime");
+                        Log.e(TAG, "currentTime : " + Integer.toString(Player.this.currentTime));
+                        scrollLyric.reset();
+                        updateBar(0);
                         songArtist.setText(temp.getArtist());
                         songName.setText(temp.getName());
                     }
@@ -309,7 +316,8 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                     Player.this.isPlay = isPlay;
                     break;
                 case Constants.UiControl.UPDATE_CURRENT:
-                    updateBar(intent.getExtras().getInt("currentTime"));
+                    Player.this.currentTime = intent.getExtras().getInt("currentTime");
+                    updateBar(Player.this.currentTime);
                     break;
             }
 
@@ -318,7 +326,6 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
     }
 
     private void updateBar(int currentTime) {
-        this.currentTime = currentTime;
         bar.setProgress(currentTime);
         smoke.setX(((float) currentTime / songList.get(current).getDuration()) * bar.getMeasuredWidth()
                 - smoke.getMeasuredWidth() - 4);
@@ -339,9 +346,9 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         blurBg.setAlpha(0f);
         blurBg.setImageBitmap(SongProvider.getArtwork(Player.this, songId, albumId, false, true));
         Blurry.with(Player.this)
-                .radius(25)
-                .sampling(6)
-                .async()
+                .radius(20)
+                .sampling(5)
+                        //.async()
                 .capture(findViewById(R.id.blurBg))
                 .into((ImageView) findViewById(R.id.blurBg));
         if (!before.isRecycled())

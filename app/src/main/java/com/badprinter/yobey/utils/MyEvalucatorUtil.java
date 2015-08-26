@@ -6,7 +6,7 @@ import android.animation.IntEvaluator;
 /**
  * Created by root on 15-8-13.
  */
-public class MyEvalucator {
+public class MyEvalucatorUtil {
     public static class JellyAnim extends IntEvaluator {
         private double amp = 0.06;
         private double freq = 1.5;

@@ -2,19 +2,13 @@ package com.badprinter.yobey.adapter;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.DecelerateInterpolator;
-import android.view.animation.OvershootInterpolator;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -28,8 +22,10 @@ import java.util.Map;
 
 import com.badprinter.yobey.R;
 import com.badprinter.yobey.models.Song;
-import com.badprinter.yobey.utils.MyEvalucator;
+import com.badprinter.yobey.utils.MyEvalucatorUtil;
 import com.badprinter.yobey.utils.SongProvider;
+
+import org.w3c.dom.Text;
 
 
 /**
@@ -87,7 +83,8 @@ public class SongListAdapter extends BaseAdapter {
             holder.playingName = (TextView) convertView.findViewById(R.id.playingName);
             holder.playingArtist = (TextView) convertView.findViewById(R.id.playingArtist);
             holder.normalLayout = (LinearLayout) convertView.findViewById(R.id.normalLayout);
-            holder.blackBar = (ImageView) convertView.findViewById(R.id.blackBar);
+            //holder.blackBar = (ImageView) convertView.findViewById(R.id.blackBar);
+            holder.letter = (TextView) convertView.findViewById(R.id.letter);
 
             convertView.setTag(holder);
 
@@ -111,9 +108,15 @@ public class SongListAdapter extends BaseAdapter {
         //holder.songPhoto.setImageBitmap(SongProvider.getArtwork(context, temp.getId(), temp.getAlbumId(), false, true));
         holder.playingName.setText(temp.getName());
         holder.playingArtist.setText(temp.getArtist());
+        holder.letter.setText(temp.getPinyin().substring(0, 1));
         //holder.playingPhoto.setImageBitmap(temp.getPhoto());
         //holder.playingPhoto.setImageBitmap(SongProvider.getArtwork(context, temp.getId(), temp.getAlbumId(), false, false));
 
+        if (position != getPositionByLetter(getLetterByPosition(position))) {
+            holder.letter.setVisibility(View.GONE);
+        } else {
+            holder.letter.setVisibility(View.VISIBLE);
+        }
         if (position == current) {
             holder.playingPhoto.setImageBitmap(SongProvider.getArtwork(context, temp.getId(), temp.getAlbumId(), false, false));
             LinearLayout normal = (LinearLayout) convertView.findViewById(R.id.normalLayout);
@@ -134,6 +137,39 @@ public class SongListAdapter extends BaseAdapter {
         return convertView;
     }
 
+    private char getLetterByPosition(int position) {
+        char[] pinyin = songList.get(position).getPinyin().toCharArray();
+        return pinyin[0];
+    }
+    private int getPositionByLetter(char letter) {
+        int index = findByBinarySearch(0, songList.size(), letter);
+        if (index == -1)
+            return -1;
+        for (int i = index ; i > 0 ; i --) {
+            char[] pinyin = songList.get(i-1).getPinyin().toCharArray();
+            if (pinyin[0] != letter) {
+                return i;
+            }
+            if (i == 1) {
+                return 0;
+            }
+        }
+        return -1;
+    }
+    private int findByBinarySearch(int start, int end, char letter) {
+        if (end <= start)
+            return -1;
+        int middle = (end + start)/2;
+        char[] pinyin = songList.get(middle).getPinyin().toCharArray();
+        if (pinyin[0] > letter) {
+            return findByBinarySearch(start, middle, letter);
+        } else if (pinyin[0] < letter) {
+            return findByBinarySearch(middle, end, letter);
+        } else {
+            return middle;
+        }
+    }
+
 
     /**
      * For Holder the Views of ListItem
@@ -147,7 +183,8 @@ public class SongListAdapter extends BaseAdapter {
         public TextView playingName;        // Song name
         public TextView playingArtist;    // Song Artist
         public LinearLayout normalLayout;
-        public ImageView blackBar;
+        //public ImageView blackBar;
+        public TextView letter;
         public ValueAnimator normalAnim = null;
         public ValueAnimator playingAnim1 = null;
         public ValueAnimator playingAnim2 = null;
@@ -223,7 +260,7 @@ public class SongListAdapter extends BaseAdapter {
         });
         holder.playingAnim2 = ValueAnimator.ofFloat(1f, 0f);
         holder.playingAnim2.setDuration(2000);
-        MyEvalucator.JellyFloatAnim jelly = new MyEvalucator.JellyFloatAnim();
+        MyEvalucatorUtil.JellyFloatAnim jelly = new MyEvalucatorUtil.JellyFloatAnim();
         jelly.setDuration(2000);
         jelly.setFirstTime(180);
         holder.playingAnim2.setEvaluator(jelly);
@@ -238,7 +275,7 @@ public class SongListAdapter extends BaseAdapter {
         holder.playingAnim1.start();
 
         //Init BlackBar Xpos
-        holder.blackBar.setX(0);
+        //holder.blackBar.setX(0);
     }
 
     private void clearAnim(final ListItemViewHolder holder) {
@@ -250,7 +287,7 @@ public class SongListAdapter extends BaseAdapter {
             holder.playingAnim2.end();
     }
 
-    public void updateBar(int progress) {
+    /*public void updateBar(int progress) {
         for (int i = 0; i < views.size(); i++) {
             View temp = views.get(i);
             int position = viewsPosition.get(temp);
@@ -260,5 +297,5 @@ public class SongListAdapter extends BaseAdapter {
                 holder.blackBar.setX(x);
             }
         }
-    }
+    }*/
 }

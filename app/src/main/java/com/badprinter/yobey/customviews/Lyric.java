@@ -48,12 +48,19 @@ public class Lyric extends TextView {
 
     public void inti(String url, String name, String artist) {
         filePath = url.replace(".mp3", ".lrc");
+        /*
+         * When there is no lyric and download from the net
+         * We need to reset the height of Lyric View.
+         */
         lyricUtil.inti(filePath, name, artist);
         lyricList = lyricUtil.getLyricList();
+        Lyric.this.setHeight(screenH + lyricList.size() * dy);
         timeList = lyricUtil.getTimeList();
         screenH = context.getResources().getDisplayMetrics().widthPixels;
         density = context.getResources().getDisplayMetrics().density;
         //Log.d(TAG, "screenH : " + screenH + "\nscreenH : "+ density);
+        id = -1;
+        invalidate();
     }
 
     @Override
@@ -104,6 +111,7 @@ public class Lyric extends TextView {
             } else if (currentTime < timeList.get(i+1) && currentTime >= timeList.get(i) && id != i) {
                 id = i;
                 invalidate();
+                break;
             }
         }
     }

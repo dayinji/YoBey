@@ -1,69 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-     android:layout_width="match_parent"
-    android:layout_height="60dp">
-    <LinearLayout
-        android:id="@+id/normalLayout"
-        android:orientation="vertical"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="100dp">
+
+    <TextView
+        android:id="@+id/letter"
+        android:layout_height="40dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
         android:gravity="center_vertical"
         android:paddingLeft="40dp"
-        android:background="@color/qianbai">
-
-        <TextView
-            android:id="@+id/songName"
-            android:textSize="@dimen/font_medium"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:id="@+id/songArtist"
-            android:textSize="@dimen/font_small"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-    </LinearLayout>
+        android:textSize="@dimen/font_large"
+        android:textColor="@color/qianbai"
+        android:background="@color/qianhui_e"
+        android:clickable="false"/>
 
     <FrameLayout
-        android:alpha="0"
-        android:id="@+id/playingLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <ImageView
-            android:id="@+id/playingPhoto"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:scaleType="centerCrop"/>
-
-        <ImageView
-            android:id="@+id/blackBar"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:background="@color/translucent_black"/>
-
+         android:layout_width="match_parent"
+        android:layout_height="60dp">
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="40dp"
-            android:padding="3dp"
-            android:background="@drawable/round_bg">
+            android:id="@+id/normalLayout"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:background="@color/qianbai">
 
             <TextView
-                android:id="@+id/playingName"
-                android:textSize="@dimen/font_large"
+                android:id="@+id/songName"
+                android:textSize="@dimen/font_medium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
             <TextView
-                android:id="@+id/playingArtist"
+                android:id="@+id/songArtist"
                 android:textSize="@dimen/font_small"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
         </LinearLayout>
-    </FrameLayout>
 
-</FrameLayout>
+        <FrameLayout
+            android:alpha="0"
+            android:id="@+id/playingLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/playingPhoto"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:scaleType="centerCrop"/>
+
+            <ImageView
+                android:id="@+id/blackBar"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:background="@color/translucent_black"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="40dp"
+                android:padding="3dp"
+                android:background="@drawable/round_bg">
+
+                <TextView
+                    android:id="@+id/playingName"
+                    android:textSize="@dimen/font_large"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/playingArtist"
+                    android:textSize="@dimen/font_small"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+        </FrameLayout>
+
+    </FrameLayout>
+</LinearLayout>

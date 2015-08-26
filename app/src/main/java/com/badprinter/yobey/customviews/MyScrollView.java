@@ -60,6 +60,9 @@ public class MyScrollView extends ScrollView {
         });
         anim.start();
     }
+    public void reset() {
+        lastMoveTime = 0;
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent me) {
