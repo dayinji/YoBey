@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,33 +12,32 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.badprinter.yobey.R;
 import com.badprinter.yobey.adapter.SongListAdapter;
 import com.badprinter.yobey.commom.Constants;
-import com.badprinter.yobey.customviews.MusicBar;
+import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.models.Song;
 import com.badprinter.yobey.service.PlayerService;
-import com.badprinter.yobey.utils.Animation_3D;
 import com.badprinter.yobey.utils.SongProvider;
-
-import org.w3c.dom.Text;
+import com.twotoasters.jazzylistview.JazzyListView;
+import com.twotoasters.jazzylistview.effects.CardsEffect;
+import com.twotoasters.jazzylistview.effects.SlideInEffect;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import me.imid.swipebacklayout.lib.app.SwipeBackActivity;
 
-public class Home extends ActionBarActivity implements View.OnClickListener {
+public class SongList extends SwipeBackActivity implements View.OnClickListener{
 
-    private final String TAG = "HomeActivity";
-    private ListView songListView;
+    private final String TAG = "SongListActivity";
+
+    private JazzyListView songListView;
     private ImageView preBt;
     private ImageView playBt;
     private ImageView nextBt;
@@ -47,11 +45,13 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
     private TextView playingName;
     private TextView playingArtist;
     private RelativeLayout bottomLayout;
+
     private boolean isPlay = false;
     private int current = 0;
     private int currentTime;
     private boolean isFirstTime = true;
-    private HomeReceiver homeReceiver;
+    private String listName;
+    private ListReceiver listReceiver;
     private SongListAdapter mySongListAdapter;
     private AnimationDrawable animPlay;
     private AnimationDrawable animNext;
@@ -72,16 +72,16 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_song_list);
 
         /*
          * Find All Views
          */
         findViewsById();
         setClickListener();
-
-        songList = SongProvider.getSongList(Home.this);
-        mySongListAdapter = new SongListAdapter(Home.this, songList);
+        listName = getIntent().getStringExtra("cata");
+        songList = SongProvider.getSongListByName(SongList.this, listName);
+        mySongListAdapter = new SongListAdapter(SongList.this, songList);
         songListView.setAdapter(mySongListAdapter);
         songListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -90,70 +90,40 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                 intent.putExtra("controlMsg", Constants.PlayerControl.PLAYING_MSG);
                 intent.putExtra("current", position);
                 intent.putExtra("currenTime", 0);
+                intent.putExtra("listName", listName);
                 isFirstTime = false;
                 startService(intent);
+
             }
         });
-
+        songListView.setTransitionEffect(new CardsEffect());
         Song temp = songList.get(current);
-        playingPhoto.setImageBitmap(SongProvider.getArtwork(Home.this, temp.getId(), temp.getAlbumId(), false, true));
+        playingPhoto.setImageBitmap(SongProvider.getArtwork(SongList.this, temp.getId(), temp.getAlbumId(), false, true));
 
-        //bar.setMax(songList.get(current).getDuration());
-        /*
-         * A Callback for Chaneging CurrentTime
-         */
-        /*bar.onProgessChange = new MusicBar.OnProgessChange() {
-            public void OnProgessChangeCall(int toPoint) {
-                Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
-                intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_CURRENTTIME);
-                intent.putExtra("currentTime", toPoint);
-                startService(intent);
-            }
-        };*/
-        homeReceiver = new HomeReceiver();
+        listReceiver = new ListReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.UiControl.UPDATE_UI);
         filter.addAction(Constants.UiControl.UPDATE_CURRENT);
-        registerReceiver(homeReceiver, filter);
+        registerReceiver(listReceiver, filter);
 
     }
 
 
     @Override
     public void onDestroy() {
-        Intent intent = new Intent(Home.this, PlayerService.class);
+        Intent intent = new Intent(SongList.this, PlayerService.class);
         stopService(intent);
-        unregisterReceiver(homeReceiver);
+        unregisterReceiver(listReceiver);
         super.onDestroy();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_home, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     /*
      * Find All Views When Create the Home Activity
      */
     private void findViewsById() {
-        songListView = (ListView)findViewById(R.id.songList);
+        songListView = (JazzyListView)findViewById(R.id.songList);
         preBt = (ImageView)findViewById(R.id.preBt);
         nextBt = (ImageView)findViewById(R.id.nextBt);
         playBt = (ImageView)findViewById(R.id.playBt);
@@ -209,11 +179,12 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                 isFirstTime = false;
                 break;
             case R.id.bottomLayout:
-                Intent trunToPlayerIntent = new Intent(Home.this, Player.class);
+                Intent trunToPlayerIntent = new Intent(SongList.this, Player.class);
                 trunToPlayerIntent.putExtra("current", current);
                 trunToPlayerIntent.putExtra("isPlay", isPlay);
                 trunToPlayerIntent.putExtra("isFirstTime", isFirstTime);
                 trunToPlayerIntent.putExtra("currentTime", currentTime);
+                trunToPlayerIntent.putExtra("listName", listName);
                 startActivity(trunToPlayerIntent);
                 overridePendingTransition(R.anim.activity_slide_in,R.anim.activity_null);
 
@@ -224,7 +195,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
     /*
      * Receive the Broad from Sevice for Updating UI
      */
-    private class HomeReceiver extends BroadcastReceiver {
+    private class ListReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
@@ -232,15 +203,15 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                     boolean isPlay = intent.getBooleanExtra("isPlay", false); // Play or Pause
                     int current = intent.getIntExtra("current", -1); // Current Song Id
                     mySongListAdapter.updateItem(current);
-                    Home.this.isPlay = isPlay;
-                    Home.this.current = current;
+                    SongList.this.isPlay = isPlay;
+                    SongList.this.current = current;
                     Song temp = songList.get(current);
                     //bar.setMax(temp.getDuration());
                     /*
                      * Recycle the Bitmap before
                      */
                     //((BitmapDrawable)playingPhoto.getDrawable()).getBitmap().recycle();
-                    playingPhoto.setImageBitmap(SongProvider.getArtwork(Home.this, temp.getId(), temp.getAlbumId(), false, true));
+                    playingPhoto.setImageBitmap(SongProvider.getArtwork(SongList.this, temp.getId(), temp.getAlbumId(), false, true));
                     playingArtist.setText(temp.getArtist());
                     playingName.setText(temp.getName());
                     if (isPlay) {

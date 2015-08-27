@@ -3,6 +3,7 @@ package com.badprinter.yobey.utils;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,6 +14,8 @@ import android.provider.MediaStore;
 import android.util.Log;
 
 import com.badprinter.yobey.R;
+import com.badprinter.yobey.commom.Constants;
+import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.models.Song;
 
 import java.io.FileDescriptor;
@@ -33,10 +36,18 @@ public class SongProvider {
      * Save the songList for saving time for starting PlayerService.
      */
     private static List<Song> songList = null;
+    private static List<String> artistList = null;
+    private static DBManager dbMgr;
+
+    public static void init(Context context) {
+        dbMgr = new DBManager(context);
+    }
 
     public static List<Song> getSongList(Context context) {
+        init(context);
         if (songList == null) {
             songList = new ArrayList<>();
+            artistList = new ArrayList<>();
             MediaMetadataRetriever mmr = new MediaMetadataRetriever();
             Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     null, null, null, null);
@@ -49,21 +60,76 @@ public class SongProvider {
                 // test
                 String pinyin = PinYinUtil.getPinYinFromHanYu(name, PinYinUtil.UPPER_CASE,
                         PinYinUtil.WITH_TONE_NUMBER, PinYinUtil.WITH_V);
-                String author = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+                String artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
                 String album = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
                 int duration = Integer.parseInt(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
                 int size = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
                 long albumId = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
                 String url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
 
-                songList.add(new Song(id, name, fileName, size, album, author, duration, albumId, url, pinyin));
+                songList.add(new Song(id, name, fileName, size, album, artist, duration, albumId, url, pinyin));
+
+                if (!artistList.contains(artist)) {
+                    artistList.add(artist);
+                }
             }
             cursor.close();
             sortByPinyin(songList);
         }
         return songList;
     }
-
+    /*
+     * Get SongList by Artist Name.
+     */
+    public static List<Song> getSongListByArtist(Context context, String artist) {
+        if (songList == null) {
+            getSongList(context);
+        }
+        List<Song> songListOfArtist = new ArrayList<Song>();
+        for (Song song : songList) {
+            if (song.getArtist() == artist) {
+                songListOfArtist.add(song);
+            }
+        }
+        return songListOfArtist;
+    }
+    /*
+     * Get ArtistList
+     */
+    public static List<String> getArtistList(Context context) {
+        if (artistList == null) {
+            getSongList(context);
+        }
+        return artistList;
+    }
+    /*
+     * Get Favorite List
+     */
+    public static List<Song> getFavoriteList(Context context) {
+        if (songList == null) {
+            getSongList(context);
+        }
+        List<Song> favoriteSongList = new ArrayList<Song>();
+        for (Song song : songList) {
+            if (dbMgr.isFavorite(song)) {
+                favoriteSongList.add(song);
+            }
+        }
+        return favoriteSongList;
+    }
+    public static List<Song> getSongListByName(Context context, String listName) {
+        if (songList == null)
+            getSongList(context);
+        List<Song> listOfName = new ArrayList<>();
+        if (listName.equals(Constants.ListName.LIST_FAVORITE)) {
+            listOfName = SongProvider.getFavoriteList(context);
+        } else if (listName.equals(Constants.ListName.LIST_ALL)) {
+            listOfName = SongProvider.getSongList(context);
+        } else {
+            listOfName = SongProvider.getSongList(context);
+        }
+        return listOfName;
+    }
     public static void sortByPinyin(List<Song> list) {
         Collections.sort(list);
     }

@@ -1,5 +1,6 @@
 package com.badprinter.yobey.service;
 
+import android.app.Application;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -26,6 +27,7 @@ public class PlayerService extends Service {
     private int current = 0;
     private int currentTime = 0;
     private boolean isPlay = false;
+    private String listName;
     /*
      * 0 = LoopPlaying
      * 1 = SingPlaying
@@ -42,9 +44,9 @@ public class PlayerService extends Service {
     public void onCreate() {
         super.onCreate();
         isPlay = false;
+        listName = Constants.ListName.LIST_ALL;
         songList = new ArrayList<Song>();
         songList = SongProvider.getSongList(this);
-
         player = new MediaPlayer();
         init();
         handler = new Handler() {
@@ -73,6 +75,11 @@ public class PlayerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags,  int startId) {
+        if (intent.getExtras().getString("listName") != null &&
+                listName != intent.getExtras().getString("listName")) {
+            listName = intent.getExtras().getString("listName");
+            songList = SongProvider.getSongListByName(this, listName);
+        }
 
         switch (intent.getExtras().getString("controlMsg")) {
             case Constants.PlayerControl.PRE_SONG_MSG:

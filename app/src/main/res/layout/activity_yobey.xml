@@ -1,0 +1,43 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.badprinter.yobey.activities.Yobey">
+
+    <FrameLayout
+        android:id="@+id/frameLayout"
+        android:background="#da5522"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"></FrameLayout>
+
+    <RadioGroup
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:divider="?android:attr/dividerHorizontal"
+        android:showDividers="middle"
+        android:dividerPadding="10dp">
+
+        <RadioButton
+            android:id="@+id/homeTab"
+            android:text="Home"
+            style="@style/tabStyle"/>
+        <RadioButton
+            android:id="@+id/listTab"
+            android:text="List"
+            style="@style/tabStyle"/>
+        <RadioButton
+            android:id="@+id/artistTab"
+            android:text="Artist"
+            style="@style/tabStyle"/>
+        <RadioButton
+            android:id="@+id/playerTab"
+            android:text="Player"
+            style="@style/tabStyle"/>
+
+    </RadioGroup>
+
+</LinearLayout>

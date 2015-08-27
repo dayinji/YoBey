@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.badprinter.yobey"
-        minSdkVersion 11
+        minSdkVersion 14
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
@@ -28,5 +28,8 @@ dependencies {
     compile 'jp.wasabeef:blurry:1.0.0'
     compile files('libs/jsoup-1.8.3.jar')
     compile files('libs/pinyin4j-2.5.0.jar')
+    compile 'com.twotoasters.jazzylistview:library:1.2.1'
+    compile 'com.twotoasters.jazzylistview:library-recyclerview:1.2.1'
+    compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
     //compile project (":libs:StackBlur")
 }

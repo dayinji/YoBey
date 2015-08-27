@@ -113,6 +113,13 @@
                 android:background="@drawable/playnext_00000"
                 android:clickable="true"
                 android:layout_marginLeft="15dp" />
+            <ImageView
+                android:id="@+id/likeBt"
+                android:layout_width="@dimen/music_control_large"
+                android:layout_height="@dimen/music_control_large"
+                android:background="@drawable/like_00000"
+                android:clickable="true"
+                android:layout_marginLeft="15dp" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

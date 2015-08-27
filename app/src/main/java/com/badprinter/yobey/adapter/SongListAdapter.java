@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -87,6 +88,8 @@ public class SongListAdapter extends BaseAdapter {
             holder.letter = (TextView) convertView.findViewById(R.id.letter);
 
             convertView.setTag(holder);
+            //Typeface type = Typeface.createFromAsset(context.getAssets(),"fonts/微软简标宋.ttf");
+            //holder.songName.setTypeface(type);
 
             views.add(convertView);
 
@@ -230,7 +233,7 @@ public class SongListAdapter extends BaseAdapter {
             public void onAnimationEnd(Animator animation) {
                 Bitmap temp = ((BitmapDrawable) holder.playingPhoto.getDrawable()).getBitmap();
                 holder.playingPhoto.setImageBitmap(replace);
-                if (!temp.isRecycled())
+                if (temp != null && !temp.isRecycled())
                     temp.recycle();
             }
         });

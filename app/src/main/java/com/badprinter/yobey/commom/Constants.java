@@ -17,4 +17,11 @@ public class Constants {
         public static final String UPDATE_UI = "com.badprinter.yobey.UPDATE_UI";
         public static final String UPDATE_CURRENT = "com.badprinter.yobey.UPDATE_CURRENT";
     }
+    public class ListName {
+        public static final String LIST_ALL = "list_all";
+        public static final String LIST_FAVORITE = "list_favorite";
+        public static final String LIST_RECOMMEND = "list_recommend";
+        public static final String LIST_MOST_LISTENED = "list_most_listened";
+        public static final String LIST_LEAST_LISTENED = "list_least_listened";
+    }
 }

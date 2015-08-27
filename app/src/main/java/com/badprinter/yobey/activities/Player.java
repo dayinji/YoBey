@@ -21,12 +21,14 @@ import android.view.animation.AccelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.badprinter.yobey.R;
 import com.badprinter.yobey.commom.Constants;
 import com.badprinter.yobey.customviews.Lyric;
 import com.badprinter.yobey.customviews.MusicBar;
 import com.badprinter.yobey.customviews.MyScrollView;
+import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.models.Song;
 import com.badprinter.yobey.utils.SongProvider;
 
@@ -50,26 +52,32 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
     private ImageView preBt;
     private ImageView playBt;
     private ImageView nextBt;
+    private ImageView likeBt;
     private MusicBar bar;
     private ImageView smoke;
+
     private int current;
     private boolean isPlay = false;
     private int mode = 0;
     private int currentTime;
     private boolean isFirstTime = true;
-    //private HomeReceiver homeReceiver;
+    private String listName;
     private AnimationDrawable animPlay;
     private AnimationDrawable animNext;
     private AnimationDrawable animPre;
+    private AnimationDrawable animlike;
     private AnimationDrawable smokeAnimDrawable;
     private Lyric lyricView;
     private MyScrollView scrollLyric;
     private int lyricId = -1;
     private PlayerReceiver playerReceiver;
+    private DBManager dbMgr;
 
     private ValueAnimator changeBlurBg = null;
     private int[] animId = new int[] {
-            R.drawable.playtopause, R.drawable.pausetoplay, R.drawable.playnext, R.drawable.playpre
+            R.drawable.playtopause, R.drawable.pausetoplay,
+            R.drawable.playnext, R.drawable.playpre,
+            R.drawable.like, R.drawable.unlike
     };
 
     @Override
@@ -87,12 +95,14 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
     }
 
     private void init(Intent intent) {
-        songList = SongProvider.getSongList(Player.this);
+        dbMgr = new DBManager(this);
         if (intent != null) {
             current = intent.getIntExtra("current", 0);
             isPlay = intent.getBooleanExtra("isPlay", false);
             isFirstTime = intent.getBooleanExtra("isFirstTime", true);
             currentTime = intent.getIntExtra("currentTime", 0);
+            listName = intent.getStringExtra("listName");
+            songList = SongProvider.getSongListByName(Player.this, listName);
 
             /*
              * Init the playButton
@@ -124,6 +134,12 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                     //Log.e(TAG, "BLUR TIME:"+Long.toString(System.currentTimeMillis() - startMs) + "ms");
                 }
             });
+            /*
+             * Init the Like Button
+             */
+            if (dbMgr.isFavorite(songList.get(current))) {
+                likeBt.setBackgroundResource(R.drawable.like_00025);
+            }
             /*
              * Init the lyricView
              */
@@ -223,6 +239,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         preBt = (ImageView)findViewById(R.id.preBt);
         nextBt = (ImageView)findViewById(R.id.nextBt);
         playBt = (ImageView)findViewById(R.id.playBt);
+        likeBt = (ImageView)findViewById(R.id.likeBt);
         bar = (MusicBar)findViewById(R.id.musicBar);
         smoke = (ImageView)findViewById(R.id.smoke);
         lyricView = (Lyric)findViewById(R.id.lyricView);
@@ -233,6 +250,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         preBt.setOnClickListener(this);
         nextBt.setOnClickListener(this);
         playBt.setOnClickListener(this);
+        likeBt.setOnClickListener(this);
         bar.setOnClickListener(this);
     }
 
@@ -268,6 +286,17 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                 playDrawableAnim(nextBt, 2, animNext);
                 isFirstTime = false;
                 break;
+            case R.id.likeBt:
+                Song currentSong = songList.get(current);
+                if (dbMgr.isFavorite(currentSong)) {
+                    dbMgr.deleteFromFavorite(currentSong);
+                    playDrawableAnim(likeBt, 5, animlike);
+                    Toast.makeText(Player.this, "取消收藏", Toast.LENGTH_SHORT).show();
+                } else {
+                    dbMgr.addToFavorite(currentSong);
+                    playDrawableAnim(likeBt, 4, animlike);
+                    Toast.makeText(Player.this, "收藏歌曲", Toast.LENGTH_SHORT).show();
+                }
 
         }
     }
