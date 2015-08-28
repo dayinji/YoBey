@@ -48,6 +48,7 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
 
     private boolean isPlay = false;
     private int current = 0;
+    private long currentSongId = 0;
     private int currentTime;
     private boolean isFirstTime = true;
     private String listName;
@@ -79,26 +80,43 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
          */
         findViewsById();
         setClickListener();
+
         listName = getIntent().getStringExtra("cata");
         songList = SongProvider.getSongListByName(SongList.this, listName);
-        mySongListAdapter = new SongListAdapter(SongList.this, songList);
+        /*
+         * Update the SongList in Service
+         */
+        /*Intent updateListIntent = new Intent();
+        updateListIntent.putExtra("listName", listName);
+        updateListIntent.setAction("com.badprinter.yobey.service.PLAYER_SERVICE");
+        updateListIntent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_LIST);
+        startService(updateListIntent);*/
+
+        mySongListAdapter = new SongListAdapter(SongList.this, songList, currentSongId);
         songListView.setAdapter(mySongListAdapter);
         songListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Intent for Changing SongList
+                Intent changeListIntent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+                changeListIntent.putExtra("controlMsg", Constants.PlayerControl.CHANGE_LIST);
+                changeListIntent.putExtra("listName", listName);
+                startService(changeListIntent);
+                // Intent for Playing Music
                 Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
                 intent.putExtra("controlMsg", Constants.PlayerControl.PLAYING_MSG);
                 intent.putExtra("current", position);
                 intent.putExtra("currenTime", 0);
-                intent.putExtra("listName", listName);
                 isFirstTime = false;
                 startService(intent);
+
 
             }
         });
         songListView.setTransitionEffect(new CardsEffect());
-        Song temp = songList.get(current);
-        playingPhoto.setImageBitmap(SongProvider.getArtwork(SongList.this, temp.getId(), temp.getAlbumId(), false, true));
+        //Song temp = songList.get(current);
+        //playingPhoto.setImageBitmap(SongProvider.getArtwork(SongList.this, temp.getId(), temp.getAlbumId(), false, true));
+
 
         listReceiver = new ListReceiver();
         IntentFilter filter = new IntentFilter();
@@ -106,13 +124,19 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
         filter.addAction(Constants.UiControl.UPDATE_CURRENT);
         registerReceiver(listReceiver, filter);
 
+        /*
+         * Init the Bottom Control Area
+         */
+        Intent intent = new Intent();
+        intent.setAction("com.badprinter.yobey.service.PLAYER_SERVICE");
+        intent.putExtra("controlMsg", Constants.PlayerControl.INIT_GET_CURRENT_INFO);
+        startService(intent);
+
     }
 
 
     @Override
     public void onDestroy() {
-        Intent intent = new Intent(SongList.this, PlayerService.class);
-        stopService(intent);
         unregisterReceiver(listReceiver);
         super.onDestroy();
     }
@@ -180,13 +204,16 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
                 break;
             case R.id.bottomLayout:
                 Intent trunToPlayerIntent = new Intent(SongList.this, Player.class);
-                trunToPlayerIntent.putExtra("current", current);
+                //trunToPlayerIntent.putExtra("current", current);
                 trunToPlayerIntent.putExtra("isPlay", isPlay);
                 trunToPlayerIntent.putExtra("isFirstTime", isFirstTime);
                 trunToPlayerIntent.putExtra("currentTime", currentTime);
-                trunToPlayerIntent.putExtra("listName", listName);
+                trunToPlayerIntent.putExtra("currentSongId", currentSongId);
                 startActivity(trunToPlayerIntent);
                 overridePendingTransition(R.anim.activity_slide_in,R.anim.activity_null);
+                break;
+            default:
+                break;
 
         }
 
@@ -198,14 +225,17 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
     private class ListReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            // If This SongList Is Not the Current SongList, Return;
             switch (intent.getAction()) {
                 case Constants.UiControl.UPDATE_UI:
                     boolean isPlay = intent.getBooleanExtra("isPlay", false); // Play or Pause
-                    int current = intent.getIntExtra("current", -1); // Current Song Id
-                    mySongListAdapter.updateItem(current);
+                    int current = intent.getIntExtra("current", 0);
+                    SongList.this.currentSongId = intent.getLongExtra("songId", 0); // Current Song Id
+                    mySongListAdapter.updateItem(currentSongId);
                     SongList.this.isPlay = isPlay;
                     SongList.this.current = current;
-                    Song temp = songList.get(current);
+                    //Song temp = songList.get(current);
+                    Song temp = SongProvider.getSongById(currentSongId, SongList.this);
                     //bar.setMax(temp.getDuration());
                     /*
                      * Recycle the Bitmap before
@@ -222,6 +252,9 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
                     break;
                 case Constants.UiControl.UPDATE_CURRENT:
                     updateBar(intent.getExtras().getInt("currentTime"));
+                    break;
+                default:
+                    break;
             }
 
 
@@ -230,8 +263,6 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
 
     private void updateBar(int currentTime) {
         this.currentTime = currentTime;
-        //bar.setProgress(currentTime);
-        //mySongListAdapter.updateBar(currentTime);
     }
 
     private void playDrawableAnim(ImageView view, int id, AnimationDrawable animDrawable) {

@@ -30,5 +30,9 @@
     <item android:drawable="@drawable/like_00023" android:duration="30"/>
     <item android:drawable="@drawable/like_00024" android:duration="30"/>
     <item android:drawable="@drawable/like_00025" android:duration="30"/>
+    <item android:drawable="@drawable/like_00026" android:duration="30"/>
+    <item android:drawable="@drawable/like_00027" android:duration="30"/>
+    <item android:drawable="@drawable/like_00028" android:duration="30"/>
+    <item android:drawable="@drawable/like_00029" android:duration="30"/>
 
 </animation-list>

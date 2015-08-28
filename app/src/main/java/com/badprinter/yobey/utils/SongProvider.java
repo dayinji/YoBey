@@ -24,7 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by root on 15-8-12.
@@ -37,6 +39,7 @@ public class SongProvider {
      */
     private static List<Song> songList = null;
     private static List<String> artistList = null;
+    private static Map<Long, Song> songIdMap;
     private static DBManager dbMgr;
 
     public static void init(Context context) {
@@ -48,6 +51,7 @@ public class SongProvider {
         if (songList == null) {
             songList = new ArrayList<>();
             artistList = new ArrayList<>();
+            songIdMap = new Hashtable<>();
             MediaMetadataRetriever mmr = new MediaMetadataRetriever();
             Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                     null, null, null, null);
@@ -66,8 +70,12 @@ public class SongProvider {
                 int size = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
                 long albumId = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
                 String url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-
-                songList.add(new Song(id, name, fileName, size, album, artist, duration, albumId, url, pinyin));
+                String year = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.YEAR));
+                String genre = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE);
+                Song newSong = new Song(id, name, fileName, size, album, artist,
+                        duration, albumId, url, pinyin, year, genre);
+                songIdMap.put(id, newSong);
+                songList.add(newSong);
 
                 if (!artistList.contains(artist)) {
                     artistList.add(artist);
@@ -143,6 +151,14 @@ public class SongProvider {
         return BitmapFactory.decodeResource(context.getResources(), R.drawable.playnext_00000);
     }
 
+    /*
+     * Get the Song with Id
+     */
+    public static Song getSongById(Long id, Context context) {
+        if (songList == null)
+            getSongList(context);
+        return songIdMap.get(id);
+    }
 
     /**
      * 从文件当中获取专辑封面位图

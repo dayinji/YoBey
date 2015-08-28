@@ -81,7 +81,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
         setClickListener();
 
         songList = SongProvider.getSongList(Home.this);
-        mySongListAdapter = new SongListAdapter(Home.this, songList);
+        mySongListAdapter = new SongListAdapter(Home.this, songList, (long)1);
         songListView.setAdapter(mySongListAdapter);
         songListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -231,7 +231,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                 case Constants.UiControl.UPDATE_UI:
                     boolean isPlay = intent.getBooleanExtra("isPlay", false); // Play or Pause
                     int current = intent.getIntExtra("current", -1); // Current Song Id
-                    mySongListAdapter.updateItem(current);
+                    mySongListAdapter.updateItem((long)current);
                     Home.this.isPlay = isPlay;
                     Home.this.current = current;
                     Song temp = songList.get(current);

@@ -197,17 +197,3 @@ public class MusicBar extends View {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-

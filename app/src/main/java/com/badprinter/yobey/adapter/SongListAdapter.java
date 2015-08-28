@@ -38,13 +38,15 @@ public class SongListAdapter extends BaseAdapter {
     private Context context;
     private List<Song> songList;
     private int current = 0;
+    private long currentSongId = 0;
     private Map<View, Integer> viewsPosition = new HashMap<>();
     private ArrayList<View> views;
     private Bitmap replace = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
 
-    public SongListAdapter(Context context, List<Song> songList) {
+    public SongListAdapter(Context context, List<Song> songList, Long currentSongId) {
         this.context = context;
         this.songList = songList;
+        this.currentSongId = currentSongId;
         views = new ArrayList<View>();
 
 
@@ -120,7 +122,7 @@ public class SongListAdapter extends BaseAdapter {
         } else {
             holder.letter.setVisibility(View.VISIBLE);
         }
-        if (position == current) {
+        if (songList.get(position).getId() == currentSongId) {
             holder.playingPhoto.setImageBitmap(SongProvider.getArtwork(context, temp.getId(), temp.getAlbumId(), false, false));
             LinearLayout normal = (LinearLayout) convertView.findViewById(R.id.normalLayout);
             normal.setAlpha(0);
@@ -194,18 +196,18 @@ public class SongListAdapter extends BaseAdapter {
 
     }
 
-    public void updateItem(int current) {
-        int last = this.current;
-        this.current = current;
-        if (current != last) {
+    public void updateItem(Long currentSongId) {
+        long last = this.currentSongId;
+        this.currentSongId = currentSongId;
+        if (currentSongId != last) {
             for (int i = 0; i < views.size(); i++) {
                 View temp = views.get(i);
                 int position = viewsPosition.get(temp);
-                if (position == last) {
+                if (songList.get(position).getId() == last) {
                     ListItemViewHolder holder = (ListItemViewHolder) temp.getTag();
                     turnToNormal(holder);
                 }
-                if (position == current) {
+                if (songList.get(position).getId() == currentSongId) {
                     ListItemViewHolder holder = (ListItemViewHolder) temp.getTag();
                     turnToPlaying(holder);
                 }
@@ -241,8 +243,7 @@ public class SongListAdapter extends BaseAdapter {
     }
 
     private void turnToPlaying(final ListItemViewHolder holder) {
-
-        Song temp = songList.get(current);
+        Song temp = SongProvider.getSongById(currentSongId, context);
         holder.playingPhoto.setImageBitmap(SongProvider.getArtwork(context, temp.getId(), temp.getAlbumId(), false, false));
         //Log.d(TAG, "y = " + holder.normalLayout.getRotationY());
         holder.playingLayout.setRotationY(-90f);
@@ -289,16 +290,4 @@ public class SongListAdapter extends BaseAdapter {
         if (holder.playingAnim2 != null && holder.playingAnim2.isRunning())
             holder.playingAnim2.end();
     }
-
-    /*public void updateBar(int progress) {
-        for (int i = 0; i < views.size(); i++) {
-            View temp = views.get(i);
-            int position = viewsPosition.get(temp);
-            if (position == this.current) {
-                ListItemViewHolder holder = (ListItemViewHolder) temp.getTag();
-                float x = holder.blackBar.getMeasuredWidth() * progress / songList.get(current).getDuration();
-                holder.blackBar.setX(x);
-            }
-        }
-    }*/
 }

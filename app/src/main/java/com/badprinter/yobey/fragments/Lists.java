@@ -75,13 +75,7 @@ public class Lists extends Fragment {
         lists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                switch (position) {
-                    case 0:
-                        newCata();
-                        break;
-                    default:
-                        startList(position);
-                }
+                startList(position);
             }
         });
         return view;

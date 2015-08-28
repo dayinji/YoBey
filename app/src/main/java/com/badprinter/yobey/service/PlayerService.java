@@ -7,14 +7,18 @@ import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.util.Log;
 
 import com.badprinter.yobey.commom.Constants;
+import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.models.Song;
 import com.badprinter.yobey.utils.SongProvider;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -40,14 +44,32 @@ public class PlayerService extends Service {
     private Timer timer;
 
 
+    private DBManager dbMgr;
+
+
     @Override
     public void onCreate() {
         super.onCreate();
+        dbMgr = new DBManager(this);
         isPlay = false;
         listName = Constants.ListName.LIST_ALL;
         songList = new ArrayList<Song>();
         songList = SongProvider.getSongList(this);
         player = new MediaPlayer();
+        player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                updateDB("completed", current);
+                playNext();
+                Intent sendIntent = new Intent(Constants.UiControl.UPDATE_UI);
+                sendIntent.putExtra("current", current);
+                sendIntent.putExtra("isPlay", isPlay);
+                currentTime = player.getCurrentPosition();
+                sendIntent.putExtra("currentTime", currentTime);
+                sendIntent.putExtra("songId", songList.get(current).getId());
+                sendBroadcast(sendIntent);
+            }
+        });
         init();
         handler = new Handler() {
             @Override
@@ -76,16 +98,18 @@ public class PlayerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags,  int startId) {
         if (intent.getExtras().getString("listName") != null &&
-                listName != intent.getExtras().getString("listName")) {
+                !listName.equals(intent.getExtras().getString("listName"))) {
             listName = intent.getExtras().getString("listName");
             songList = SongProvider.getSongListByName(this, listName);
         }
 
         switch (intent.getExtras().getString("controlMsg")) {
             case Constants.PlayerControl.PRE_SONG_MSG:
+                updateDB("uncompleted", current);
                 playPre();
                 break;
             case Constants.PlayerControl.NEXT_SONG_MSG:
+                updateDB("uncompleted", current);
                 playNext();
                 break;
             case Constants.PlayerControl.PAUSE_PLAYING_MSG:
@@ -102,12 +126,25 @@ public class PlayerService extends Service {
             case Constants.PlayerControl.UPDATE_CURRENTTIME:
                 updateCurrentTime(intent.getExtras().getInt("currentTime"));
                 break;
+            case Constants.PlayerControl.INIT_GET_CURRENT_INFO:
+                // Only for Get Current SongId And Other Info
+                break;
+            case Constants.PlayerControl.UPDATE_LIST:
+                updateList(intent.getExtras().getString("listName"));
+                break;
+            case Constants.PlayerControl.CHANGE_LIST:
+                changeList(intent.getExtras().getString("listName"));
+                break;
         }
         Intent sendIntent = new Intent(Constants.UiControl.UPDATE_UI);
         sendIntent.putExtra("current", current);
+        // Return songId
+        sendIntent.putExtra("songId", songList.get(current).getId());
+        Log.e(TAG, "songId = " + Long.toString(songList.get(current).getId()));
         sendIntent.putExtra("isPlay", isPlay);
         currentTime = player.getCurrentPosition();
         sendIntent.putExtra("currentTime", currentTime);
+        sendIntent.putExtra("listName", listName);
         sendBroadcast(sendIntent);
 
         /*
@@ -240,6 +277,41 @@ public class PlayerService extends Service {
             if (seekPos > 0) {
                 player.seekTo(seekPos);
             }
+        }
+    }
+    private void updateDB(String state, int current) {
+        if (player.getCurrentPosition() < 30*1000)
+            return;
+        Song temp = songList.get(current);
+        if (!dbMgr.inSongDetail(temp)) {
+            dbMgr.addToSongDetail(temp);
+        }
+        if (state == "completed") {
+            dbMgr.updatePlayCount(temp);
+        } else {
+            dbMgr.updateSwicthCount(temp);
+        }
+
+    }
+    /*
+     * Update the SongList EveryTime the User Open the List
+     */
+    private void updateList(String listName) {
+        if (listName.equals(this.listName)) {
+            songList = SongProvider.getSongListByName(this, listName);
+            Log.e(TAG, "updateList");
+
+        }
+    }
+    /*
+     * Change the SongList EveryTime the User Click the List Item to Play Music
+     */
+    private void changeList(String listName) {
+        if (listName.equals(this.listName))
+            return;
+        else {
+            songList = SongProvider.getSongListByName(this, listName);
+            Log.e(TAG, "changeList");
         }
     }
 }

@@ -48,7 +48,6 @@ public class LyricUtil {
     private DownloadTask myTask = new DownloadTask();
 
     public void inti(String path, String name, String artist) {
-        Log.e(TAG, "init called");
 
         this.filePath = path;
         this.name = name;
@@ -86,15 +85,11 @@ public class LyricUtil {
                 }
             }
 
-            Log.e(TAG, "lyricList 's size == 0 ? " + Boolean.toString(lyricList.size()==0));
-            for (int i = 0 ; i < lyricList.size() ; i++)
-                Log.e(TAG, lyricList.get(i));
             bufferedReader.close();
             inputStreamReader.close();
             fileInputStream.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            Log.e(TAG, "no found lyric file, I am trying to connect the net fro it!");
             loadLyricFromWeb(name);
         } catch (IOException e) {
             e.printStackTrace();
@@ -145,7 +140,6 @@ public class LyricUtil {
         @Override
         protected void onPostExecute(byte[] result) {
             if (result.length == 0) {
-                Log.d(TAG, "connct failed! Cannot find lyric file in the net");
                 lyricList.add("没有找到可下载的歌词文件");
                 timeList.add(0);
                 return;
@@ -157,7 +151,6 @@ public class LyricUtil {
                 String outStr = new String(result, 0, result.length-1, "GBK");
                 writer.write(outStr, 0, outStr.length()-1);
                 writer.flush();
-                Log.d(TAG, outStr);
                 writer.close();
                 out.close();
             } catch (FileNotFoundException e) {
@@ -165,9 +158,7 @@ public class LyricUtil {
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                Log.d(TAG, "download lyric of " + name + " successful!");
                 inti(filePath, name, artist);
-                Log.e(TAG, "call init again after downloading");
             }
         }
     }
@@ -205,7 +196,6 @@ public class LyricUtil {
         String url = "http://www.lrc123.com";
         boolean hasfound = false;
 
-        Log.e(TAG, "the url = " + searchDownLoadUrl);
         Document doc = Jsoup.connect(searchDownLoadUrl).timeout(5000).get();
         Elements eles = doc.getElementsByTag("a");
         for (int i = 0 ; i < eles.size() ; i++) {
@@ -229,7 +219,6 @@ public class LyricUtil {
             return nullBytes;
         }
 
-        Log.e(TAG, "the download url = " + url);
         Connection.Response resultImageResponse = Jsoup.connect(url).ignoreContentType(true).execute();
         byte[] bytes = resultImageResponse.bodyAsBytes();
         return bytes;
