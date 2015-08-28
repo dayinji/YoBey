@@ -86,11 +86,11 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
         /*
          * Update the SongList in Service
          */
-        /*Intent updateListIntent = new Intent();
+        Intent updateListIntent = new Intent();
         updateListIntent.putExtra("listName", listName);
         updateListIntent.setAction("com.badprinter.yobey.service.PLAYER_SERVICE");
         updateListIntent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_LIST);
-        startService(updateListIntent);*/
+        startService(updateListIntent);
 
         mySongListAdapter = new SongListAdapter(SongList.this, songList, currentSongId);
         songListView.setAdapter(mySongListAdapter);

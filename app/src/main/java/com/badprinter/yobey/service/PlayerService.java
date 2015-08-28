@@ -67,6 +67,7 @@ public class PlayerService extends Service {
                 currentTime = player.getCurrentPosition();
                 sendIntent.putExtra("currentTime", currentTime);
                 sendIntent.putExtra("songId", songList.get(current).getId());
+                sendIntent.putExtra("mode", mode);
                 sendBroadcast(sendIntent);
             }
         });
@@ -97,11 +98,6 @@ public class PlayerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags,  int startId) {
-        if (intent.getExtras().getString("listName") != null &&
-                !listName.equals(intent.getExtras().getString("listName"))) {
-            listName = intent.getExtras().getString("listName");
-            songList = SongProvider.getSongListByName(this, listName);
-        }
 
         switch (intent.getExtras().getString("controlMsg")) {
             case Constants.PlayerControl.PRE_SONG_MSG:
@@ -129,19 +125,24 @@ public class PlayerService extends Service {
             case Constants.PlayerControl.INIT_GET_CURRENT_INFO:
                 // Only for Get Current SongId And Other Info
                 break;
+            case Constants.PlayerControl.CHANGE_MODE:
+                mode = mode + 1 >= 3 ? 0 : mode + 1;
+                break;
             case Constants.PlayerControl.UPDATE_LIST:
                 updateList(intent.getExtras().getString("listName"));
-                break;
+                return START_STICKY;
             case Constants.PlayerControl.CHANGE_LIST:
                 changeList(intent.getExtras().getString("listName"));
+                return START_STICKY;
+            default:
                 break;
         }
         Intent sendIntent = new Intent(Constants.UiControl.UPDATE_UI);
         sendIntent.putExtra("current", current);
         // Return songId
         sendIntent.putExtra("songId", songList.get(current).getId());
-        Log.e(TAG, "songId = " + Long.toString(songList.get(current).getId()));
         sendIntent.putExtra("isPlay", isPlay);
+        sendIntent.putExtra("mode", mode);
         currentTime = player.getCurrentPosition();
         sendIntent.putExtra("currentTime", currentTime);
         sendIntent.putExtra("listName", listName);
@@ -192,11 +193,12 @@ public class PlayerService extends Service {
      * Get A Random Num that Is No Equal to CurrentNum
      */
     private int getRandom(int current) {
-        int random;
+        return (int)(Math.random()*songList.size());
+        /*int random;
         do {
             random = (int)Math.random()*songList.size();
         } while(random != current);
-        return random;
+        return random;*/
     }
 
     /*
@@ -299,8 +301,7 @@ public class PlayerService extends Service {
     private void updateList(String listName) {
         if (listName.equals(this.listName)) {
             songList = SongProvider.getSongListByName(this, listName);
-            Log.e(TAG, "updateList");
-
+            this.listName = listName;
         }
     }
     /*
@@ -311,7 +312,7 @@ public class PlayerService extends Service {
             return;
         else {
             songList = SongProvider.getSongListByName(this, listName);
-            Log.e(TAG, "changeList");
+            this.listName = listName;
         }
     }
 }

@@ -54,6 +54,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
     private ImageView playBt;
     private ImageView nextBt;
     private ImageView likeBt;
+    private ImageView modeBt;
     private MusicBar bar;
     private ImageView smoke;
 
@@ -62,7 +63,6 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
     private boolean isPlay = false;
     private int mode = 0;
     private int currentTime;
-    private boolean isFirstTime = true;
     //private String listName;
     private AnimationDrawable animPlay;
     private AnimationDrawable animNext;
@@ -74,6 +74,10 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
     private int lyricId = -1;
     private PlayerReceiver playerReceiver;
     private DBManager dbMgr;
+
+    private Toast modeToast;
+    private Toast likeToast;
+
 
     private ValueAnimator changeBlurBg = null;
     private int[] animId = new int[] {
@@ -106,18 +110,16 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         filter.addAction(Constants.UiControl.UPDATE_UI);
         filter.addAction(Constants.UiControl.UPDATE_CURRENT);
         registerReceiver(playerReceiver, filter);
-        /*
-         * Init From Service
-         */
-        Intent initIntent = new Intent();
-        initIntent.setAction("com.badprinter.yobey.service.PLAYER_SERVICE");
-        initIntent.putExtra("controlMsg", Constants.PlayerControl.INIT_GET_CURRENT_INFO);
-        startService(initIntent);
 
         Song temp = SongProvider.getSongById(currentSongId, Player.this);
+        /*
+         * Init Artist and Name
+         */
+        songArtist.setText(temp.getArtist());
+        songName.setText(temp.getName());
 
         blurBg.setImageBitmap(SongProvider.getArtwork(Player.this, temp.getId(),
-                    temp.getAlbumId(), false, true));
+                temp.getAlbumId(), false, true));
         ViewTreeObserver vto2 = blurBg.getViewTreeObserver();
         vto2.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -172,6 +174,15 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         smokeAnimDrawable = (AnimationDrawable) smoke.getBackground();
         smokeAnimDrawable.setOneShot(false);
         smokeAnimDrawable.start();
+
+        /*
+         * Init From Service
+         */
+        Intent initIntent = new Intent();
+        initIntent.setAction("com.badprinter.yobey.service.PLAYER_SERVICE");
+        initIntent.putExtra("controlMsg", Constants.PlayerControl.INIT_GET_CURRENT_INFO);
+        startService(initIntent);
+
     }
     @Override
     public void onDestroy() {
@@ -187,6 +198,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         nextBt = (ImageView)findViewById(R.id.nextBt);
         playBt = (ImageView)findViewById(R.id.playBt);
         likeBt = (ImageView)findViewById(R.id.likeBt);
+        modeBt = (ImageView)findViewById(R.id.modeBt);
         bar = (MusicBar)findViewById(R.id.musicBar);
         smoke = (ImageView)findViewById(R.id.smoke);
         lyricView = (Lyric)findViewById(R.id.lyricView);
@@ -198,6 +210,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         nextBt.setOnClickListener(this);
         playBt.setOnClickListener(this);
         likeBt.setOnClickListener(this);
+        modeBt.setOnClickListener(this);
         bar.setOnClickListener(this);
     }
 
@@ -210,18 +223,12 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                 intent.putExtra("controlMsg", Constants.PlayerControl.PRE_SONG_MSG);
                 startService(intent);
                 playDrawableAnim(preBt, 3, animPre);
-                isFirstTime = false;
                 break;
             case R.id.playBt:
                 if (isPlay == false) {
-                    if (isFirstTime) {
-                        intent.putExtra("controlMsg", Constants.PlayerControl.PLAYING_MSG);
-                        //intent.putExtra("current", current);
-                        intent.putExtra("currenTime", currentTime);
-                        isFirstTime = false;
-                    } else {
-                        intent.putExtra("controlMsg", Constants.PlayerControl.CONTINUE_PLAYING_MSG);
-                    }
+                    intent.putExtra("controlMsg", Constants.PlayerControl.PLAYING_MSG);
+                    intent.putExtra("currenTime", currentTime);
+                    intent.putExtra("controlMsg", Constants.PlayerControl.CONTINUE_PLAYING_MSG);
                 } else {
                     intent.putExtra("controlMsg", Constants.PlayerControl.PAUSE_PLAYING_MSG);
                 }
@@ -231,19 +238,30 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                 intent.putExtra("controlMsg", Constants.PlayerControl.NEXT_SONG_MSG);
                 startService(intent);
                 playDrawableAnim(nextBt, 2, animNext);
-                isFirstTime = false;
                 break;
             case R.id.likeBt:
                 Song currentSong = SongProvider.getSongById(currentSongId, Player.this);
                 if (dbMgr.isFavorite(currentSong)) {
                     dbMgr.deleteFromFavorite(currentSong);
                     playDrawableAnim(likeBt, 5, animlike);
-                    Toast.makeText(Player.this, "取消收藏", Toast.LENGTH_SHORT).show();
+                    if (likeToast != null)
+                        likeToast.cancel();
+                    likeToast = Toast.makeText(Player.this, "取消收藏", Toast.LENGTH_SHORT);
+                    likeToast.show();
                 } else {
                     dbMgr.addToFavorite(currentSong);
                     playDrawableAnim(likeBt, 4, animlike);
-                    Toast.makeText(Player.this, "收藏歌曲", Toast.LENGTH_SHORT).show();
+                    if (likeToast != null)
+                        likeToast.cancel();
+                    likeToast = Toast.makeText(Player.this, "收藏成功", Toast.LENGTH_SHORT);
+                    likeToast.show();
                 }
+                break;
+            case R.id.modeBt:
+                //mode = mode + 1 >= 3 ? 0 : mode + 1;
+                intent.putExtra("controlMsg", Constants.PlayerControl.CHANGE_MODE);
+                startService(intent);
+
 
         }
     }
@@ -293,6 +311,20 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                     if (Player.this.isPlay != isPlay) {
                         int animId = isPlay ? 0 : 1;
                         playDrawableAnim(playBt, animId, animPlay);
+                    }
+                    if (intent.getIntExtra("mode", 0) != mode) {
+                        mode = intent.getIntExtra("mode", 0);
+                        int[] modeDrawables = new int[] {
+                                R.drawable.mode_normal, R.drawable.mode_single, R.drawable.mode_random};
+                        String[] modeText = new String[] {
+                                "列表循环", "单曲循环", "随机播放"
+                        };
+                        modeBt.setBackgroundResource(modeDrawables[mode]);
+                        if (modeToast != null)
+                            modeToast.cancel();
+                        modeToast = Toast.makeText(Player.this, modeText[mode], Toast.LENGTH_SHORT);
+                        modeToast.show();
+
                     }
                     Player.this.isPlay = isPlay;
                     break;

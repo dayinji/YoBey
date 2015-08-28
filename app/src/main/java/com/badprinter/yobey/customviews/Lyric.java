@@ -26,7 +26,7 @@ public class Lyric extends TextView {
     private List<Integer> timeList;
     int screenH;
     float density;
-    private int dy = 70;
+    private int dy = 100;
     private int textSize = 30;
     private Context context;
     private int id = -1;
@@ -81,7 +81,7 @@ public class Lyric extends TextView {
         } else {
             for (int i = 0; i < lyricList.size(); i++) {
                 if (id == i) {
-                    paint.setColor(Color.GREEN);
+                    paint.setColor(Color.WHITE);
                 } else {
                     paint.setColor(Color.GRAY);
                 }

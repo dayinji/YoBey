@@ -14,6 +14,7 @@ public class Constants {
         public static final String INIT_GET_CURRENT_INFO = "com.badprinter.yobey.INIT_GET_CURRENT_INFO";
         public static final String UPDATE_LIST = "com.badprinter.yobey.UPDATE_LIST";
         public static final String CHANGE_LIST = "com.badprinter.yobey.CHANGE_LIST";
+        public static final String CHANGE_MODE = "com.badprinter.yobey.CHANGE_MODE";
 
     }
     public class UiControl {
