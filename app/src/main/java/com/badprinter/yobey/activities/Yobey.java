@@ -16,6 +16,8 @@ import android.widget.RadioGroup;
 
 import com.badprinter.yobey.R;
 import com.badprinter.yobey.commom.Constants;
+import com.badprinter.yobey.customviews.DragView;
+import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.fragments.Home1;
 import com.badprinter.yobey.fragments.Lists;
 import com.badprinter.yobey.service.PlayerService;
@@ -28,6 +30,7 @@ public class Yobey extends ActionBarActivity {
     private RadioButton tab_artist;
     private RadioButton tab_player;
     private FrameLayout frameLayout;
+    private DragView dragView;
 
     private FragmentManager fragmentManager;
     private int currentFragment = 0;
@@ -36,15 +39,17 @@ public class Yobey extends ActionBarActivity {
     private int currentTime;
     private boolean isFirstTime = true;
     private YobeyReceiver yobeyReceiver;
+    private DBManager dbMgr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_yobey);
         findViewsById();
+        dbMgr = new DBManager(this);
         setOnClickListener();
         updateFragment(1);
-
+        dragView.setAnimation(0);
         yobeyReceiver = new YobeyReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.UiControl.UPDATE_UI);
@@ -59,12 +64,30 @@ public class Yobey extends ActionBarActivity {
         tab_artist = (RadioButton)findViewById(R.id.artistTab);
         tab_list = (RadioButton)findViewById(R.id.listTab);
         tab_player = (RadioButton)findViewById(R.id.playerTab);
+        dragView = (DragView)findViewById(R.id.drag);
+
     }
     private void setOnClickListener() {
         tabs.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 updateFragment(checkedId);
+                switch (checkedId) {
+                    case R.id.homeTab:
+                        dragView.setAnimation(0);
+                        break;
+                    case R.id.listTab:
+                        dragView.setAnimation(1);
+                        break;
+                    case R.id.artistTab:
+                        dragView.setAnimation(2);
+                        break;
+                    case R.id.playerTab:
+                        dragView.setAnimation(3);
+                        break;
+                    default:
+                        break;
+                }
             }
         });
     }
@@ -111,6 +134,9 @@ public class Yobey extends ActionBarActivity {
 
 
         }
+    }
+    public DBManager getDBMgr() {
+        return dbMgr;
     }
 
 

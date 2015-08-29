@@ -65,7 +65,7 @@ public class MyEvalucatorUtil {
         it must larger than firstTime!
         And It is recommend to be 1.0 ~ 2.0(1000ms ~ 2000ms)
          */
-        private double duration;
+        private double duration = 2.0;
 
         public void setAmp(double amp) { this.amp = amp; }
         public double getAmp() { return amp; }
@@ -93,6 +93,8 @@ public class MyEvalucatorUtil {
             else {
                 value = (float)(startValue.floatValue() + (endValue.floatValue() - startValue.floatValue()) * fraction * duration / firstTime);
             }
+            if (fraction == 1)
+                value = (float)endValue.floatValue();
 
             return value;
         }

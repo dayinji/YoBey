@@ -59,7 +59,7 @@ public class PlayerService extends Service {
         player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                updateDB("completed", current);
+                updateDB(true, current);
                 playNext();
                 Intent sendIntent = new Intent(Constants.UiControl.UPDATE_UI);
                 sendIntent.putExtra("current", current);
@@ -101,11 +101,11 @@ public class PlayerService extends Service {
 
         switch (intent.getExtras().getString("controlMsg")) {
             case Constants.PlayerControl.PRE_SONG_MSG:
-                updateDB("uncompleted", current);
+                updateDB(false, current);
                 playPre();
                 break;
             case Constants.PlayerControl.NEXT_SONG_MSG:
-                updateDB("uncompleted", current);
+                updateDB(false, current);
                 playNext();
                 break;
             case Constants.PlayerControl.PAUSE_PLAYING_MSG:
@@ -281,19 +281,19 @@ public class PlayerService extends Service {
             }
         }
     }
-    private void updateDB(String state, int current) {
+    private void updateDB(boolean isCompleted, int current) {
         if (player.getCurrentPosition() < 30*1000)
             return;
         Song temp = songList.get(current);
         if (!dbMgr.inSongDetail(temp)) {
             dbMgr.addToSongDetail(temp);
         }
-        if (state == "completed") {
+        if (isCompleted) {
             dbMgr.updatePlayCount(temp);
         } else {
             dbMgr.updateSwicthCount(temp);
         }
-
+        dbMgr.updateCommonCountPlay(isCompleted);
     }
     /*
      * Update the SongList EveryTime the User Open the List

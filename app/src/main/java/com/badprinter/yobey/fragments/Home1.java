@@ -1,52 +1,71 @@
 package com.badprinter.yobey.fragments;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Rect;
+import android.graphics.drawable.AnimationDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.badprinter.yobey.R;
+import com.badprinter.yobey.activities.Player;
+import com.badprinter.yobey.adapter.CountAdapter;
+import com.badprinter.yobey.commom.Constants;
+import com.badprinter.yobey.customviews.WaveView;
+import com.badprinter.yobey.db.DBManager;
+import com.badprinter.yobey.models.Song;
+import com.badprinter.yobey.utils.SongProvider;
+import com.db.chart.listener.OnEntryClickListener;
+import com.db.chart.model.LineSet;
+import com.db.chart.view.AxisController;
+import com.db.chart.view.LineChartView;
+import com.db.chart.view.Tooltip;
+import com.db.chart.view.animation.Animation;
+import com.db.chart.view.animation.easing.BounceEase;
+import com.db.chart.view.animation.easing.CircEase;
+import com.yalantis.phoenix.PullToRefreshView;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link Home1.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link Home1#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class Home1 extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private String TAG = "HOME1";
+    private View root;
+    private ImageView playingPhoto;
+    private ImageView preBt;
+    private ImageView playBt;
+    private ImageView nextBt;
+    private TextView playingName;
+    private TextView playingArtist;
+    private RelativeLayout player;
+    private WaveView waveBar;
+    private ListView countList;
+    private PullToRefreshView pullToRefreshView;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
- //   private OnFragmentInteractionListener mListener;
+    private DBManager dbMgr;
+    private MyClickListener listener = new MyClickListener();
+    private boolean isPlay = false;
+    private long currentSongId = 0;
+    private AnimationDrawable animPlay;
+    private AnimationDrawable animNext;
+    private AnimationDrawable animPre;
+    private int[] animId = new int[] {
+            R.drawable.playtopause, R.drawable.pausetoplay, R.drawable.playnext, R.drawable.playpre
+    };
+    private HomeReceiver homeReceiver;
+    private CountAdapter countAdapter;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment Home1.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static Home1 newInstance(String param1, String param2) {
-        Home1 fragment = new Home1();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     public Home1() {
         // Required empty public constructor
@@ -55,56 +74,173 @@ public class Home1 extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home1, container, false);
-    }
+        View root =  inflater.inflate(R.layout.fragment_home1, container, false);
+        this.root = root;
+        dbMgr = new DBManager(getActivity());
+        findViewsById();
+        setClickListener();
 
-    // TODO: Rename method, update argument and hook method into UI event
-   /* public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-*/
-  /*  @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (OnFragmentInteractionListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }*/
+        countAdapter = new CountAdapter(getActivity());
+        countList.setAdapter(countAdapter);
 
-  /*  @Override
+        pullToRefreshView.setOnRefreshListener(new PullToRefreshView.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                pullToRefreshView.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        countAdapter.updateCount();
+                        pullToRefreshView.setRefreshing(false);
+                    }
+                }, 1000);
+            }
+        });
+
+        homeReceiver = new HomeReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constants.UiControl.UPDATE_UI);
+        filter.addAction(Constants.UiControl.UPDATE_CURRENT);
+        getActivity().registerReceiver(homeReceiver, filter);
+        /*
+         * Init the Bottom Control Area
+         */
+        Intent intent = new Intent();
+        intent.setAction("com.badprinter.yobey.service.PLAYER_SERVICE");
+        intent.putExtra("controlMsg", Constants.PlayerControl.INIT_GET_CURRENT_INFO);
+        getActivity().startService(intent);
+
+        return root;
+    }
+    @Override
     public void onDetach() {
+        getActivity().unregisterReceiver(homeReceiver);
         super.onDetach();
-        mListener = null;
-    }*/
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
+    }
+
+    /*
+     * Find All Views When Create the Home Activity
      */
-   /* public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        public void onFragmentInteraction(Uri uri);
-    }*/
+    public void findViewsById() {
+        playBt = (ImageView)root.findViewById(R.id.playBt);
+        nextBt = (ImageView)root.findViewById(R.id.nextBt);
+        preBt = (ImageView)root.findViewById(R.id.preBt);
+        playingPhoto = (ImageView)root.findViewById(R.id.playingPhoto);
+        playingName = (TextView)root.findViewById(R.id.playingName);
+        playingArtist = (TextView)root.findViewById(R.id.playingArtist);
+        player = (RelativeLayout)root.findViewById(R.id.player);
+        waveBar = (WaveView)root.findViewById(R.id.waveBar);
+        countList = (ListView)root.findViewById(R.id.countList);
+        pullToRefreshView = (PullToRefreshView)root.findViewById(R.id.pullToRefreshView);
+    }
+
+    /*
+     * Set the ClickListener to Views
+     */
+    private void setClickListener() {
+        preBt.setOnClickListener(listener);
+        nextBt.setOnClickListener(listener);
+        playBt.setOnClickListener(listener);
+        player.setOnClickListener(listener);
+    }
+    class MyClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            Intent intent = new Intent();
+            intent.setAction("com.badprinter.yobey.service.PLAYER_SERVICE");
+            switch (view.getId()) {
+                case R.id.playBt:
+                    if (isPlay == false) {
+                        intent.putExtra("controlMsg", Constants.PlayerControl.CONTINUE_PLAYING_MSG);
+                    } else {
+                        intent.putExtra("controlMsg", Constants.PlayerControl.PAUSE_PLAYING_MSG);
+                    }
+                    getActivity().startService(intent);
+                    break;
+                case R.id.nextBt:
+                    intent.putExtra("controlMsg", Constants.PlayerControl.NEXT_SONG_MSG);
+                    getActivity().startService(intent);
+                    playDrawableAnim(nextBt, 2, animNext);
+                    break;
+                case R.id.preBt:
+                    intent.putExtra("controlMsg", Constants.PlayerControl.PRE_SONG_MSG);
+                    getActivity().startService(intent);
+                    playDrawableAnim(preBt, 3, animPre);
+                    break;
+                case R.id.player:
+                    Intent trunToPlayerIntent = new Intent(getActivity(), Player.class);
+                    //trunToPlayerIntent.putExtra("current", current);
+                    trunToPlayerIntent.putExtra("isPlay", isPlay);
+                    trunToPlayerIntent.putExtra("currentSongId", currentSongId);
+                    getActivity().startActivity(trunToPlayerIntent);
+                    getActivity().overridePendingTransition(R.anim.activity_slide_in, R.anim.activity_null);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    private void playDrawableAnim(ImageView view, int id, AnimationDrawable animDrawable) {
+        if (animDrawable != null && animDrawable.isRunning())
+            animDrawable.stop();
+        if (id == 2)
+            view.setBackgroundResource(R.drawable.playnext_00000);
+        else if (id == 3)
+            view.setBackgroundResource(R.drawable.playpre_00000);
+        view.setBackgroundResource(animId[id]);
+        animDrawable = (AnimationDrawable) view.getBackground();
+        animDrawable.setOneShot(true);
+        animDrawable.start();
+    }
+    /*
+ * Receive the Broad from Sevice for Updating UI
+ */
+    private class HomeReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getAction()) {
+                case Constants.UiControl.UPDATE_UI:
+                    boolean isPlayFromSevice = intent.getBooleanExtra("isPlay", false); // Play or Pause
+
+                    currentSongId = intent.getLongExtra("songId", 0); // Current Song Id
+                    isPlay = isPlayFromSevice;
+
+                    Song temp = SongProvider.getSongById(currentSongId, getActivity());
+                    Log.e(TAG, "context == null ? " + Boolean.toString(getActivity() == null));
+                    playingPhoto.setImageBitmap(SongProvider.getArtwork(getActivity(), temp.getId(), temp.getAlbumId(), false, true));
+                    playingArtist.setText(temp.getArtist());
+                    playingName.setText(temp.getName());
+
+                    if (isPlay) {
+                        playDrawableAnim(playBt, 0, animPlay);
+                    } else {
+                        playDrawableAnim(playBt, 1, animPlay);
+                    }
+                    break;
+                case Constants.UiControl.UPDATE_CURRENT:
+                    int currentTime = intent.getExtras().getInt("currentTime");
+                    updateWaveBar(currentTime);
+                    break;
+                default:
+                    break;
+            }
+
+
+        }
+    }
+    private void updateWaveBar(int currentTime) {
+        Song temp = SongProvider.getSongById(currentSongId, getActivity());
+        if (temp != null) {
+            int duration = temp.getDuration();
+            int progress = currentTime*100/duration;
+            waveBar.setProgress(progress);
+        }
+    }
 
 }

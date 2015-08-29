@@ -8,11 +8,12 @@
     <dimen name="font_medium">15dp</dimen>
     <dimen name="font_large">20dp</dimen>
     <dimen name="font_xlarge">30dp</dimen>
+    <dimen name="font_xxlarge">50dp</dimen>
 
     <!--Image Size-->
     <dimen name="image_small">40dp</dimen>
     <dimen name="image_medium">60dp</dimen>
-    <dimen name="image_large">10dp</dimen>
+    <dimen name="image_large">100dp</dimen>
     <dimen name="image_xlarge">200dp</dimen>
 
     <!--Music Control-->

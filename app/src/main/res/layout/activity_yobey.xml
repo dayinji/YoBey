@@ -7,37 +7,51 @@
 
     <FrameLayout
         android:id="@+id/frameLayout"
-        android:background="#da5522"
+        android:background="@color/qianbai"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"></FrameLayout>
 
-    <RadioGroup
-        android:id="@+id/tabs"
+    <com.badprinter.yobey.customviews.MyFrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:divider="?android:attr/dividerHorizontal"
-        android:showDividers="middle"
-        android:dividerPadding="10dp">
+        android:layout_height="50dp">
+        <com.badprinter.yobey.customviews.DragView
+            android:id="@+id/drag"
+            xmlns:app="http://schemas.android.com/apk/res/com.badprinter.yobey"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
 
-        <RadioButton
-            android:id="@+id/homeTab"
-            android:text="Home"
-            style="@style/tabStyle"/>
-        <RadioButton
-            android:id="@+id/listTab"
-            android:text="List"
-            style="@style/tabStyle"/>
-        <RadioButton
-            android:id="@+id/artistTab"
-            android:text="Artist"
-            style="@style/tabStyle"/>
-        <RadioButton
-            android:id="@+id/playerTab"
-            android:text="Player"
-            style="@style/tabStyle"/>
+            app:myBackgroundColor="@color/qianbai"
+            app:dragColor="@color/qingse"
+            app:borderRadius="0"
+            app:delayTime="200"/>
+        <RadioGroup
+            android:id="@+id/tabs"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:divider="?android:attr/dividerHorizontal"
+            android:showDividers="middle"
+            android:dividerPadding="10dp">
 
-    </RadioGroup>
+            <RadioButton
+                android:id="@+id/homeTab"
+                android:text="Home"
+                style="@style/tabStyle"/>
+            <RadioButton
+                android:id="@+id/listTab"
+                android:text="List"
+                style="@style/tabStyle"/>
+            <RadioButton
+                android:id="@+id/artistTab"
+                android:text="Artist"
+                style="@style/tabStyle"/>
+            <RadioButton
+                android:id="@+id/playerTab"
+                android:text="Player"
+                style="@style/tabStyle"/>
+
+        </RadioGroup>
+    </com.badprinter.yobey.customviews.MyFrameLayout>
 
 </LinearLayout>
