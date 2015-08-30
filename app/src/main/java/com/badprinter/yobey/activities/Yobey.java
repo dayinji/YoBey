@@ -10,6 +10,8 @@ import android.content.IntentFilter;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -41,6 +43,9 @@ public class Yobey extends ActionBarActivity {
     private YobeyReceiver yobeyReceiver;
     private DBManager dbMgr;
 
+    private Home1 home;
+    private Lists lists;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,6 +55,7 @@ public class Yobey extends ActionBarActivity {
         setOnClickListener();
         updateFragment(1);
         dragView.setAnimation(0);
+
         yobeyReceiver = new YobeyReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.UiControl.UPDATE_UI);
@@ -71,7 +77,6 @@ public class Yobey extends ActionBarActivity {
         tabs.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                updateFragment(checkedId);
                 switch (checkedId) {
                     case R.id.homeTab:
                         dragView.setAnimation(0);
@@ -88,6 +93,7 @@ public class Yobey extends ActionBarActivity {
                     default:
                         break;
                 }
+                updateFragment(checkedId);
             }
         });
     }
@@ -97,17 +103,27 @@ public class Yobey extends ActionBarActivity {
         Fragment fragment;
         switch (id) {
             case R.id.homeTab:
-                fragment  = new Home1();
+                if (home == null) {
+                    home = new Home1();
+                    Log.e(TAG, "new Home");
+                }
+                Log.e(TAG, "old Home");
+                fragment  = home;
                 break;
             case R.id.listTab:
-                fragment  = new Lists();
+                if (lists == null)
+                    lists = new Lists();
+                fragment  = lists;
                 break;
             case R.id.artistTab:
             case R.id.playerTab:
             default:
-                fragment = new Home1();
-
+                if (home == null)
+                    home = new Home1();
+                fragment  = home;
+                break;
         }
+        transaction.setCustomAnimations(R.anim.enter, R.anim.exit);
         transaction.replace(R.id.frameLayout, fragment);
         transaction.commit();
     }

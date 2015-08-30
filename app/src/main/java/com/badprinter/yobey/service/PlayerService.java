@@ -101,11 +101,17 @@ public class PlayerService extends Service {
 
         switch (intent.getExtras().getString("controlMsg")) {
             case Constants.PlayerControl.PRE_SONG_MSG:
-                updateDB(false, current);
+                if (currentTime > 30*1000 && currentTime < duration - 30*1000)
+                    updateDB(false, current);
+                else if (currentTime >= duration-30*1000)
+                    updateDB(true, current);
                 playPre();
                 break;
             case Constants.PlayerControl.NEXT_SONG_MSG:
-                updateDB(false, current);
+                if (currentTime > 30 * 1000 && currentTime < duration - 30*1000)
+                    updateDB(false, current);
+                else if (currentTime >= duration-30*1000)
+                    updateDB(true, current);
                 playNext();
                 break;
             case Constants.PlayerControl.PAUSE_PLAYING_MSG:
@@ -282,8 +288,6 @@ public class PlayerService extends Service {
         }
     }
     private void updateDB(boolean isCompleted, int current) {
-        if (player.getCurrentPosition() < 30*1000)
-            return;
         Song temp = songList.get(current);
         if (!dbMgr.inSongDetail(temp)) {
             dbMgr.addToSongDetail(temp);

@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -37,6 +38,8 @@ import com.db.chart.view.animation.Animation;
 import com.db.chart.view.animation.easing.BounceEase;
 import com.db.chart.view.animation.easing.CircEase;
 import com.yalantis.phoenix.PullToRefreshView;
+
+import jp.wasabeef.blurry.Blurry;
 
 public class Home1 extends Fragment {
     private String TAG = "HOME1";
@@ -107,13 +110,25 @@ public class Home1 extends Fragment {
         filter.addAction(Constants.UiControl.UPDATE_UI);
         filter.addAction(Constants.UiControl.UPDATE_CURRENT);
         getActivity().registerReceiver(homeReceiver, filter);
-        /*
-         * Init the Bottom Control Area
-         */
-        Intent intent = new Intent();
-        intent.setAction("com.badprinter.yobey.service.PLAYER_SERVICE");
-        intent.putExtra("controlMsg", Constants.PlayerControl.INIT_GET_CURRENT_INFO);
-        getActivity().startService(intent);
+
+        ViewTreeObserver vto2 = playingPhoto.getViewTreeObserver();
+        vto2.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                playingPhoto.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                /*
+                 * Init the Bottom Control Area
+                 */
+                Intent intent = new Intent();
+                intent.setAction("com.badprinter.yobey.service.PLAYER_SERVICE");
+                intent.putExtra("controlMsg", Constants.PlayerControl.INIT_GET_CURRENT_INFO);
+                getActivity().startService(intent);
+
+
+                Log.e(TAG, "addOnGlobalLayoutListener");
+            }
+        });
+        Log.e(TAG, "onCreateView");
 
         return root;
     }

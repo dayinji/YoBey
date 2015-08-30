@@ -130,6 +130,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                         .sampling(5)//.async()
                         .capture(findViewById(R.id.blurBg))
                         .into((ImageView) findViewById(R.id.blurBg));
+                Log.e(TAG, "addOnGlobalLayoutListener");
             }
         });
         if (dbMgr.isFavorite(SongProvider.getSongById(currentSongId, Player.this))) {

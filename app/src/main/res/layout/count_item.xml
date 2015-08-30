@@ -7,7 +7,8 @@
         android:id="@+id/countLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:padding="10dp">
         <TextView
             android:id="@+id/allPlay"
             android:textColor="@color/fense"
@@ -16,7 +17,6 @@
             android:textSize="@dimen/font_xxlarge"
             android:layout_centerInParent="true"
             android:layout_alignParentLeft="true"
-            android:layout_margin="5dp"
             android:layout_marginLeft="20dp"
             android:text="63" />
         <TextView
@@ -33,8 +33,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/font_xxlarge"
+            android:layout_centerInParent="true"
             android:layout_alignParentRight="true"
-            android:layout_margin="5dp"
             android:layout_marginRight="20dp"
             android:text="37%" />
         <TextView
@@ -46,18 +46,10 @@
             android:layout_below="@id/allSwicth"
             android:text="切歌" />
     </RelativeLayout>
-
-    <com.db.chart.view.LineChartView
-        android:id="@+id/dayschart"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/chartPager"
         android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:padding="10dp"/>
+        android:layout_height="100dp" />
 
-    <com.db.chart.view.LineChartView
-        android:id="@+id/hourschart"
-        android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:layout_weight="1"
-        android:padding="10dp"/>
 
 </LinearLayout>
