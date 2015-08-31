@@ -32,7 +32,7 @@ import com.badprinter.yobey.service.PlayerService;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Yobey extends ActionBarActivity {
+public class Yobey extends Base {
     private String TAG = "Yobey";
     private RadioGroup tabs;
     private RadioButton tab_home;
@@ -59,6 +59,7 @@ public class Yobey extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_yobey);
+
         findViewsById();
         dbMgr = new DBManager(this);
         setOnClickListener();

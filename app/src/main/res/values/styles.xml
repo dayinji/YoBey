@@ -1,20 +1,44 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light">
         <!-- Customize your theme here. -->
+
         <item name="android:windowIsTranslucent">true</item>
+        <item name="android:actionBarStyle">@style/MyActionBar</item>
+        <item name="android:windowContentOverlay">@null</item>
+
+        <!-- Support library compatibility -->
+        <item name="actionBarStyle">@style/MyActionBar</item>
     </style>
 
     <style name="tabStyle">
         <item name="android:textSize">@dimen/font_large</item>
         <item name="android:textColor">@color/qianhui</item>
-        <item name="android:gravity">center</item>
         <item name="android:button">@null</item>
+        <item name="android:gravity">center</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_weight">1</item>
         <item name="android:padding">10dp</item>
     </style>
+
+    <!--MyActionBar-->
+    <style name="MyActionBar"
+        parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
+        <item name="android:background">@color/qianbai</item>
+        <item name="android:titleTextStyle">@style/MyActionBarTitleText</item>
+        <!-- Support library compatibility -->
+        <item name="background">@color/qianbai</item>
+        <item name="titleTextStyle">@style/MyActionBarTitleText</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <!-- ActionBar title text -->
+    <style name="MyActionBarTitleText"
+        parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textColor">@color/qingse</item>
+    </style>
+
 
 </resources>

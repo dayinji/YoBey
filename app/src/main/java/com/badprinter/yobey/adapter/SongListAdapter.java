@@ -149,7 +149,7 @@ public class SongListAdapter extends BaseAdapter {
     }
     private int getPositionByLetter(char letter) {
 
-        int index = findByBinarySearch(0, songList.size(), letter);
+        int index = findByBinarySearch(0, songList.size() - 1, letter);
         if (index == -1)
             return -1;
         for (int i = index ; i > 0 ; i --) {
@@ -167,9 +167,9 @@ public class SongListAdapter extends BaseAdapter {
         if (end < start)
             return -1;
         int middle = (end + start)/2;
-        Log.e(TAG, "start = "+ start);
-        Log.e(TAG, "end = "+ end);
-        Log.e(TAG, "middle = "+ middle);
+        //Log.e(TAG, "start = "+ start);
+        //Log.e(TAG, "end = "+ end);
+        //Log.e(TAG, "middle = "+ middle);
         char[] pinyin = songList.get(middle).getPinyin().toCharArray();
         if (pinyin[0] > letter) {
             return findByBinarySearch(start, middle - 1, letter);
