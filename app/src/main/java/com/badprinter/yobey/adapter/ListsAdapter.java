@@ -26,7 +26,7 @@ public class ListsAdapter extends BaseAdapter {
     private Context context;
     private String[] catas = {"All Music", "My Favorite", "Recommend", "Recently", "Long ago"};
     private int[] colors;
-    private String[] cataWords = {"全", "藏", "佳", "近", "久"};
+    private String[] cataWords = {"全", "藏", "荐", "近", "久"};
 
     public ListsAdapter(Context context) {
         this.context = context;

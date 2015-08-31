@@ -14,7 +14,7 @@
     <dimen name="image_small">40dp</dimen>
     <dimen name="image_medium">60dp</dimen>
     <dimen name="image_large">100dp</dimen>
-    <dimen name="image_xlarge">200dp</dimen>
+    <dimen name="image_xlarge">120dp</dimen>
 
     <!--Music Control-->
     <dimen name="music_control_small">25dp</dimen>

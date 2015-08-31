@@ -37,7 +37,8 @@
                 android:id="@+id/homeTab"
                 android:text="Home"
                 android:textColor="@color/baise"
-                style="@style/tabStyle"/>
+                style="@style/tabStyle"
+                android:drawableTop="@drawable/home_white"/>
             <RadioButton
                 android:id="@+id/listTab"
                 android:text="List"
@@ -50,7 +51,7 @@
                 style="@style/tabStyle"/>
             <RadioButton
                 android:id="@+id/playerTab"
-                android:text="Player"
+                android:text="Settings"
                 android:textColor="@color/qianhui"
                 style="@style/tabStyle"/>
 

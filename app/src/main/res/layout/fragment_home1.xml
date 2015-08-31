@@ -5,22 +5,26 @@
     <RelativeLayout
         android:id="@+id/player"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:background="@color/qianbai">
-        <ImageView
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:background="@color/qingse">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/playingPhoto"
-            android:layout_alignParentLeft="true"
-            android:background="@color/qianbai"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="10dp"
-            android:layout_centerVertical="true"
-            android:layout_width="@dimen/image_large"
-            android:layout_height="@dimen/image_large"/>
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="15dp"
+            android:background="#00ffffff"
+            android:layout_width="@dimen/image_xlarge"
+            android:layout_height="@dimen/image_xlarge"
+            app:border_width="5dp"
+            app:border_color="@color/qianbai"/>
+
         <com.badprinter.yobey.customviews.WaveView
             xmlns:wave="http://schemas.android.com/apk/res-auto"
             android:id="@+id/waveBar"
-            android:layout_width="@dimen/image_large"
-            android:layout_height="@dimen/image_large"
+            android:layout_width="@dimen/image_xlarge"
+            android:layout_height="@dimen/image_xlarge"
             android:background="#00ffffff"
             android:layout_alignTop="@id/playingPhoto"
             android:layout_alignLeft="@id/playingPhoto"
@@ -31,37 +35,49 @@
             wave:wave_height="little"
             wave:wave_hz="normal"
             wave:wave_length="middle" />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_alignTop="@id/playingPhoto"
+            android:layout_alignLeft="@id/playingPhoto"
+            android:background="#00ffffff"
+            android:layout_width="@dimen/image_xlarge"
+            android:layout_height="@dimen/image_xlarge"
+            android:src="@drawable/transparent"
+
+            app:border_width="5dp"
+            app:border_color="@color/qianbai"/>
+
         <TextView
             android:id="@+id/playingName"
             android:text="Name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/font_large"
-            android:textColor="@color/qingse"
-            android:layout_alignTop="@id/playingPhoto"
-            android:layout_toRightOf="@id/playingPhoto"/>
+            android:textColor="@color/qianbai"
+            android:layout_below="@id/playingPhoto"
+            android:layout_centerHorizontal="true"/>
         <TextView
             android:id="@+id/playingArtist"
             android:text="artist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="@dimen/font_medium"
-            android:textColor="@color/qianhui"
-            android:layout_alignLeft="@id/playingName"
-            android:layout_below="@id/playingName"/>
+            android:textColor="@color/qingse_deep"
+            android:layout_below="@id/playingName"
+            android:layout_centerHorizontal="true"/>
         <LinearLayout
             android:id="@+id/musicControlLayout"
             android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@id/playingPhoto"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="20dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
             android:gravity="center_vertical"
             android:background="@color/qingse"
             android:divider="?android:attr/dividerHorizontal"
             android:showDividers="middle"
-            android:dividerPadding="10dp">
+            android:dividerPadding="20dp">
 
             <ImageView
                 android:id="@+id/preBt"
@@ -72,8 +88,8 @@
                 android:layout_margin="5dp"/>
             <ImageView
                 android:id="@+id/playBt"
-                android:layout_width="@dimen/music_control_medium"
-                android:layout_height="@dimen/music_control_medium"
+                android:layout_width="@dimen/music_control_large"
+                android:layout_height="@dimen/music_control_large"
                 android:background="@drawable/playtopause_00000"
                 android:clickable="true"
                 android:layout_margin="5dp" />
@@ -87,17 +103,37 @@
         </LinearLayout>
 
     </RelativeLayout>
-    <View
-        android:layout_marginRight="20dp"
-        android:layout_marginLeft="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/qianhui"/>
 
-    <com.yalantis.phoenix.PullToRefreshView
-        android:id="@+id/pullToRefreshView"
+    <in.srain.cube.views.ptr.PtrFrameLayout
+        android:id="@+id/ptrFrame"
+        xmlns:cube_ptr="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="2"
+
+        cube_ptr:ptr_resistance="1.7"
+        cube_ptr:ptr_ratio_of_header_height_to_refresh="0.8"
+        cube_ptr:ptr_duration_to_close="300"
+        cube_ptr:ptr_duration_to_close_header="700"
+        cube_ptr:ptr_keep_header_when_refresh="true"
+        cube_ptr:ptr_pull_to_fresh="false" >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="200dp">
+            <ImageView
+                android:id="@+id/bg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/bg"
+                android:scaleType="centerCrop"/>
+            <ImageView
+                android:id="@+id/cd"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_alignParentBottom="true"
+                android:src="@drawable/cd"/>
+        </RelativeLayout>
 
         <ListView
             android:id="@+id/countList"
@@ -107,7 +143,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-    </com.yalantis.phoenix.PullToRefreshView>
+    </in.srain.cube.views.ptr.PtrFrameLayout>
 
 
 </LinearLayout>

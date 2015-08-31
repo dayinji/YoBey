@@ -1,5 +1,7 @@
 package com.badprinter.yobey.fragments;
 
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -39,12 +41,19 @@ import com.db.chart.view.animation.easing.BounceEase;
 import com.db.chart.view.animation.easing.CircEase;
 import com.yalantis.phoenix.PullToRefreshView;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+import in.srain.cube.views.ptr.PtrClassicFrameLayout;
+import in.srain.cube.views.ptr.PtrDefaultHandler;
+import in.srain.cube.views.ptr.PtrFrameLayout;
+import in.srain.cube.views.ptr.PtrHandler;
+import in.srain.cube.views.ptr.PtrUIHandler;
+import in.srain.cube.views.ptr.indicator.PtrIndicator;
 import jp.wasabeef.blurry.Blurry;
 
 public class Home1 extends Fragment {
     private String TAG = "HOME1";
     private View root;
-    private ImageView playingPhoto;
+    private CircleImageView playingPhoto;
     private ImageView preBt;
     private ImageView playBt;
     private ImageView nextBt;
@@ -53,7 +62,8 @@ public class Home1 extends Fragment {
     private RelativeLayout player;
     private WaveView waveBar;
     private ListView countList;
-    private PullToRefreshView pullToRefreshView;
+    private PtrFrameLayout ptrFrame;
+    private ImageView cd;
 
 
     private DBManager dbMgr;
@@ -91,17 +101,56 @@ public class Home1 extends Fragment {
 
         countAdapter = new CountAdapter(getActivity());
         countList.setAdapter(countAdapter);
-
-        pullToRefreshView.setOnRefreshListener(new PullToRefreshView.OnRefreshListener() {
+        ptrFrame.setPtrHandler(new PtrHandler() {
             @Override
-            public void onRefresh() {
-                pullToRefreshView.postDelayed(new Runnable() {
+            public void onRefreshBegin(PtrFrameLayout frame) {
+                frame.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        countAdapter.updateCount();
-                        pullToRefreshView.setRefreshing(false);
+                        ptrFrame.refreshComplete();
                     }
-                }, 1000);
+                }, 1200);
+            }
+
+            @Override
+            public boolean checkCanDoRefresh(PtrFrameLayout frame, View content, View header) {
+                return PtrDefaultHandler.checkContentCanBePulledDown(frame, content, header);
+            }
+        });
+        //ptrFrame.setOffsetToRefresh(1000);
+        ptrFrame.addPtrUIHandler(new PtrUIHandler() {
+            @Override
+            public void onUIReset(PtrFrameLayout ptrFrameLayout) {
+                cd.setRotationY(0);
+                cd.setY(300);
+            }
+
+            @Override
+            public void onUIRefreshPrepare(PtrFrameLayout ptrFrameLayout) {
+            }
+
+            @Override
+            public void onUIRefreshBegin(PtrFrameLayout ptrFrameLayout) {
+
+                ValueAnimator anim = new ValueAnimator().ofInt(0, 360);
+                anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        cd.setRotationY((int)animation.getAnimatedValue());
+                    }
+                });
+                anim.start();
+                Log.e(TAG, ""+ptrFrame.getOffsetToRefresh());
+            }
+
+            @Override
+            public void onUIRefreshComplete(PtrFrameLayout ptrFrameLayout) {
+
+            }
+
+            @Override
+            public void onUIPositionChange(PtrFrameLayout ptrFrameLayout, boolean b, byte b1, PtrIndicator ptrIndicator) {
+
             }
         });
 
@@ -146,13 +195,14 @@ public class Home1 extends Fragment {
         playBt = (ImageView)root.findViewById(R.id.playBt);
         nextBt = (ImageView)root.findViewById(R.id.nextBt);
         preBt = (ImageView)root.findViewById(R.id.preBt);
-        playingPhoto = (ImageView)root.findViewById(R.id.playingPhoto);
+        playingPhoto = (CircleImageView)root.findViewById(R.id.playingPhoto);
         playingName = (TextView)root.findViewById(R.id.playingName);
         playingArtist = (TextView)root.findViewById(R.id.playingArtist);
         player = (RelativeLayout)root.findViewById(R.id.player);
         waveBar = (WaveView)root.findViewById(R.id.waveBar);
         countList = (ListView)root.findViewById(R.id.countList);
-        pullToRefreshView = (PullToRefreshView)root.findViewById(R.id.pullToRefreshView);
+        ptrFrame = (PtrFrameLayout)root.findViewById(R.id.ptrFrame);
+        cd = (ImageView)root.findViewById(R.id.cd);
     }
 
     /*
@@ -228,7 +278,7 @@ public class Home1 extends Fragment {
 
                     Song temp = SongProvider.getSongById(currentSongId, getActivity());
                     Log.e(TAG, "context == null ? " + Boolean.toString(getActivity() == null));
-                    playingPhoto.setImageBitmap(SongProvider.getArtwork(getActivity(), temp.getId(), temp.getAlbumId(), false, true));
+                    playingPhoto.setImageBitmap(SongProvider.getArtwork(getActivity(), temp.getId(), temp.getAlbumId(), false, false));
                     playingArtist.setText(temp.getArtist());
                     playingName.setText(temp.getName());
 
