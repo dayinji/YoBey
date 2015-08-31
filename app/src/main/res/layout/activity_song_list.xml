@@ -17,7 +17,7 @@
         android:id="@+id/bottomLayout"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:background="@color/fense">
+        android:background="@color/qingse">
         <ImageView
             android:id="@+id/playingPhoto"
             android:layout_width="@dimen/image_medium"

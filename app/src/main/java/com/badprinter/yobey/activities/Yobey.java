@@ -1,17 +1,22 @@
 package com.badprinter.yobey.activities;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -24,6 +29,9 @@ import com.badprinter.yobey.fragments.Home1;
 import com.badprinter.yobey.fragments.Lists;
 import com.badprinter.yobey.service.PlayerService;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Yobey extends ActionBarActivity {
     private String TAG = "Yobey";
     private RadioGroup tabs;
@@ -31,10 +39,9 @@ public class Yobey extends ActionBarActivity {
     private RadioButton tab_list;
     private RadioButton tab_artist;
     private RadioButton tab_player;
-    private FrameLayout frameLayout;
     private DragView dragView;
+    private ViewPager pager;
 
-    private FragmentManager fragmentManager;
     private int currentFragment = 0;
     private boolean isPlay = false;
     private int current = 0;
@@ -45,6 +52,8 @@ public class Yobey extends ActionBarActivity {
 
     private Home1 home;
     private Lists lists;
+    private Lists lists1;
+    private Lists lists2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +62,7 @@ public class Yobey extends ActionBarActivity {
         findViewsById();
         dbMgr = new DBManager(this);
         setOnClickListener();
-        updateFragment(1);
+        initPager();
         dragView.setAnimation(0);
 
         yobeyReceiver = new YobeyReceiver();
@@ -64,13 +73,13 @@ public class Yobey extends ActionBarActivity {
 
     }
     private void findViewsById() {
-        frameLayout = (FrameLayout)findViewById(R.id.frameLayout);
         tabs = (RadioGroup)findViewById(R.id.tabs);
         tab_home = (RadioButton)findViewById(R.id.homeTab);
         tab_artist = (RadioButton)findViewById(R.id.artistTab);
         tab_list = (RadioButton)findViewById(R.id.listTab);
         tab_player = (RadioButton)findViewById(R.id.playerTab);
         dragView = (DragView)findViewById(R.id.drag);
+        pager = (ViewPager)findViewById(R.id.pager);
 
     }
     private void setOnClickListener() {
@@ -80,24 +89,73 @@ public class Yobey extends ActionBarActivity {
                 switch (checkedId) {
                     case R.id.homeTab:
                         dragView.setAnimation(0);
+                        pager.setCurrentItem(0, true);
+                        setWhiteText(tab_home);
                         break;
                     case R.id.listTab:
                         dragView.setAnimation(1);
+                        pager.setCurrentItem(1, true);
+                        setWhiteText(tab_list);
                         break;
                     case R.id.artistTab:
                         dragView.setAnimation(2);
+                        pager.setCurrentItem(2, true);
+                        setWhiteText(tab_artist);
                         break;
                     case R.id.playerTab:
                         dragView.setAnimation(3);
+                        pager.setCurrentItem(3, true);
+                        setWhiteText(tab_player);
                         break;
                     default:
                         break;
                 }
-                updateFragment(checkedId);
+                //updateFragment(checkedId);
             }
         });
     }
-    private void updateFragment(int id) {
+    private void initPager() {
+        home = new Home1();
+        lists = new Lists();
+        lists1 = new Lists();
+        lists2 = new Lists();
+
+        List<Fragment> list = new ArrayList<>();
+        list.add(home);
+        list.add(lists);
+        list.add(lists1);
+        list.add(lists2);
+        pager.setAdapter(new MyPagerAdapter(getSupportFragmentManager(), list));
+        pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                dragView.setAnimation(position);
+                RadioButton[] tabs = {tab_home, tab_list, tab_artist, tab_player};
+                setWhiteText(tabs[position]);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+        pager.setAlwaysDrawnWithCacheEnabled(true);
+        pager.setHorizontalFadingEdgeEnabled(false);
+    }
+    private void setWhiteText(RadioButton tab) {
+        tab_player.setTextColor(getResources().getColor(R.color.qianhui));
+        tab_list.setTextColor(getResources().getColor(R.color.qianhui));
+        tab_artist.setTextColor(getResources().getColor(R.color.qianhui));
+        tab_home.setTextColor(getResources().getColor(R.color.qianhui));
+        tab.setTextColor(getResources().getColor(R.color.baise));
+
+    }
+    /*private void updateFragment(int id) {
         fragmentManager = getFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         Fragment fragment;
@@ -126,7 +184,7 @@ public class Yobey extends ActionBarActivity {
         transaction.setCustomAnimations(R.anim.enter, R.anim.exit);
         transaction.replace(R.id.frameLayout, fragment);
         transaction.commit();
-    }
+    }*/
     @Override
     public void onDestroy() {
         Intent intent = new Intent(Yobey.this, PlayerService.class);
@@ -153,6 +211,26 @@ public class Yobey extends ActionBarActivity {
     }
     public DBManager getDBMgr() {
         return dbMgr;
+    }
+    private class MyPagerAdapter extends FragmentPagerAdapter {
+        private List<Fragment> fragmentList;
+        public MyPagerAdapter(FragmentManager fm, List<Fragment> list) {
+            super(fm);
+            this.fragmentList = list;
+        }
+        @Override
+        public int getCount() {
+            return fragmentList.size();
+        }
+        @Override
+        public Fragment getItem(int arg0) {
+            return fragmentList.get(arg0);
+        }
+        @Override
+        public void destroyItem (ViewGroup container, int position, Object object) {
+            // Never Destroy Fragment for Preventing from Getting stuck!
+            return;
+        }
     }
 
 

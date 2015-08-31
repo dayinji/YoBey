@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:oneshot="false">
+
+    <item android:drawable="@drawable/daytohour_00000" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00001" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00002" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00003" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00004" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00005" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00006" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00007" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00008" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00009" android:duration="30"/>
+
+    <item android:drawable="@drawable/daytohour_00010" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00011" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00012" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00013" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00014" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00015" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00016" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00017" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00018" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00019" android:duration="30"/>
+
+    <item android:drawable="@drawable/daytohour_00020" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00021" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00022" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00023" android:duration="30"/>
+    <item android:drawable="@drawable/daytohour_00024" android:duration="30"/>
+
+</animation-list>

@@ -102,6 +102,7 @@
         <ListView
             android:id="@+id/countList"
             android:divider="@null"
+            android:background="@color/qianbai"
             android:dividerHeight="0dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />

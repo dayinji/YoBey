@@ -7,6 +7,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -147,6 +148,7 @@ public class SongListAdapter extends BaseAdapter {
         return pinyin[0];
     }
     private int getPositionByLetter(char letter) {
+
         int index = findByBinarySearch(0, songList.size(), letter);
         if (index == -1)
             return -1;
@@ -162,14 +164,17 @@ public class SongListAdapter extends BaseAdapter {
         return -1;
     }
     private int findByBinarySearch(int start, int end, char letter) {
-        if (end <= start)
+        if (end < start)
             return -1;
         int middle = (end + start)/2;
+        Log.e(TAG, "start = "+ start);
+        Log.e(TAG, "end = "+ end);
+        Log.e(TAG, "middle = "+ middle);
         char[] pinyin = songList.get(middle).getPinyin().toCharArray();
         if (pinyin[0] > letter) {
-            return findByBinarySearch(start, middle, letter);
+            return findByBinarySearch(start, middle - 1, letter);
         } else if (pinyin[0] < letter) {
-            return findByBinarySearch(middle, end, letter);
+            return findByBinarySearch(middle + 1, end, letter);
         } else {
             return middle;
         }

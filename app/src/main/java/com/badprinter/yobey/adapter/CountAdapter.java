@@ -3,6 +3,7 @@ package com.badprinter.yobey.adapter;
 import android.animation.PropertyValuesHolder;
 import android.content.Context;
 import android.graphics.Rect;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Handler;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -41,11 +42,13 @@ public class CountAdapter extends BaseAdapter{
     private LineChartView daysChart;
     private LineChartView hoursChart;
     private ViewPager pager;
+    private ImageView dayHourBt;
     private String[] days = {"Mon", "Tuse", "Wed", "Thur", "Fri", "Sat", "Sun"};
     private String[] hours = {"00", "01", "02", "03", "04", "05", "06", "07", "08", "09",
             "10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
             "20", "21", "22", "23"};
     DBManager dbMgr;
+    private AnimationDrawable dayHourAnim;
     private float[] daysCount = new float[7];
     private float[] hoursCount = new float[24];
     private final String HOURS_CHART = "CountAdapter_hours_chart";
@@ -114,6 +117,29 @@ public class CountAdapter extends BaseAdapter{
         allPlay = (TextView)convertView.findViewById(R.id.allPlay);
         allSwitch = (TextView)convertView.findViewById(R.id.allSwicth);
         pager = (ViewPager)convertView.findViewById(R.id.chartPager);
+        dayHourBt = (ImageView)convertView.findViewById(R.id.dayHourBt);
+        dayHourBt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (currentChart.equals(HOURS_CHART)) {
+                    if (dayHourAnim != null && dayHourAnim.isRunning())
+                        dayHourAnim.stop();
+                    dayHourBt.setBackgroundResource(R.drawable.hour_to_day);
+                    dayHourAnim = (AnimationDrawable) dayHourBt.getBackground();
+                    dayHourAnim.setOneShot(true);
+                    dayHourAnim.start();
+                    pager.setCurrentItem(0, true);
+                } else if (currentChart.equals(DAYS_CHART)) {
+                    if (dayHourAnim != null && dayHourAnim.isRunning())
+                        dayHourAnim.stop();
+                    dayHourBt.setBackgroundResource(R.drawable.day_to_hour);
+                    dayHourAnim = (AnimationDrawable) dayHourBt.getBackground();
+                    dayHourAnim.setOneShot(true);
+                    dayHourAnim.start();
+                    pager.setCurrentItem(1, true);
+                }
+            }
+        });
         initCharts();
         initCount();
         initPager();
@@ -159,6 +185,7 @@ public class CountAdapter extends BaseAdapter{
 
             }
         });
+        pager.setHorizontalFadingEdgeEnabled(false);
 
     }
     // Update Current Chart's Count
@@ -166,7 +193,11 @@ public class CountAdapter extends BaseAdapter{
         int allPlayCount = dbMgr.getAllPlayCount();
         allPlay.setText(Integer.toString(allPlayCount));
         float allSwitchCount = dbMgr.getAllSwitchCount();
-        String p = Float.toString(allSwitchCount * 100 / (allPlayCount + allSwitchCount)).substring(0, 4);
+        if (allPlayCount == 0 && allSwitchCount == 0) {
+            allSwitch.setText("0.0%");
+            return;
+        }
+        String p = String.format("%.1f", allSwitchCount*100/(allPlayCount+allSwitchCount));
         allSwitch.setText(p + "%");
         hoursChart.dismiss(new Animation().setStartPoint(0f, 0f).setEndAction(updateHoursAction));
         daysChart.dismiss(new Animation().setStartPoint(0f, 0f).setEndAction(updateDaysAction));
@@ -176,9 +207,13 @@ public class CountAdapter extends BaseAdapter{
         int allPlayCount = dbMgr.getAllPlayCount();
         allPlay.setText(Integer.toString(allPlayCount));
         float allSwitchCount = dbMgr.getAllSwitchCount();
-        String p = Float.toString(allSwitchCount * 100 / (allPlayCount + allSwitchCount)).substring(0, 4);
-        allSwitch.setText(p + "%");
-
+        String rate = Float.toString(allSwitchCount * 100 / (allPlayCount + allSwitchCount));
+        if (allPlayCount == 0 && allSwitchCount == 0) {
+            allSwitch.setText("0.0%");
+        } else {
+            String p = String.format("%.1f", allSwitchCount*100/(allPlayCount+allSwitchCount));
+            allSwitch.setText(p + "%");
+        }
         int[] temp1 = dbMgr.getDaysCount();
         int[] temp2 = dbMgr.getHoursCount();
         intToFloat(temp1, daysCount);

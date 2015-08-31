@@ -24,9 +24,9 @@ import java.util.List;
  */
 public class ListsAdapter extends BaseAdapter {
     private Context context;
-    private String[] catas = {"All Music", "My Favorite", "Recommend", "Most Listened", "Least Listened"};
+    private String[] catas = {"All Music", "My Favorite", "Recommend", "Recently", "Long ago"};
     private int[] colors;
-    private String[] cataWords = {"全", "藏", "佳", "多", "少"};
+    private String[] cataWords = {"全", "藏", "佳", "近", "久"};
 
     public ListsAdapter(Context context) {
         this.context = context;

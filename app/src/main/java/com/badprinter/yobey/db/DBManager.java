@@ -8,9 +8,12 @@ import android.util.Log;
 
 import com.badprinter.yobey.models.Song;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by root on 15-8-27.
@@ -20,6 +23,7 @@ public class DBManager {
 
     private DBHelper helper;
     private SQLiteDatabase db;
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.CHINA);
 
     public DBManager(Context context) {
         helper = new DBHelper(context);
@@ -70,7 +74,7 @@ public class DBManager {
      * Query A Cursor from Favorite Table
      */
     public Cursor queryFromFavorite() {
-        Cursor c = db.rawQuery("SELECT song_id FROM favorite", null);
+        Cursor c = db.rawQuery("SELECT * FROM favorite", null);
         return c;
     }
 
@@ -85,9 +89,11 @@ public class DBManager {
             return;
         db.beginTransaction();
         try {
-            db.execSQL("INSERT INTO songdetail VALUES(null, ?, ?, ?, ?, ?, ?, ?)",
+            db.execSQL("INSERT INTO songdetail VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     new Object[]{song.getId(), song.getName(), song.getArtist(),
-                            song.getYear(), song.getGenre(), 0, 0});
+                            song.getYear(), song.getGenre(), 0, 0,
+                            getCurrentTimeString(), getCurrentTimeLong()});
+
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
@@ -134,7 +140,10 @@ public class DBManager {
         c.close();
         ContentValues values = new ContentValues();
         values.put("switch_count", Integer.toString(count + 1));
+        values.put("time_long", getCurrentTimeLong());
+        values.put("time_string", getCurrentTimeString());
         db.update("songdetail", values, "song_id=?", new String[]{Long.toString(song.getId())});
+        //logCursor();
     }
     /*
      * Get Switch_count
@@ -149,7 +158,7 @@ public class DBManager {
         return count;
     }
     /*
-     * Update Play_count(+1)
+     * Update Play_count(+1) && Update Time
      */
     public void updatePlayCount(Song song) {
         Cursor c = db.rawQuery("SELECT play_count FROM songdetail WHERE song_id = ?",
@@ -161,6 +170,8 @@ public class DBManager {
         c.close();
         ContentValues values = new ContentValues();
         values.put("play_count", Integer.toString(count + 1));
+        values.put("time_long", getCurrentTimeLong());
+        values.put("time_string", getCurrentTimeString());
         db.update("songdetail", values, "song_id=?", new String[]{Long.toString(song.getId())});
     }
     /*
@@ -176,7 +187,20 @@ public class DBManager {
         c.close();
         return count;
     }
-
+    /*
+     * Get 10 Songs which are Listened Long Long ago
+     */
+    public Cursor getAgoSongs() {
+        Cursor c = db.rawQuery("SELECT *  FROM songdetail ORDER BY time_long ASC LIMIT 10", null);
+        return c;
+    }
+    /*
+     * Get 10 Songs which are Listened Recently
+     */
+    public Cursor getRecentlySongs() {
+        Cursor c = db.rawQuery("SELECT *  FROM songdetail ORDER BY time_long DESC LIMIT 10", null);
+        return c;
+    }
 
 
     /*****************************
@@ -304,10 +328,10 @@ public class DBManager {
 
 
     /*****************************
-     * Log the Cursor for Debug
+     * Utils
      ****************************/
     public void logCursor() {
-        Cursor c = db.rawQuery("SELECT * FROM commoncount", null);
+        Cursor c = db.rawQuery("SELECT * FROM songdetail", null);
         Log.e(TAG, "logCursor0");
         if (c == null) {
             return;
@@ -322,5 +346,12 @@ public class DBManager {
             }
             System.out.println();
         }
+    }
+    private long getCurrentTimeLong() {
+        return System.currentTimeMillis();
+    }
+    private String getCurrentTimeString() {
+        Date date = new Date();
+        return dateFormat.format(date);
     }
 }

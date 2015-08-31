@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,8 +47,8 @@ public class Lists extends Fragment {
             Constants.ListName.LIST_ALL,
             Constants.ListName.LIST_FAVORITE,
             Constants.ListName.LIST_RECOMMEND,
-            Constants.ListName.LIST_MOST_LISTENED,
-            Constants.ListName.LIST_LEAST_LISTENED,
+            Constants.ListName.LIST_RECENTLY,
+            Constants.ListName.LIST_AGO,
     };
     //private OnFragmentInteractionListener mListener;
 
@@ -92,25 +92,5 @@ public class Lists extends Fragment {
         startActivity(intent);
     }
 
-   /* @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (OnFragmentInteractionListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }*/
-
-    /*public interface OnFragmentInteractionListener {
-        public void onFragmentInteraction(Uri uri);
-    }*/
 
 }

@@ -50,6 +50,12 @@
         android:id="@+id/chartPager"
         android:layout_width="match_parent"
         android:layout_height="100dp" />
-
+    <ImageView
+        android:id="@+id/dayHourBt"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@drawable/daytohour_00000"
+        android:layout_gravity="right"
+        android:layout_marginRight="10dp"/>
 
 </LinearLayout>

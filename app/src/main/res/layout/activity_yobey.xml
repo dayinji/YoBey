@@ -5,12 +5,11 @@
     android:orientation="vertical"
     tools:context="com.badprinter.yobey.activities.Yobey">
 
-    <FrameLayout
-        android:id="@+id/frameLayout"
-        android:background="@color/qianbai"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"></FrameLayout>
+        android:layout_weight="1"/>
 
     <com.badprinter.yobey.customviews.MyFrameLayout
         android:layout_width="match_parent"
@@ -37,18 +36,22 @@
             <RadioButton
                 android:id="@+id/homeTab"
                 android:text="Home"
+                android:textColor="@color/baise"
                 style="@style/tabStyle"/>
             <RadioButton
                 android:id="@+id/listTab"
                 android:text="List"
+                android:textColor="@color/qianhui"
                 style="@style/tabStyle"/>
             <RadioButton
                 android:id="@+id/artistTab"
                 android:text="Artist"
+                android:textColor="@color/qianhui"
                 style="@style/tabStyle"/>
             <RadioButton
                 android:id="@+id/playerTab"
                 android:text="Player"
+                android:textColor="@color/qianhui"
                 style="@style/tabStyle"/>
 
         </RadioGroup>

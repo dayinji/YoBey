@@ -14,6 +14,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 
 import com.badprinter.yobey.R;
+import com.badprinter.yobey.commom.AppContext;
 import com.badprinter.yobey.commom.Constants;
 import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.models.Song;
@@ -76,6 +77,9 @@ public class SongProvider {
                         duration, albumId, url, pinyin, year, genre);
                 songIdMap.put(id, newSong);
                 songList.add(newSong);
+                if (!dbMgr.inSongDetail(newSong)) {
+                    dbMgr.addToSongDetail(newSong);
+                }
 
                 if (!artistList.contains(artist)) {
                     artistList.add(artist);
@@ -125,19 +129,53 @@ public class SongProvider {
         }
         return favoriteSongList;
     }
+    /*
+     * Get SongList By SongList Name
+     */
     public static List<Song> getSongListByName(Context context, String listName) {
         if (songList == null)
             getSongList(context);
         List<Song> listOfName = new ArrayList<>();
         if (listName.equals(Constants.ListName.LIST_FAVORITE)) {
-            listOfName = SongProvider.getFavoriteList(context);
+            listOfName = getFavoriteList(context);
         } else if (listName.equals(Constants.ListName.LIST_ALL)) {
-            listOfName = SongProvider.getSongList(context);
+            listOfName = getSongList(context);
+        } else if (listName.equals(Constants.ListName.LIST_RECENTLY)){
+            listOfName = getRecentlySongs();
+        } else if (listName.equals(Constants.ListName.LIST_AGO)) {
+            listOfName = getAgoSongs();
         } else {
-            listOfName = SongProvider.getSongList(context);
+            listOfName = getSongList(context);
         }
         return listOfName;
     }
+    /*
+     * Get 10 Songs which are Listened Least
+     */
+    public static List<Song> getAgoSongs() {
+        List<Song> list = new ArrayList<>();
+        Cursor c = dbMgr.getAgoSongs();
+        while(c.moveToNext()) {
+            list.add(getSongById(c.getLong(c.getColumnIndex("song_id")), AppContext.getInstance()));
+        }
+        c.close();
+        return list;
+    }
+    /*
+     * Get 10 Songs which are Listened Recently
+     */
+    public static List<Song> getRecentlySongs() {
+        List<Song> list = new ArrayList<>();
+        Cursor c = dbMgr.getRecentlySongs();
+        while(c.moveToNext()) {
+            list.add(getSongById(c.getLong(c.getColumnIndex("song_id")), AppContext.getInstance()));
+        }
+        c.close();
+        return list;
+    }
+    /*
+     * Sort a List By Pinyin
+     */
     public static void sortByPinyin(List<Song> list) {
         Collections.sort(list);
     }
