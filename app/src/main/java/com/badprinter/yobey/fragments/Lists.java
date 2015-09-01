@@ -71,7 +71,7 @@ public class Lists extends Fragment {
         root = view;
         findViewsById();
         lists.setTransitionEffect(new SlideInEffect());
-        lists.setAdapter(new ListsAdapter(getActivity()));
+        lists.setAdapter(new ListsAdapter());
         lists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

@@ -75,7 +75,6 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_song_list);
-
         /*
          * Find All Views
          */
@@ -83,7 +82,7 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
         setClickListener();
 
         listName = getIntent().getStringExtra("cata");
-        songList = SongProvider.getSongListByName(SongList.this, listName);
+        songList = SongProvider.getSongListByName(listName);
         /*
          * Update the SongList in Service
          */
@@ -93,7 +92,7 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
         updateListIntent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_LIST);
         startService(updateListIntent);
 
-        mySongListAdapter = new SongListAdapter(SongList.this, songList, currentSongId);
+        mySongListAdapter = new SongListAdapter(songList, currentSongId);
         songListView.setAdapter(mySongListAdapter);
         songListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -236,7 +235,7 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
                     SongList.this.isPlay = isPlay;
                     SongList.this.current = current;
                     //Song temp = songList.get(current);
-                    Song temp = SongProvider.getSongById(currentSongId, SongList.this);
+                    Song temp = SongProvider.getSongById(currentSongId);
                     //bar.setMax(temp.getDuration());
                     /*
                      * Recycle the Bitmap before

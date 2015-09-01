@@ -13,7 +13,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private final String TAG = "DBHelper";
 
     private static final String DATABASE_NAME = "yobey.db";
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
 
     /*
      * My Favorite List Table
@@ -22,6 +22,12 @@ public class DBHelper extends SQLiteOpenHelper {
             "_id integer primary key autoincrement, " +
             "song_id varchar(100), " +
             "name varchar(100), " +
+            "artist varchar(100)) ";
+    /*
+     * My Favorite Artist Table
+     */
+    final String SQL_CREATE_TABLE_FAVORITE_ARTIST = "CREATE TABLE IF NOT EXISTS favoriteartist (" +
+            "_id integer primary key autoincrement, " +
             "artist varchar(100)) ";
     /*
      * MUSIC Table
@@ -54,6 +60,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_TABLE_FAVORITE);
         db.execSQL(SQL_CREATE_TABLE_SONG_DETAIL);
         db.execSQL(SQL_CREATE_TABLE_COMMON_COUNT);
+        db.execSQL(SQL_CREATE_TABLE_FAVORITE_ARTIST);
         initCommonCount(db);
     }
 

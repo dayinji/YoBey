@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.badprinter.yobey.R;
+import com.badprinter.yobey.commom.AppContext;
 import com.badprinter.yobey.models.Song;
 import com.badprinter.yobey.utils.MyEvalucatorUtil;
 import com.badprinter.yobey.utils.SongProvider;
@@ -36,16 +37,15 @@ import org.w3c.dom.Text;
 public class SongListAdapter extends BaseAdapter {
 
     private final String TAG = "SongListAdapter";
-    private Context context;
     private List<Song> songList;
     private int current = 0;
     private long currentSongId = 0;
     private Map<View, Integer> viewsPosition = new HashMap<>();
     private ArrayList<View> views;
     private Bitmap replace = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    private Context context = AppContext.getInstance();
 
-    public SongListAdapter(Context context, List<Song> songList, Long currentSongId) {
-        this.context = context;
+    public SongListAdapter(List<Song> songList, Long currentSongId) {
         this.songList = songList;
         this.currentSongId = currentSongId;
         views = new ArrayList<View>();
@@ -248,7 +248,7 @@ public class SongListAdapter extends BaseAdapter {
     }
 
     private void turnToPlaying(final ListItemViewHolder holder) {
-        Song temp = SongProvider.getSongById(currentSongId, context);
+        Song temp = SongProvider.getSongById(currentSongId);
         holder.playingPhoto.setImageBitmap(SongProvider.getArtwork(context, temp.getId(), temp.getAlbumId(), false, false));
         //Log.d(TAG, "y = " + holder.normalLayout.getRotationY());
         holder.playingLayout.setRotationY(-90f);

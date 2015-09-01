@@ -20,7 +20,6 @@ public class Base extends ActionBarActivity {
             getSupportActionBar().setCustomView(R.layout.action_bar);
             getSupportActionBar().setElevation(0);
         }
-        Log.e(TAG, "getSupportActionBar");
     }
 
     @Override

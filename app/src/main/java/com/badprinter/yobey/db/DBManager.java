@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import com.badprinter.yobey.commom.AppContext;
 import com.badprinter.yobey.models.Song;
 
 import java.text.SimpleDateFormat;
@@ -25,8 +26,8 @@ public class DBManager {
     private SQLiteDatabase db;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd", Locale.CHINA);
 
-    public DBManager(Context context) {
-        helper = new DBHelper(context);
+    public DBManager() {
+        helper = new DBHelper(AppContext.getInstance());
         db = helper.getWritableDatabase();
     }
 
@@ -57,10 +58,13 @@ public class DBManager {
         Cursor c =  db.rawQuery("SELECT * " +
                 "FROM favorite " +
                 "WHERE song_id = ?",args);
-        if (c.getCount() == 0)
+        if (c.getCount() == 0) {
+            c.close();
             return false;
-        else
+        } else {
+            c.close();
             return true;
+        }
     }
     /*
      * Delete a Song from Favorite Table
@@ -107,10 +111,13 @@ public class DBManager {
         Cursor c =  db.rawQuery("SELECT * " +
                 "FROM songdetail " +
                 "WHERE song_id = ?",args);
-        if (c.getCount() == 0)
+        if (c.getCount() == 0) {
+            c.close();
             return false;
-        else
+        } else {
+            c.close();
             return true;
+        }
     }
     /*
      * Delete a Song from songdetail Table
@@ -327,6 +334,45 @@ public class DBManager {
     }
 
 
+    /*****************************
+     * Favorite Artist Table
+     ****************************/
+    public boolean isFavoriteArtist(String name) {
+        String[] args = {name};
+        Cursor c =  db.rawQuery("SELECT * " +
+                "FROM favoriteartist " +
+                "WHERE artist = ?",args);
+        if (c.getCount() == 0) {
+            c.close();
+            return false;
+        }
+        else {
+            c.close();
+            return true;
+        }
+    }
+    public void addToFavoriteArtist(String name) {
+        if (isFavoriteArtist(name))
+            return;
+        db.beginTransaction();
+        try {
+            db.execSQL("INSERT INTO favoriteartist VALUES(null, ?)",
+                    new Object[]{name});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    public void deleteFromFavoriteArtist(String name) {
+        if (!isFavoriteArtist(name))
+            return;
+        db.delete("favoriteartist", "artist=?", new String[]{name});
+    }
+    public Cursor queryFromFavoriteArtist() {
+        Cursor c = db.rawQuery("SELECT * FROM favoriteartist", null);
+        return c;
+    }
     /*****************************
      * Utils
      ****************************/

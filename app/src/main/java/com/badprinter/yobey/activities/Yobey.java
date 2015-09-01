@@ -28,6 +28,7 @@ import com.badprinter.yobey.customviews.DragView;
 import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.fragments.Home1;
 import com.badprinter.yobey.fragments.Lists;
+import com.badprinter.yobey.models.Artist;
 import com.badprinter.yobey.service.PlayerService;
 
 import java.util.ArrayList;
@@ -53,7 +54,7 @@ public class Yobey extends Base {
 
     private Home1 home;
     private Lists lists;
-    private Lists lists1;
+    private com.badprinter.yobey.fragments.Artist artist;
     private Lists lists2;
 
     private Drawable homeDrawableWhite;
@@ -71,7 +72,7 @@ public class Yobey extends Base {
         setContentView(R.layout.activity_yobey);
 
         findViewsById();
-        dbMgr = new DBManager(this);
+        dbMgr = new DBManager();
         setOnClickListener();
         initPager();
         dragView.setAnimation(0);
@@ -157,13 +158,13 @@ public class Yobey extends Base {
     private void initPager() {
         home = new Home1();
         lists = new Lists();
-        lists1 = new Lists();
+        artist = new com.badprinter.yobey.fragments.Artist();
         lists2 = new Lists();
 
         List<Fragment> list = new ArrayList<>();
         list.add(home);
         list.add(lists);
-        list.add(lists1);
+        list.add(artist);
         list.add(lists2);
         pager.setAdapter(new MyPagerAdapter(getSupportFragmentManager(), list));
         pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {

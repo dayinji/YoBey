@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.badprinter.yobey.R;
+import com.badprinter.yobey.commom.AppContext;
 import com.badprinter.yobey.db.DBManager;
 import com.db.chart.listener.OnEntryClickListener;
 import com.db.chart.model.LineSet;
@@ -36,7 +37,7 @@ import java.util.List;
  */
 public class CountAdapter extends BaseAdapter{
     private final String TAG="CountAdapter";
-    private Context context;
+    private Context context = AppContext.getInstance();
     private TextView allPlay;
     private TextView allSwitch;
     private LineChartView daysChart;
@@ -88,9 +89,8 @@ public class CountAdapter extends BaseAdapter{
     };
 
 
-    public CountAdapter(Context context) {
-        this.context = context;
-        dbMgr = new DBManager(context);
+    public CountAdapter() {
+        dbMgr = new DBManager();
     }
 
     @Override

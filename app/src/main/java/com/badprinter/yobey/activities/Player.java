@@ -101,7 +101,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
 
     private void init(Intent intent) {
         currentSongId = intent.getLongExtra("currentSongId", 0);
-        dbMgr = new DBManager(this);
+        dbMgr = new DBManager();
         /*
          * Init the playerReceiver
          */
@@ -111,7 +111,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         filter.addAction(Constants.UiControl.UPDATE_CURRENT);
         registerReceiver(playerReceiver, filter);
 
-        Song temp = SongProvider.getSongById(currentSongId, Player.this);
+        Song temp = SongProvider.getSongById(currentSongId);
         /*
          * Init Artist and Name
          */
@@ -133,7 +133,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                 Log.e(TAG, "addOnGlobalLayoutListener");
             }
         });
-        if (dbMgr.isFavorite(SongProvider.getSongById(currentSongId, Player.this))) {
+        if (dbMgr.isFavorite(SongProvider.getSongById(currentSongId))) {
             likeBt.setBackgroundResource(R.drawable.like_00029);
         }
         lyricView.inti(temp.getUrl(), temp.getName(), temp.getArtist());
@@ -147,7 +147,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                 startService(intent);
             }
             public void onProgressAnimCall(int point) {
-                smoke.setX(((float)bar.getProgress()/SongProvider.getSongById(currentSongId, Player.this).getDuration())*bar.getMeasuredWidth()
+                smoke.setX(((float)bar.getProgress()/SongProvider.getSongById(currentSongId).getDuration())*bar.getMeasuredWidth()
                         - smoke.getMeasuredWidth() - 4);
             }
         };
@@ -241,7 +241,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                 playDrawableAnim(nextBt, 2, animNext);
                 break;
             case R.id.likeBt:
-                Song currentSong = SongProvider.getSongById(currentSongId, Player.this);
+                Song currentSong = SongProvider.getSongById(currentSongId);
                 if (dbMgr.isFavorite(currentSong)) {
                     dbMgr.deleteFromFavorite(currentSong);
                     playDrawableAnim(likeBt, 5, animlike);
@@ -294,7 +294,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
 
                     if (currentSongId != Player.this.currentSongId) {
                         Player.this.currentSongId = currentSongId;
-                        Song temp = SongProvider.getSongById(currentSongId, Player.this);
+                        Song temp = SongProvider.getSongById(currentSongId);
                         bar.setMax(temp.getDuration());
                         changeBlurBg(temp.getId(), temp.getAlbumId());
                         lyricView.inti(temp.getUrl(), temp.getName(), temp.getArtist());
@@ -341,7 +341,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
 
     private void updateBar(int currentTime) {
         bar.setProgress(currentTime);
-        smoke.setX(((float) currentTime / SongProvider.getSongById(currentSongId, Player.this).getDuration()) * bar.getMeasuredWidth()
+        smoke.setX(((float) currentTime / SongProvider.getSongById(currentSongId).getDuration()) * bar.getMeasuredWidth()
                 - smoke.getMeasuredWidth() - 4);
 
         lyricView.setCurrentTime(currentTime);

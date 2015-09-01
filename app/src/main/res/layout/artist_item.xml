@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ripple="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="80dp">
+    <com.indris.material.RippleView
+        android:id="@+id/rippleView"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_centerInParent="true"
+        android:background="@color/qianbai"
+        ripple:alphaFactor="0.7"
+        ripple:rippleColor="@color/qingse"
+        ripple:hover="true" />
+    <ImageView
+        android:id="@+id/artistCata"
+        android:padding="25dp"
+        android:layout_height="80dp"
+        android:layout_width="80dp"
+        android:src="@drawable/artist_grey"
+        android:scaleType="centerCrop"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true" />
+    <TextView
+        android:id="@+id/artistName"
+        android:textSize="@dimen/font_medium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/artistCata"
+        android:layout_centerVertical="true" />
+    <ImageView
+        android:id="@+id/enterIcon"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/enter"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"/>
+
+
+</RelativeLayout>

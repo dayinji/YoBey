@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/RippleView/RippleView.iml" filepath="$PROJECT_DIR$/RippleView/RippleView.iml" />
       <module fileurl="file://$PROJECT_DIR$/YoBey.iml" filepath="$PROJECT_DIR$/YoBey.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>

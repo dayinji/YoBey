@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.badprinter.yobey.R;
+import com.badprinter.yobey.commom.AppContext;
 import com.badprinter.yobey.models.Song;
 
 import java.util.ArrayList;
@@ -23,13 +24,12 @@ import java.util.List;
  * Created by root on 15-8-27.
  */
 public class ListsAdapter extends BaseAdapter {
-    private Context context;
+    private Context context = AppContext.getInstance();
     private String[] catas = {"All Music", "My Favorite", "Recommend", "Recently", "Long ago"};
     private int[] colors;
     private String[] cataWords = {"全", "藏", "荐", "近", "久"};
 
-    public ListsAdapter(Context context) {
-        this.context = context;
+    public ListsAdapter() {
         colors = new int[5];
         colors[0] = context.getResources().getColor(R.color.fense);
         colors[1] = context.getResources().getColor(R.color.qingse);

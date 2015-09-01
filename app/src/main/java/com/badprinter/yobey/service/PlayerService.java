@@ -50,11 +50,11 @@ public class PlayerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        dbMgr = new DBManager(this);
+        dbMgr = new DBManager();
         isPlay = false;
         listName = Constants.ListName.LIST_ALL;
         songList = new ArrayList<Song>();
-        songList = SongProvider.getSongList(this);
+        songList = SongProvider.getSongList();
         player = new MediaPlayer();
         player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -304,7 +304,7 @@ public class PlayerService extends Service {
      */
     private void updateList(String listName) {
         if (listName.equals(this.listName)) {
-            songList = SongProvider.getSongListByName(this, listName);
+            songList = SongProvider.getSongListByName(listName);
             this.listName = listName;
         }
     }
@@ -315,7 +315,7 @@ public class PlayerService extends Service {
         if (listName.equals(this.listName))
             return;
         else {
-            songList = SongProvider.getSongListByName(this, listName);
+            songList = SongProvider.getSongListByName(listName);
             this.listName = listName;
         }
     }

@@ -95,11 +95,11 @@ public class Home1 extends Fragment {
         // Inflate the layout for this fragment
         View root =  inflater.inflate(R.layout.fragment_home1, container, false);
         this.root = root;
-        dbMgr = new DBManager(getActivity());
+        dbMgr = new DBManager();
         findViewsById();
         setClickListener();
 
-        countAdapter = new CountAdapter(getActivity());
+        countAdapter = new CountAdapter();
         countList.setAdapter(countAdapter);
         ptrFrame.setPtrHandler(new PtrHandler() {
             @Override
@@ -276,7 +276,7 @@ public class Home1 extends Fragment {
                     currentSongId = intent.getLongExtra("songId", 0); // Current Song Id
                     isPlay = isPlayFromSevice;
 
-                    Song temp = SongProvider.getSongById(currentSongId, getActivity());
+                    Song temp = SongProvider.getSongById(currentSongId);
                     Log.e(TAG, "context == null ? " + Boolean.toString(getActivity() == null));
                     playingPhoto.setImageBitmap(SongProvider.getArtwork(getActivity(), temp.getId(), temp.getAlbumId(), false, false));
                     playingArtist.setText(temp.getArtist());
@@ -300,7 +300,7 @@ public class Home1 extends Fragment {
         }
     }
     private void updateWaveBar(int currentTime) {
-        Song temp = SongProvider.getSongById(currentSongId, getActivity());
+        Song temp = SongProvider.getSongById(currentSongId);
         if (temp != null) {
             int duration = temp.getDuration();
             int progress = currentTime*100/duration;
