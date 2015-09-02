@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
 import android.net.Uri;
@@ -78,6 +79,9 @@ public class Home1 extends Fragment {
     };
     private HomeReceiver homeReceiver;
     private CountAdapter countAdapter;
+    private String listName = Constants.ListName.LIST_ALL;
+    private int current = 0;
+    private int currentTime = 0;
 
 
     public Home1() {
@@ -98,6 +102,13 @@ public class Home1 extends Fragment {
         dbMgr = new DBManager();
         findViewsById();
         setClickListener();
+
+        //test
+        SharedPreferences sharedPref = getActivity().getSharedPreferences(
+                Constants.Preferences.PREFERENCES_KEY, Context.MODE_PRIVATE);
+        listName = sharedPref.getString("lastListName", Constants.ListName.LIST_ALL);
+        current = sharedPref.getInt("lastCurrent", 0);
+        currentTime = sharedPref.getInt("lastCurrentTime", 0);
 
         countAdapter = new CountAdapter();
         countList.setAdapter(countAdapter);
@@ -166,6 +177,16 @@ public class Home1 extends Fragment {
             public void onGlobalLayout() {
                 playingPhoto.getViewTreeObserver().removeGlobalOnLayoutListener(this);
                 /*
+                 * Init Service
+                 */
+                Intent intentInitService = new Intent();
+                intentInitService.setAction("com.badprinter.yobey.service.PLAYER_SERVICE");
+                intentInitService.putExtra("controlMsg", Constants.PlayerControl.INIT_SERVICE);
+                intentInitService.putExtra("listName", listName);
+                intentInitService.putExtra("current", current);
+                getActivity().startService(intentInitService);
+
+                /*
                  * Init the Bottom Control Area
                  */
                 Intent intent = new Intent();
@@ -183,9 +204,16 @@ public class Home1 extends Fragment {
     }
     @Override
     public void onDetach() {
+        //test
+        SharedPreferences sharedPref = getActivity().getSharedPreferences(
+                Constants.Preferences.PREFERENCES_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("lastListName", listName);
+        editor.putInt("lastCurrent", current);
+        editor.commit();
+
         getActivity().unregisterReceiver(homeReceiver);
         super.onDetach();
-
     }
 
     /*
@@ -287,9 +315,13 @@ public class Home1 extends Fragment {
                     } else {
                         playDrawableAnim(playBt, 1, animPlay);
                     }
+                    //test
+                    listName = intent.getStringExtra("listName");
+                    current = intent.getIntExtra("current", 0);
+
                     break;
                 case Constants.UiControl.UPDATE_CURRENT:
-                    int currentTime = intent.getExtras().getInt("currentTime");
+                    currentTime = intent.getExtras().getInt("currentTime");
                     updateWaveBar(currentTime);
                     break;
                 default:

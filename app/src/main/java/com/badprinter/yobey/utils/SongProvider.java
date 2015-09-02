@@ -43,7 +43,7 @@ public class SongProvider {
     private static List<Song> songList = null;
     private static List<Artist> artistList = null;
     private static Map<Long, Song> songIdMap;
-    private static Map<String, Integer> artistMap;
+    private static Map<String, Artist> artistMap;
     private static DBManager dbMgr;
     private static Context context = AppContext.getInstance();
 
@@ -97,9 +97,9 @@ public class SongProvider {
                     Artist artistItem = new Artist(artist);
                     artistItem.addSong(newSong);
                     artistList.add(artistItem);
-                    artistMap.put(artist, artistList.size()-1);
+                    artistMap.put(artist, artistItem);
                 } else {
-                    artistList.get(artistMap.get(artist)).addSong(newSong);
+                    artistMap.get(artist).addSong(newSong);
                 }
             }
             cursor.close();
@@ -116,7 +116,7 @@ public class SongProvider {
             getSongList();
         }
         //List<Song> songListOfArtist = new ArrayList<Song>();
-        Artist temp = artistList.get(artistMap.get(artist));
+        Artist temp = artistMap.get(artist);
         return temp.getSongListOfArtist();
     }
     /*

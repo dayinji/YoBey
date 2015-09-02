@@ -76,10 +76,15 @@ public class PlayerService extends Service {
             @Override
             public void handleMessage(Message msg) {
                 if (msg.what == 1) {
-                    Intent sendIntent = new Intent(Constants.UiControl.UPDATE_CURRENT);
-                    currentTime = player.getCurrentPosition();
-                    sendIntent.putExtra("currentTime", currentTime);
-                    sendBroadcast(sendIntent);
+                    try {
+                        Intent sendIntent = new Intent(Constants.UiControl.UPDATE_CURRENT);
+                        currentTime = player.getCurrentPosition();
+                        sendIntent.putExtra("currentTime", currentTime);
+                        sendBroadcast(sendIntent);
+                    } catch (NullPointerException e) {
+                        e.printStackTrace();
+                        Log.e(TAG, "Player has destory!");
+                    }
                 }
             }
         };
@@ -140,6 +145,13 @@ public class PlayerService extends Service {
             case Constants.PlayerControl.CHANGE_LIST:
                 changeList(intent.getExtras().getString("listName"));
                 return START_STICKY;
+            case Constants.PlayerControl.INIT_SERVICE:
+                changeList(intent.getExtras().getString("listName"));
+                current = intent.getExtras().getInt("current");
+                Log.e(TAG, "listName = " + listName);
+                Log.e(TAG, "file = " + songList.get(current).getFileName());
+                init();
+                return START_STICKY;
             default:
                 break;
         }
@@ -172,6 +184,7 @@ public class PlayerService extends Service {
 
     private void init() {
         try {
+            player.reset();
             player.setDataSource(songList.get(current).getFileName());
             player.prepare();
             duration = songList.get(current).getDuration();

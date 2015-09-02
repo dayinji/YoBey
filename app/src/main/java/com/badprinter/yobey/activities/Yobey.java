@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.drawable.Drawable;
 import android.support.v4.app.Fragment;
@@ -28,6 +29,7 @@ import com.badprinter.yobey.customviews.DragView;
 import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.fragments.Home1;
 import com.badprinter.yobey.fragments.Lists;
+import com.badprinter.yobey.fragments.Settings;
 import com.badprinter.yobey.models.Artist;
 import com.badprinter.yobey.service.PlayerService;
 
@@ -55,7 +57,7 @@ public class Yobey extends Base {
     private Home1 home;
     private Lists lists;
     private com.badprinter.yobey.fragments.Artist artist;
-    private Lists lists2;
+    private Settings settings;
 
     private Drawable homeDrawableWhite;
     private Drawable listDrawableWhite;
@@ -159,13 +161,13 @@ public class Yobey extends Base {
         home = new Home1();
         lists = new Lists();
         artist = new com.badprinter.yobey.fragments.Artist();
-        lists2 = new Lists();
+        settings = new Settings();
 
         List<Fragment> list = new ArrayList<>();
         list.add(home);
         list.add(lists);
         list.add(artist);
-        list.add(lists2);
+        list.add(settings);
         pager.setAdapter(new MyPagerAdapter(getSupportFragmentManager(), list));
         pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override

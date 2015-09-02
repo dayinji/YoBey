@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.app.ActionBarActivity;
@@ -124,6 +125,12 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
         Intent intent = new Intent(Home.this, PlayerService.class);
         stopService(intent);
         unregisterReceiver(homeReceiver);
+        //test
+        SharedPreferences sharedPref = getSharedPreferences(
+                Constants.Preferences.PREFERENCES_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt("lastId", 1);
+        editor.commit();
         super.onDestroy();
     }
 

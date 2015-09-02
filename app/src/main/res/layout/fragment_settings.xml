@@ -1,0 +1,84 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:slideswitch="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.badprinter.yobey.fragments.Settings"
+    android:orientation="vertical"
+    android:background="@color/qianbai"
+    android:divider="?android:attr/dividerHorizontal"
+    android:showDividers="middle"
+    android:dividerPadding="10dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <ImageView
+            android:id="@+id/nightIcon"
+            style="@style/settingIconStyle"
+            android:src="@drawable/night"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <ImageView
+            android:id="@+id/colorIcon"
+            style="@style/settingIconStyle"
+            android:src="@drawable/color"/>
+        <com.leaking.slideswitch.SlideSwitch
+            android:id="@+id/colorSwith"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="20dp"
+            android:layout_width="70dp"
+            android:layout_height="35dp"
+            slideswitch:isOpen="false"
+            slideswitch:shape="rect"
+            slideswitch:themeColor="@color/qingse" >
+        </com.leaking.slideswitch.SlideSwitch>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <ImageView
+            android:id="@+id/adjustIcon"
+            style="@style/settingIconStyle"
+            android:src="@drawable/adjust"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <ImageView
+            android:id="@+id/wifiIcon"
+            style="@style/settingIconStyle"
+            android:src="@drawable/wifi"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <ImageView
+            android:id="@+id/aboutIcon"
+            style="@style/settingIconStyle"
+            android:src="@drawable/about"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <ImageView
+            android:id="@+id/exitIcon"
+            style="@style/settingIconStyle"
+            android:src="@drawable/exit"/>
+    </RelativeLayout>
+
+</LinearLayout>
