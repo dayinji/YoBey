@@ -51,5 +51,42 @@
         <item name="android:background">@color/qingse</item>
     </style>.
 
+    <!--Settings Ripple Style-->
+    <style name="settingRippleStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_centerInParent">true</item>
+        <item name="android:background">@color/qianbai</item>
+        <item name="alphaFactor">0.7</item>
+        <item name="rippleColor">@color/qingse</item>
+        <item name="hover">true</item>
+    </style>.
+    <!--Settings Title Style-->
+    <style name="settingTiteStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">@dimen/font_large</item>
+        <item name="android:textColor">@color/qingse</item>
+    </style>.
+    <!--Settings Detail Style-->
+    <style name="settingDetailStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_centerVertical">true</item>
+        <item name="android:textSize">@dimen/font_small</item>
+        <item name="android:textColor">@color/qianhui</item>
+        <item name="android:layout_marginTop">3dp</item>
+    </style>.
+
+    <!--Settings Night_TextView Style-->
+    <style name="settingsNightButtonStyle">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:padding">20dp</item>
+        <item name="android:background">@color/qianbai</item>
+        <item name="android:textColor">@color/qingse</item>
+        <item name="android:textSize">@dimen/font_medium</item>
+    </style>
+
 
 </resources>

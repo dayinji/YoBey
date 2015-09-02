@@ -107,26 +107,29 @@ public class Yobey extends Base {
                         dragView.setAnimation(0);
                         pager.setCurrentItem(0, true);
                         setWhiteText(tab_home, 0);
+                        Log.e(TAG, "homeTab");
                         break;
                     case R.id.listTab:
                         dragView.setAnimation(1);
                         pager.setCurrentItem(1, true);
                         setWhiteText(tab_list, 1);
+                        Log.e(TAG, "listTab");
                         break;
                     case R.id.artistTab:
                         dragView.setAnimation(2);
                         pager.setCurrentItem(2, true);
                         setWhiteText(tab_artist, 2);
+                        Log.e(TAG, "artistTab");
                         break;
                     case R.id.playerTab:
                         dragView.setAnimation(3);
                         pager.setCurrentItem(3, true);
                         setWhiteText(tab_player, 3);
+                        Log.e(TAG, "playerTab");
                         break;
                     default:
                         break;
                 }
-                //updateFragment(checkedId);
             }
         });
     }
@@ -178,6 +181,7 @@ public class Yobey extends Base {
             @Override
             public void onPageSelected(int position) {
                 dragView.setAnimation(position);
+                tabs.check(position);
                 RadioButton[] tabs = {tab_home, tab_list, tab_artist, tab_player};
                 setWhiteText(tabs[position], position);
             }
@@ -206,36 +210,6 @@ public class Yobey extends Base {
         tab.setCompoundDrawables(null, temps[position], null, null);
 
     }
-    /*private void updateFragment(int id) {
-        fragmentManager = getFragmentManager();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        Fragment fragment;
-        switch (id) {
-            case R.id.homeTab:
-                if (home == null) {
-                    home = new Home1();
-                    Log.e(TAG, "new Home");
-                }
-                Log.e(TAG, "old Home");
-                fragment  = home;
-                break;
-            case R.id.listTab:
-                if (lists == null)
-                    lists = new Lists();
-                fragment  = lists;
-                break;
-            case R.id.artistTab:
-            case R.id.playerTab:
-            default:
-                if (home == null)
-                    home = new Home1();
-                fragment  = home;
-                break;
-        }
-        transaction.setCustomAnimations(R.anim.enter, R.anim.exit);
-        transaction.replace(R.id.frameLayout, fragment);
-        transaction.commit();
-    }*/
     @Override
     public void onDestroy() {
         Intent intent = new Intent(Yobey.this, PlayerService.class);

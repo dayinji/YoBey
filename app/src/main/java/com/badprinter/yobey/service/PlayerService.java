@@ -81,7 +81,7 @@ public class PlayerService extends Service {
                         currentTime = player.getCurrentPosition();
                         sendIntent.putExtra("currentTime", currentTime);
                         sendBroadcast(sendIntent);
-                    } catch (NullPointerException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                         Log.e(TAG, "Player has destory!");
                     }

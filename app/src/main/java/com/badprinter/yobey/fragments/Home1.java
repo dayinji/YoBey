@@ -204,7 +204,7 @@ public class Home1 extends Fragment {
     }
     @Override
     public void onDetach() {
-        //test
+        // Save the Last Info of Player
         SharedPreferences sharedPref = getActivity().getSharedPreferences(
                 Constants.Preferences.PREFERENCES_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();

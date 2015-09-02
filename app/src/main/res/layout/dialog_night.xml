@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <Button
+        android:id="@+id/nightCloseBt"
+        android:text="关闭"
+        style="@style/settingsNightButtonStyle" />
+    <Button
+        android:id="@+id/nightMins10Bt"
+        android:text="10 mins"
+        style="@style/settingsNightButtonStyle" />
+    <Button
+        android:id="@+id/nightMins20Bt"
+        android:text="20 mins"
+        style="@style/settingsNightButtonStyle" />
+    <Button
+        android:id="@+id/nightMins30Bt"
+        android:text="30 mins"
+        style="@style/settingsNightButtonStyle" />
+    <Button
+        android:id="@+id/nightMins45Bt"
+        android:text="45 mins"
+        style="@style/settingsNightButtonStyle" />
+    <Button
+        android:id="@+id/nightMins60Bt"
+        android:text="60 mins"
+        style="@style/settingsNightButtonStyle" />
+    <Button
+        android:id="@+id/nightMins90Bt"
+        android:text="90 mins"
+        style="@style/settingsNightButtonStyle" />
+
+</LinearLayout>
