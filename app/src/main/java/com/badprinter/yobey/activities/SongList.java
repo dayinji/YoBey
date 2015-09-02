@@ -4,7 +4,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.drawable.AnimationDrawable;
+import android.nfc.Tag;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,7 +28,16 @@ import com.badprinter.yobey.service.PlayerService;
 import com.badprinter.yobey.utils.SongProvider;
 import com.twotoasters.jazzylistview.JazzyListView;
 import com.twotoasters.jazzylistview.effects.CardsEffect;
+import com.twotoasters.jazzylistview.effects.CurlEffect;
+import com.twotoasters.jazzylistview.effects.FadeEffect;
+import com.twotoasters.jazzylistview.effects.FanEffect;
+import com.twotoasters.jazzylistview.effects.FlipEffect;
+import com.twotoasters.jazzylistview.effects.FlyEffect;
+import com.twotoasters.jazzylistview.effects.GrowEffect;
+import com.twotoasters.jazzylistview.effects.HelixEffect;
+import com.twotoasters.jazzylistview.effects.ReverseFlyEffect;
 import com.twotoasters.jazzylistview.effects.SlideInEffect;
+import com.twotoasters.jazzylistview.effects.StandardEffect;
 import com.yalantis.phoenix.PullToRefreshView;
 
 import java.util.ArrayList;
@@ -92,32 +103,29 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
         updateListIntent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_LIST);
         startService(updateListIntent);
 
-        mySongListAdapter = new SongListAdapter(songList, currentSongId);
+        mySongListAdapter = new SongListAdapter(songList, currentSongId, listName);
         songListView.setAdapter(mySongListAdapter);
         songListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Intent for Changing SongList
-                Intent changeListIntent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
-                changeListIntent.putExtra("controlMsg", Constants.PlayerControl.CHANGE_LIST);
-                changeListIntent.putExtra("listName", listName);
-                startService(changeListIntent);
-                // Intent for Playing Music
-                Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
-                intent.putExtra("controlMsg", Constants.PlayerControl.PLAYING_MSG);
-                intent.putExtra("current", position);
-                intent.putExtra("currenTime", 0);
-                isFirstTime = false;
-                startService(intent);
-
 
             }
         });
-        songListView.setTransitionEffect(new CardsEffect());
-        //Song temp = songList.get(current);
-        //playingPhoto.setImageBitmap(SongProvider.getArtwork(SongList.this, temp.getId(), temp.getAlbumId(), false, true));
-
-
+        // Get Anim Preference
+        SharedPreferences pre = getSharedPreferences(
+                Constants.Preferences.PREFERENCES_KEY, Context.MODE_PRIVATE);
+        int animMode = pre.getInt(Constants.Preferences.PREFERENCES_LIST_ANIM, 0);
+        if (animMode == 0)
+            songListView.setTransitionEffect(new StandardEffect());
+        else if (animMode == 1)
+            songListView.setTransitionEffect(new CardsEffect());
+        else if (animMode == 2)
+            songListView.setTransitionEffect(new SlideInEffect());
+        else if (animMode == 3)
+            songListView.setTransitionEffect(new FlipEffect());
+        else if (animMode == 4)
+            songListView.setTransitionEffect(new FlyEffect());
+        Log.e(TAG, "animMode = " + animMode);
         listReceiver = new ListReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.UiControl.UPDATE_UI);

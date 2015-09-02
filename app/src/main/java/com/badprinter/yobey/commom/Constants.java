@@ -33,7 +33,7 @@ public class Constants {
         public static final String PREFERENCES_KEY = "com.badprinter.yobey.PREFERENCE_FILE_KEY";
 
         public static final String PREFERENCES_WIFI = "com.badprinter.yobey.PREFERENCES_WIFI";
-        public static final String PREFERENCES_COLOR = "com.badprinter.yobey.PREFERENCES_COLOR";
+        public static final String PREFERENCES_LIST_ANIM = "com.badprinter.yobey.PREFERENCES_LIST_ANIM";
         public static final String PREFERENCES_ADJUST = "com.badprinter.yobey.PREFERENCES_ADJUST";
         public static final String PREFERENCES_NIGHT = "com.badprinter.yobey.PREFERENCES_NIGHT";
     }

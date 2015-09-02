@@ -134,14 +134,13 @@ public class ArtistAdapter extends BaseAdapter {
     }
 
     private class Holder {
-        RippleView ripple;
-        TextView artistName;
-        RelativeLayout root;
-        ImageView enterIcon;
-        ImageView artistCata;
-        ValueAnimator zoomOutAnim;
-        ValueAnimator zoomInAnim;
-
+        public RippleView ripple;
+        public TextView artistName;
+        public RelativeLayout root;
+        public ImageView enterIcon;
+        public ImageView artistCata;
+        public ValueAnimator zoomOutAnim;
+        public ValueAnimator zoomInAnim;
     }
     // Start List Activiy
     private void startList(final String artistName) {

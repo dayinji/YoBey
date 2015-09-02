@@ -4,9 +4,12 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,10 +26,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.badprinter.yobey.R;
+import com.badprinter.yobey.activities.SongList;
 import com.badprinter.yobey.commom.AppContext;
+import com.badprinter.yobey.commom.Constants;
+import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.models.Song;
 import com.badprinter.yobey.utils.MyEvalucatorUtil;
 import com.badprinter.yobey.utils.SongProvider;
+import com.indris.material.RippleView;
 
 import org.w3c.dom.Text;
 
@@ -40,21 +47,19 @@ public class SongListAdapter extends BaseAdapter {
     private List<Song> songList;
     private int current = 0;
     private long currentSongId = 0;
-    private Map<View, Integer> viewsPosition = new HashMap<>();
-    private ArrayList<View> views;
-    private Bitmap replace = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    private Drawable greyDrawable;
+    private Drawable qingseDrawable;
     private Context context = AppContext.getInstance();
+    private DBManager dbMgr;
+    private String listName;
 
-    public SongListAdapter(List<Song> songList, Long currentSongId) {
+    public SongListAdapter(List<Song> songList, Long currentSongId, String listName) {
         this.songList = songList;
         this.currentSongId = currentSongId;
-        views = new ArrayList<View>();
-
-
-        /*
-         * Test the memory
-         */
-        System.out.println(TAG + " List : " + this.songList);
+        this.dbMgr = new DBManager();
+        this.listName = listName;
+        this.greyDrawable = context.getResources().getDrawable(R.drawable.like_grey);
+        this.qingseDrawable = context.getResources().getDrawable(R.drawable.like_qingse);
     }
 
     @Override
@@ -73,8 +78,8 @@ public class SongListAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ListItemViewHolder holder;
+    public View getView(final int position, View convertView, ViewGroup parent) {
+        final ListItemViewHolder holder;
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.song_list_item, null);
             holder = new ListItemViewHolder();
@@ -82,63 +87,49 @@ public class SongListAdapter extends BaseAdapter {
             //.songPhoto = (ImageView) convertView.findViewById(R.id.songPhoto);
             holder.songName = (TextView) convertView.findViewById(R.id.songName);
             holder.songArtist = (TextView) convertView.findViewById(R.id.songArtist);
-            holder.playingLayout = (FrameLayout) convertView.findViewById(R.id.playingLayout);
-            holder.playingPhoto = (ImageView) convertView.findViewById(R.id.playingPhoto);
-            holder.playingName = (TextView) convertView.findViewById(R.id.playingName);
-            holder.playingArtist = (TextView) convertView.findViewById(R.id.playingArtist);
-            holder.normalLayout = (LinearLayout) convertView.findViewById(R.id.normalLayout);
-            //holder.blackBar = (ImageView) convertView.findViewById(R.id.blackBar);
-            holder.letter = (TextView) convertView.findViewById(R.id.letter);
+            holder.songCata = (ImageView)convertView.findViewById(R.id.songCata);
+            holder.ripple = (RippleView)convertView.findViewById(R.id.rippleView);
 
             convertView.setTag(holder);
-            //Typeface type = Typeface.createFromAsset(context.getAssets(),"fonts/微软简标宋.ttf");
-            //holder.songName.setTypeface(type);
-
-            views.add(convertView);
 
         } else {
             holder = (ListItemViewHolder) convertView.getTag();
         }
 
-        /*
-         * Once you click a item and slide up or dowm very quickly,
-         * The same convertView carries different songInfo may play the animation not belongs to it!
-         * The below statement deals with it!
-         */
-        clearAnim(holder);
-
-        Song temp = songList.get(position);
+        final Song temp = songList.get(position);
         holder.songName.setText(temp.getName());
         holder.songArtist.setText(temp.getArtist());
-        //holder.songPhoto.setImageBitmap(temp.getPhoto());
-        //holder.songPhoto.setImageBitmap(SongProvider.getArtwork(context, temp.getId(), temp.getAlbumId(), false, true));
-        holder.playingName.setText(temp.getName());
-        holder.playingArtist.setText(temp.getArtist());
-        holder.letter.setText(temp.getPinyin().substring(0, 1));
-        //holder.playingPhoto.setImageBitmap(temp.getPhoto());
-        //holder.playingPhoto.setImageBitmap(SongProvider.getArtwork(context, temp.getId(), temp.getAlbumId(), false, false));
-
-        if (position != getPositionByLetter(getLetterByPosition(position))) {
-            holder.letter.setVisibility(View.GONE);
+        if (dbMgr.isFavorite(temp)) {
+            holder.songCata.setImageDrawable(qingseDrawable);
         } else {
-            holder.letter.setVisibility(View.VISIBLE);
+            holder.songCata.setImageDrawable(greyDrawable);
         }
+        holder.songCata.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (dbMgr.isFavorite(temp)) {
+                    dbMgr.deleteFromFavorite(temp);
+                    clearAnim(holder);
+                    startAnim(holder, greyDrawable);
+                } else {
+                    dbMgr.addToFavorite(temp);
+                    clearAnim(holder);
+                    startAnim(holder, qingseDrawable);
+                }
+            }
+        });
+        holder.ripple.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startPlayMusic(position);
+            }
+        });
+
         if (songList.get(position).getId() == currentSongId) {
-            holder.playingPhoto.setImageBitmap(SongProvider.getArtwork(context, temp.getId(), temp.getAlbumId(), false, false));
-            LinearLayout normal = (LinearLayout) convertView.findViewById(R.id.normalLayout);
-            normal.setAlpha(0);
-            FrameLayout playing = (FrameLayout) convertView.findViewById(R.id.playingLayout);
-            playing.setAlpha(1);
+            // do something
         } else {
-            LinearLayout normal = (LinearLayout) convertView.findViewById(R.id.normalLayout);
-            normal.setAlpha(1);
-            normal.setRotationY(0f);
-            FrameLayout playing = (FrameLayout) convertView.findViewById(R.id.playingLayout);
-            playing.setAlpha(0);
+            // do something
         }
-
-        // Save the convertView and Position
-        viewsPosition.put(convertView, position);
 
         return convertView;
     }
@@ -167,9 +158,6 @@ public class SongListAdapter extends BaseAdapter {
         if (end < start)
             return -1;
         int middle = (end + start)/2;
-        //Log.e(TAG, "start = "+ start);
-        //Log.e(TAG, "end = "+ end);
-        //Log.e(TAG, "middle = "+ middle);
         char[] pinyin = songList.get(middle).getPinyin().toCharArray();
         if (pinyin[0] > letter) {
             return findByBinarySearch(start, middle - 1, letter);
@@ -185,114 +173,81 @@ public class SongListAdapter extends BaseAdapter {
      * For Holder the Views of ListItem
      */
     public class ListItemViewHolder {
-        //public ImageView songPhoto;    // Album photo
-        public TextView songName;        // Song name
-        public TextView songArtist;    // Song Artist
-        public FrameLayout playingLayout;
-        public ImageView playingPhoto;    // Album photo
-        public TextView playingName;        // Song name
-        public TextView playingArtist;    // Song Artist
-        public LinearLayout normalLayout;
-        //public ImageView blackBar;
-        public TextView letter;
-        public ValueAnimator normalAnim = null;
-        public ValueAnimator playingAnim1 = null;
-        public ValueAnimator playingAnim2 = null;
-
+        public TextView songName;
+        public TextView songArtist;
+        public ImageView songCata;
+        private RippleView ripple;
+        public ValueAnimator zoomOutAnim;
+        public ValueAnimator zoomInAnim;
     }
 
     public void updateItem(Long currentSongId) {
         long last = this.currentSongId;
         this.currentSongId = currentSongId;
         if (currentSongId != last) {
-            for (int i = 0; i < views.size(); i++) {
-                View temp = views.get(i);
-                int position = viewsPosition.get(temp);
-                if (songList.get(position).getId() == last) {
-                    ListItemViewHolder holder = (ListItemViewHolder) temp.getTag();
-                    turnToNormal(holder);
-                }
-                if (songList.get(position).getId() == currentSongId) {
-                    ListItemViewHolder holder = (ListItemViewHolder) temp.getTag();
-                    turnToPlaying(holder);
-                }
-            }
+
         }
     }
 
-    private void turnToNormal(final ListItemViewHolder holder) {
-        clearAnim(holder);
-        holder.normalLayout.setRotationY(0f);
-        holder.normalAnim = ValueAnimator.ofFloat(0f, 1f);
-        holder.normalAnim.setDuration(500);
-        holder.normalAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                holder.normalLayout.setAlpha((float) animation.getAnimatedValue());
-                holder.playingLayout.setAlpha(1 - (float) animation.getAnimatedValue());
-            }
-        });
-        /*
-         * When PlayingLayout's Alpha trun to 0, recycle the Bitmap
-         */
-        holder.normalAnim.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                Bitmap temp = ((BitmapDrawable) holder.playingPhoto.getDrawable()).getBitmap();
-                holder.playingPhoto.setImageBitmap(replace);
-                if (temp != null && !temp.isRecycled())
-                    temp.recycle();
-            }
-        });
-        holder.normalAnim.start();
+
+    private void clearAnim(ListItemViewHolder holder) {
+        if (holder.zoomOutAnim != null && holder.zoomOutAnim.isRunning())
+            holder.zoomOutAnim.end();
+        if (holder.zoomInAnim != null && holder.zoomInAnim.isRunning())
+            holder.zoomInAnim.end();
     }
 
-    private void turnToPlaying(final ListItemViewHolder holder) {
-        Song temp = SongProvider.getSongById(currentSongId);
-        holder.playingPhoto.setImageBitmap(SongProvider.getArtwork(context, temp.getId(), temp.getAlbumId(), false, false));
-        //Log.d(TAG, "y = " + holder.normalLayout.getRotationY());
-        holder.playingLayout.setRotationY(-90f);
-        clearAnim(holder);
-        holder.playingAnim1 = ValueAnimator.ofFloat(0f, 1f);
-        holder.playingAnim1.setDuration(350);
-        holder.playingAnim1.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+    private void startAnim(final ListItemViewHolder holder, final Drawable drawable) {
+        holder.zoomOutAnim = ValueAnimator.ofFloat(1, 0).setDuration(100);
+        holder.zoomOutAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                holder.normalLayout.setRotationY(90 * (float) animation.getAnimatedValue());
+                float f = (float)animation.getAnimatedValue();
+                holder.songCata.setScaleX(f);
+                holder.songCata.setScaleY(f);
             }
         });
-        holder.playingAnim1.addListener(new AnimatorListenerAdapter() {
+        holder.zoomInAnim = ValueAnimator.ofFloat(0, 1).setDuration(2000);
+        holder.zoomInAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
-            public void onAnimationEnd(Animator animation) {
-                holder.playingLayout.setAlpha(1);
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float f = (float) animation.getAnimatedValue();
+                holder.songCata.setScaleX(f);
+                holder.songCata.setScaleY(f);
             }
         });
-        holder.playingAnim2 = ValueAnimator.ofFloat(1f, 0f);
-        holder.playingAnim2.setDuration(2000);
         MyEvalucatorUtil.JellyFloatAnim jelly = new MyEvalucatorUtil.JellyFloatAnim();
         jelly.setDuration(2000);
-        jelly.setFirstTime(180);
-        holder.playingAnim2.setEvaluator(jelly);
-        holder.playingAnim2.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        jelly.setFirstTime(100);
+        jelly.setAmp(0.03);
+        holder.zoomInAnim.setEvaluator(jelly);
+        holder.zoomOutAnim.addListener(new AnimatorListenerAdapter() {
             @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                holder.playingLayout.setRotationY(-90 * (float) animation.getAnimatedValue());
+            public void onAnimationEnd(Animator animation) {
+                holder.songCata.setImageDrawable(drawable);
+                holder.zoomInAnim.start();
             }
         });
-        holder.playingAnim2.setStartDelay(350);
-        holder.playingAnim2.start();
-        holder.playingAnim1.start();
-
-        //Init BlackBar Xpos
-        //holder.blackBar.setX(0);
+        holder.zoomOutAnim.start();
     }
 
-    private void clearAnim(final ListItemViewHolder holder) {
-        if (holder.normalAnim != null && holder.normalAnim.isRunning())
-            holder.normalAnim.end();
-        if (holder.playingAnim1 != null && holder.playingAnim1.isRunning())
-            holder.playingAnim1.end();
-        if (holder.playingAnim2 != null && holder.playingAnim2.isRunning())
-            holder.playingAnim2.end();
+    private void startPlayMusic(final int position) {
+        Handler handlerTimer = new Handler();
+        handlerTimer.postDelayed(new Runnable() {
+            public void run() {
+                // Intent for Changing SongList
+                Intent changeListIntent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+                changeListIntent.putExtra("controlMsg", Constants.PlayerControl.CHANGE_LIST);
+                changeListIntent.putExtra("listName", listName);
+                context.startService(changeListIntent);
+                // Intent for Playing Music
+                Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+                intent.putExtra("controlMsg", Constants.PlayerControl.PLAYING_MSG);
+                intent.putExtra("current", position);
+                intent.putExtra("currenTime", 0);
+                context.startService(intent);
+            }
+        }, 500);
     }
+
 }

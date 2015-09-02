@@ -65,7 +65,7 @@
     <style name="settingTiteStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textSize">@dimen/font_large</item>
+        <item name="android:textSize">@dimen/font_medium</item>
         <item name="android:textColor">@color/qingse</item>
     </style>.
     <!--Settings Detail Style-->

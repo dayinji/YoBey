@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.badprinter.yobey.R;
 import com.badprinter.yobey.activities.SongList;
@@ -45,6 +46,8 @@ public class Settings extends Fragment implements View.OnClickListener{
     private AlertDialog exitAlert;
     private RippleView nightRipple;
     private AlertDialog nightAlert;
+    private RippleView listAnimRipple;
+    private AlertDialog listAnimAlert;
     private Timer timer;
     private int nightMode = 0;
     private int nightTime = -1;
@@ -104,7 +107,7 @@ public class Settings extends Fragment implements View.OnClickListener{
 
     private void finViewsById() {
         icons[0] = (ImageView)root.findViewById(R.id.nightIcon);
-        icons[1] = (ImageView)root.findViewById(R.id.colorIcon);
+        icons[1] = (ImageView)root.findViewById(R.id.listAnimIcon);
         icons[2] = (ImageView)root.findViewById(R.id.adjustIcon);
         icons[3] = (ImageView)root.findViewById(R.id.wifiIcon);
         icons[4] = (ImageView)root.findViewById(R.id.aboutIcon);
@@ -113,6 +116,7 @@ public class Settings extends Fragment implements View.OnClickListener{
         exitRipple = (RippleView)root.findViewById(R.id.exitRipple);
         nightRipple = (RippleView)root.findViewById(R.id.nightRipple);
         countdown = (TextView)root.findViewById(R.id.countdown);
+        listAnimRipple = (RippleView)root.findViewById(R.id.listAnimRipple);
     }
     private void initIcons() {
         for (int i = 0 ; i < icons.length ; i++) {
@@ -142,6 +146,7 @@ public class Settings extends Fragment implements View.OnClickListener{
         });
         exitRipple.setOnClickListener(this);
         nightRipple.setOnClickListener(this);
+        listAnimRipple.setOnClickListener(this);
     }
     @Override
     public void onClick(View view) {
@@ -166,6 +171,17 @@ public class Settings extends Fragment implements View.OnClickListener{
                 };
                 delayRun(nightRun, 500);
                 break;
+            case R.id.listAnimRipple:
+                listAnimRipple.setClickable(false);
+                Runnable listAnimRun = new Runnable() {
+                    public void run() {
+                        showlistAnimDialog();
+                        listAnimRipple.setClickable(true);
+                    }
+                };
+                delayRun(listAnimRun, 500);
+                break;
+
             case R.id.exitYesBt:
                 Button exitYesBt = (Button)exitAlert.findViewById(R.id.exitYesBt);
                 exitYesBt.setBackgroundColor(getResources().getColor(R.color.qingse));
@@ -207,10 +223,10 @@ public class Settings extends Fragment implements View.OnClickListener{
                 Button lastBt = (Button)nightAlert.findViewById(btIds.get(nightMode));
                 Button selectedBt = (Button)nightAlert.findViewById(view.getId());
                 // Change Color
-                selectedBt.setBackgroundColor(getResources().getColor(R.color.qingse));
-                selectedBt.setTextColor(getResources().getColor(R.color.baise));
                 lastBt.setBackgroundColor(getResources().getColor(R.color.baise));
                 lastBt.setTextColor(getResources().getColor(R.color.qingse));
+                selectedBt.setBackgroundColor(getResources().getColor(R.color.qingse));
+                selectedBt.setTextColor(getResources().getColor(R.color.baise));
                 // Reset nightTime And nightMode
                 int[] nightTimes = {-1, 10*60, 20*60, 30*60, 45*60, 60*60, 90*60};
                 nightMode = btIds.indexOf(view.getId());
@@ -219,10 +235,51 @@ public class Settings extends Fragment implements View.OnClickListener{
                 Runnable nightDismissRun = new Runnable() {
                     public void run() {
                         nightAlert.dismiss();
+                        int[] temp = {-1, 10, 20, 30, 45, 60, 90};
+                        if (nightMode == 0)
+                            Toast.makeText(getActivity(), "关闭睡眠模式", Toast.LENGTH_SHORT).show();
+                        else
+                            Toast.makeText(getActivity(), temp[nightMode] + "分钟后关闭YoBey", Toast.LENGTH_SHORT).show();
+
                     }
                 };
                 delayRun(nightDismissRun, 50);
                 break;
+            case R.id.listAnimCardBt:
+            case R.id.listAnimFlipBt:
+            case R.id.listAnimFlyBt:
+            case R.id.listAnimSlideBt:
+            case R.id.listAnimStandardBt:
+                // Get sharedPref's currentListAnimIndex
+                int lastListAnimIndex = sharedPref.getInt(Constants.Preferences.PREFERENCES_LIST_ANIM, 0);
+                ArrayList<Integer>listAnimBtIds = new ArrayList<>();
+                listAnimBtIds.add(R.id.listAnimStandardBt);
+                listAnimBtIds.add(R.id.listAnimCardBt);
+                listAnimBtIds.add(R.id.listAnimSlideBt);
+                listAnimBtIds.add(R.id.listAnimFlipBt);
+                listAnimBtIds.add(R.id.listAnimFlyBt);
+                int currentListAnimIndex = listAnimBtIds.indexOf(view.getId());
+                Button lastListAnimBt = (Button)listAnimAlert.findViewById(listAnimBtIds.get(lastListAnimIndex));
+                final Button currentListAnimBt = (Button)listAnimAlert.findViewById(view.getId());
+                // Change Color
+                lastListAnimBt.setBackgroundColor(getResources().getColor(R.color.baise));
+                lastListAnimBt.setTextColor(getResources().getColor(R.color.qingse));
+                currentListAnimBt.setBackgroundColor(getResources().getColor(R.color.qingse));
+                currentListAnimBt.setTextColor(getResources().getColor(R.color.baise));
+                // Save
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putInt(Constants.Preferences.PREFERENCES_LIST_ANIM, currentListAnimIndex);
+                editor.commit();
+                
+                Runnable listNameDismissRun = new Runnable() {
+                    public void run() {
+                        listAnimAlert.dismiss();
+                        String info = currentListAnimBt.getText().toString() + "动效";
+                        Toast.makeText(getActivity(), info, Toast.LENGTH_SHORT).show();
+
+                    }
+                };
+                delayRun(listNameDismissRun, 50);
         }
     }
     /*
@@ -277,6 +334,39 @@ public class Settings extends Fragment implements View.OnClickListener{
 
         nightAlert = builder.create();
         nightAlert.show();
+    }
+    /*
+     * Show ListAnimDialog
+     */
+    private void showlistAnimDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_list_anim, null);
+
+        final Button listAnimStandardBt = (Button)view.findViewById(R.id.listAnimStandardBt);
+        final Button listAnimCardBt = (Button)view.findViewById(R.id.listAnimCardBt);
+        final Button listAnimSlideBt = (Button)view.findViewById(R.id.listAnimSlideBt);
+        final Button listAnimFlipBt = (Button)view.findViewById(R.id.listAnimFlipBt);
+        final Button listAnimFlyBt = (Button)view.findViewById(R.id.listAnimFlyBt);
+
+        listAnimStandardBt.setOnClickListener(this);
+        listAnimCardBt.setOnClickListener(this);
+        listAnimSlideBt.setOnClickListener(this);
+        listAnimFlipBt.setOnClickListener(this);
+        listAnimFlyBt.setOnClickListener(this);
+
+        Button[] bts = {listAnimStandardBt, listAnimCardBt, listAnimSlideBt,
+                listAnimFlipBt, listAnimFlyBt};
+
+        // Get sharedPref's currentListAnimIndex
+        int currentListAnimIndex = sharedPref.getInt(Constants.Preferences.PREFERENCES_LIST_ANIM, 0);
+        bts[currentListAnimIndex].setBackgroundColor(getResources().getColor(R.color.qingse));
+        bts[currentListAnimIndex].setTextColor(getResources().getColor(R.color.baise));
+
+        builder.setView(view);
+
+        listAnimAlert = builder.create();
+        listAnimAlert.show();
     }
     /*
      * Run A Runable after DelayTime

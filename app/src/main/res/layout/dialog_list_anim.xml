@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <Button
+        android:id="@+id/listAnimStandardBt"
+        android:text="标准"
+        style="@style/settingsNightButtonStyle" />
+    <Button
+        android:id="@+id/listAnimCardBt"
+        android:text="卡片"
+        style="@style/settingsNightButtonStyle" />
+    <Button
+        android:id="@+id/listAnimSlideBt"
+        android:text="滑入"
+        style="@style/settingsNightButtonStyle" />
+    <Button
+        android:id="@+id/listAnimFlipBt"
+        android:text="翻转"
+        style="@style/settingsNightButtonStyle" />
+    <Button
+        android:id="@+id/listAnimFlyBt"
+        android:text="飞入"
+        style="@style/settingsNightButtonStyle" />
+
+</LinearLayout>

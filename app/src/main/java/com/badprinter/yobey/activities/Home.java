@@ -82,7 +82,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
         setClickListener();
 
         songList = SongProvider.getSongList();
-        mySongListAdapter = new SongListAdapter(songList, (long)1);
+        mySongListAdapter = new SongListAdapter(songList, (long)1, Constants.ListName.LIST_ALL);
         songListView.setAdapter(mySongListAdapter);
         songListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

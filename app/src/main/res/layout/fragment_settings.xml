@@ -53,10 +53,10 @@
         android:layout_height="0dp"
         android:layout_weight="1">
         <com.indris.material.RippleView
-            android:id="@+id/colorRipple"
+            android:id="@+id/listAnimRipple"
             style="@style/settingRippleStyle" />
         <ImageView
-            android:id="@+id/colorIcon"
+            android:id="@+id/listAnimIcon"
             style="@style/settingIconStyle"
             android:src="@drawable/color"/>
         <LinearLayout
@@ -64,14 +64,14 @@
             android:layout_centerVertical="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/colorIcon"
+            android:layout_toRightOf="@id/listAnimIcon"
             android:layout_marginLeft="15dp">
             <TextView
                 android:id="@+id/colorTitle"
-                android:text="更改主色"
+                android:text="列表动效"
                 style="@style/settingTiteStyle"/>
             <TextView
-                android:text="换种心情 / 遇见不一样的YoBey"
+                android:text="不同的动效 / 只为你的爱好"
                 style="@style/settingDetailStyle"/>
         </LinearLayout>
     </RelativeLayout>
@@ -133,8 +133,8 @@
             android:layout_centerVertical="true"
             android:layout_alignParentRight="true"
             android:layout_marginRight="20dp"
-            android:layout_width="70dp"
-            android:layout_height="35dp"
+            android:layout_width="50dp"
+            android:layout_height="25dp"
             slideswitch:isOpen="true"
             slideswitch:shape="rect"
             slideswitch:themeColor="@color/qingse" >
