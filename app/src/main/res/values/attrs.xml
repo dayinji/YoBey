@@ -10,6 +10,16 @@
         <attr name="indicatorRadius" format="dimension"></attr>
     </declare-styleable>
 
+    <declare-styleable name="AdujustBar">
+        <attr name="adjustMax" format="integer"></attr>
+        <attr name="adjustProgress" format="integer"></attr>
+        <attr name="adjustBackgroundColor" format="color"/>
+        <attr name="adjustHavePlayedColor" format="color"/>
+        <attr name="adjustBarHeight" format="dimension"></attr>
+        <attr name="adjustBarRadius" format="dimension"></attr>
+        <attr name="adjustIndicatorId" format="reference"></attr>
+    </declare-styleable>
+
     <declare-styleable name="DragView">
         <attr name="myBackgroundColor" format="color"></attr>
         <attr name="dragColor" format="color"></attr>

@@ -46,19 +46,29 @@ public class Lyric extends TextView {
         this.context = context;
     }
 
-    public void inti(String url, String name, String artist) {
+    public void inti(String url, final String name, final String artist) {
         filePath = url.replace(".mp3", ".lrc");
+        screenH = context.getResources().getDisplayMetrics().widthPixels;
+        density = context.getResources().getDisplayMetrics().density;
+
         /*
          * When there is no lyric and download from the net
          * We need to reset the height of Lyric View.
          */
-        lyricUtil.inti(filePath, name, artist);
+        lyricUtil.callback = new LyricUtil.OnDownLoadLyric() {
+            @Override
+            public void onDownLoadLyric() {
+                lyricUtil.init(filePath, name, artist);
+                lyricList = lyricUtil.getLyricList();
+                Lyric.this.setHeight(screenH + lyricList.size() * dy);
+            }
+        };
+        lyricUtil.init(filePath, name, artist);
         lyricList = lyricUtil.getLyricList();
         Lyric.this.setHeight(screenH + lyricList.size() * dy);
+        Lyric.this.setHeight(screenH + lyricList.size() * dy);
         timeList = lyricUtil.getTimeList();
-        screenH = context.getResources().getDisplayMetrics().widthPixels;
-        density = context.getResources().getDisplayMetrics().density;
-        //Log.d(TAG, "screenH : " + screenH + "\nscreenH : "+ density);
+
         id = -1;
         invalidate();
     }

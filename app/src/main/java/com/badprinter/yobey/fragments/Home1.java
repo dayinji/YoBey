@@ -151,7 +151,6 @@ public class Home1 extends Fragment {
                     }
                 });
                 anim.start();
-                Log.e(TAG, ""+ptrFrame.getOffsetToRefresh());
             }
 
             @Override
@@ -195,10 +194,8 @@ public class Home1 extends Fragment {
                 getActivity().startService(intent);
 
 
-                Log.e(TAG, "addOnGlobalLayoutListener");
             }
         });
-        Log.e(TAG, "onCreateView");
 
         return root;
     }
@@ -305,7 +302,6 @@ public class Home1 extends Fragment {
                     isPlay = isPlayFromSevice;
 
                     Song temp = SongProvider.getSongById(currentSongId);
-                    Log.e(TAG, "context == null ? " + Boolean.toString(getActivity() == null));
                     playingPhoto.setImageBitmap(SongProvider.getArtwork(getActivity(), temp.getId(), temp.getAlbumId(), false, false));
                     playingArtist.setText(temp.getArtist());
                     playingName.setText(temp.getName());

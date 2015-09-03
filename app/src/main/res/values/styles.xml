@@ -88,5 +88,17 @@
         <item name="android:textSize">@dimen/font_medium</item>
     </style>
 
+    <!--Settings AdjustBar Style-->
+    <style name="settingsAdjustBarStyle">
+        <item name="android:layout_height">40dp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="adjustMax">100</item>
+        <item name="adjustProgress">50</item>
+        <item name="adjustBackgroundColor">@color/qianhui_e</item>
+        <item name="adjustBarHeight">15dp</item>
+        <item name="adjustBarRadius">5dp</item>
+        <item name="android:layout_margin">10dp</item>
+    </style>
+
 
 </resources>

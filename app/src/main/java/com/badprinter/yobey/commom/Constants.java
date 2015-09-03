@@ -34,7 +34,11 @@ public class Constants {
 
         public static final String PREFERENCES_WIFI = "com.badprinter.yobey.PREFERENCES_WIFI";
         public static final String PREFERENCES_LIST_ANIM = "com.badprinter.yobey.PREFERENCES_LIST_ANIM";
-        public static final String PREFERENCES_ADJUST = "com.badprinter.yobey.PREFERENCES_ADJUST";
-        public static final String PREFERENCES_NIGHT = "com.badprinter.yobey.PREFERENCES_NIGHT";
+        public static final String PREFERENCES_ADJUST_FAVORITE_SONG = "com.badprinter.yobey.PREFERENCES_ADJUST_FAVORITE_SONG";
+        public static final String PREFERENCES_ADJUST_FAVORITE_ARTIST = "com.badprinter.yobey.PREFERENCES_ADJUST_FAVORITE_ARTIST";
+        public static final String PREFERENCES_ADJUST_RECENT = "com.badprinter.yobey.PREFERENCES_ADJUST_RECENT";
+        public static final String PREFERENCES_ADJUST_AGO = "com.badprinter.yobey.PREFERENCES_ADJUST_AGO";
+
+
     }
 }

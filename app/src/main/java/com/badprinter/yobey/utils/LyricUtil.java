@@ -9,6 +9,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -46,8 +48,9 @@ public class LyricUtil {
     private List<String> lyricList = new ArrayList<String>();
     private List<Integer> timeList =  new ArrayList<Integer>();
     private DownloadTask myTask = new DownloadTask();
+    public OnDownLoadLyric callback;
 
-    public void inti(String path, String name, String artist) {
+    public void init(String path, String name, String artist) {
 
         this.filePath = path;
         this.name = name;
@@ -115,15 +118,15 @@ public class LyricUtil {
     }
 
     private void loadLyricFromWeb(String name) {
-        String url = "http://box.zhangmen.baidu.com/x?op=12&count=1&title=" + name + "$$" + artist + "$$$$";
+        //String url = "http://box.zhangmen.baidu.com/x?op=12&count=1&title=" + name + "$$" + artist + "$$$$";
         //new DownloadTask().execute(url);
         myTask = new DownloadTask();
-        myTask.execute(url);
+        myTask.execute();
     }
 
-    private class DownloadTask extends AsyncTask<String, Void, byte[]> {
+    private class DownloadTask extends AsyncTask<Void, Void, byte[]> {
         @Override
-        protected byte[] doInBackground(String... urls) {
+        protected byte[] doInBackground(Void... urls) {
             try {
                 return downLoadLryic();
             } catch (IOException e) {
@@ -144,21 +147,22 @@ public class LyricUtil {
                 timeList.add(0);
                 return;
             }
+            Log.e(TAG, "I got it(Lyric)!");
             FileOutputStream out = null;
             try {
                 out = new FileOutputStream(filePath);
                 OutputStreamWriter writer = new OutputStreamWriter(out, "GBK");
-                String outStr = new String(result, 0, result.length-1, "GBK");
+                String outStr = new String(result, 0, result.length-1, "UTF-8");
                 writer.write(outStr, 0, outStr.length()-1);
                 writer.flush();
                 writer.close();
                 out.close();
+                // Reset the View Hight
+                callback.onDownLoadLyric();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-                inti(filePath, name, artist);
             }
         }
     }
@@ -180,35 +184,46 @@ public class LyricUtil {
     }
 
     /*
-     * Download lyric from lrc123.com
+     * Download lyric
      */
     private byte[] downLoadLryic() throws IOException{
-        String searchDownLoadUrl;
-        if (!name.equals("") && artist == null) {
-            searchDownLoadUrl = "http://www.lrc123.com/?keyword=" + URLEncoder.encode(name, "utf-8") + "&field=all";
-        } else if (!name.equals("") && !artist.equals("")) {
-            searchDownLoadUrl = "http://www.lrc123.com/?keyword=" + URLEncoder.encode(name, "utf-8") + "+" +
-                    URLEncoder.encode(artist, "utf-8") + "&field=all";
-        } else {
-            byte[] nullBytes = {};
-            return nullBytes;
-        }
-        String url = "http://www.lrc123.com";
+        String searchDownLoadUrl1 = "";
+        String searchDownLoadUrl2 = "";
+        String lrcUrl = "http://music.baidu.com";
+
+        searchDownLoadUrl1 = "http://sug.music.baidu.com/info/suggestion?format=json&version=2&from=0&word=" +
+                URLEncoder.encode(name, "utf-8") + "&_=1405404358299";
         boolean hasfound = false;
 
-        Document doc = Jsoup.connect(searchDownLoadUrl).timeout(5000).get();
-        Elements eles = doc.getElementsByTag("a");
-        for (int i = 0 ; i < eles.size() ; i++) {
-            Pattern pattern = Pattern.compile("^/download/lrc/\\d+-\\d+\\.aspx$");
-            if (eles.get(i).attr("href") != "") {
-                String str = eles.get(i).attr("href");
-                Matcher matcher = pattern.matcher(str);
-                if (matcher.matches()) {
-                    url += str;
+        Document doc1 = Jsoup.connect(searchDownLoadUrl1).timeout(5000).get();
+        Elements bodys = doc1.getElementsByTag("body");
+        org.jsoup.nodes.Element body = bodys.get(0);
+        Log.e(TAG, "body1 = " + body.text());
+        try {
+            JSONObject jsonObject1 = new JSONObject(body.text());
+            JSONArray jsonArray = jsonObject1.getJSONObject("data").getJSONArray("song");
+            JSONObject jsonObject2 = (JSONObject)jsonArray.get(0);
+            String songid = (String)jsonObject2.get("songid");
+            searchDownLoadUrl2 = "http://music.baidu.com/data/music/links?songIds=" +
+                    songid + "&format=json";
+            Log.e(TAG, "searchDownLoadUrl2 = " + searchDownLoadUrl2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (!searchDownLoadUrl2.equals("")) {
+            String body2 = Jsoup.connect(searchDownLoadUrl2).ignoreContentType(true).execute().body();
+            try {
+                JSONObject jsonObject3 = new JSONObject(body2);
+                JSONArray jsonArray = jsonObject3.getJSONObject("data").getJSONArray("songList");
+                JSONObject jsonObject4 = (JSONObject)jsonArray.get(0);
+                String url = (String)jsonObject4.get("lrcLink");
+                if (!url.equals("")) {
+                    lrcUrl += url.replace("\\", "");
+                    Log.e(TAG, "lrcUrl = " + lrcUrl);
                     hasfound = true;
-                    break;
                 }
-
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         /*
@@ -219,10 +234,12 @@ public class LyricUtil {
             return nullBytes;
         }
 
-        Connection.Response resultImageResponse = Jsoup.connect(url).ignoreContentType(true).execute();
+        Connection.Response resultImageResponse = Jsoup.connect(lrcUrl).ignoreContentType(true).execute();
         byte[] bytes = resultImageResponse.bodyAsBytes();
         return bytes;
     }
-
+    public interface OnDownLoadLyric {
+        void onDownLoadLyric();
+    }
 
 }

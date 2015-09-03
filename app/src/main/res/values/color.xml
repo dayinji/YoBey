@@ -3,10 +3,10 @@
     <!--Useful-->
     <color name="fense">#ffffb7a9</color>
     <color name="qingse">#ff79bba4</color>
-    <color name="qingse_deep">#fa4a9172</color>
+    <color name="qingse_deep">#ff4a9172</color>
     <color name="lanse">#ff72b3c7</color>
-    <color name="zise">#c5bf9dc6</color>
-    <color name="huangse">#a0ecdb4e</color>
+    <color name="zise">#ffbf9dc6</color>
+    <color name="huangse">#ffeeef59</color>
     <color name="baise">#ffffffff</color>
 
     <color name="qianhui">#ffD1D1D1</color>

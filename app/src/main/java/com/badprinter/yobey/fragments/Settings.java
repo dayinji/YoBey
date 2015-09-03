@@ -27,6 +27,7 @@ import android.widget.Toast;
 import com.badprinter.yobey.R;
 import com.badprinter.yobey.activities.SongList;
 import com.badprinter.yobey.commom.Constants;
+import com.badprinter.yobey.customviews.AdjustBar;
 import com.indris.material.RippleView;
 import com.leaking.slideswitch.SlideSwitch;
 
@@ -48,6 +49,8 @@ public class Settings extends Fragment implements View.OnClickListener{
     private AlertDialog nightAlert;
     private RippleView listAnimRipple;
     private AlertDialog listAnimAlert;
+    private RippleView adjustRipple;
+    private AlertDialog adjustAlert;
     private Timer timer;
     private int nightMode = 0;
     private int nightTime = -1;
@@ -117,6 +120,7 @@ public class Settings extends Fragment implements View.OnClickListener{
         nightRipple = (RippleView)root.findViewById(R.id.nightRipple);
         countdown = (TextView)root.findViewById(R.id.countdown);
         listAnimRipple = (RippleView)root.findViewById(R.id.listAnimRipple);
+        adjustRipple = (RippleView)root.findViewById(R.id.adjustRipple);
     }
     private void initIcons() {
         for (int i = 0 ; i < icons.length ; i++) {
@@ -131,22 +135,21 @@ public class Settings extends Fragment implements View.OnClickListener{
             @Override
             public void open() {
                 SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putInt("color", 1);
+                editor.putInt(Constants.Preferences.PREFERENCES_WIFI, 1);
                 editor.commit();
-                int a = sharedPref.getInt("color", -1);
-                Log.e(TAG, ""+a);
             }
 
             @Override
             public void close() {
                 SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putInt("color", 0);
+                editor.putInt(Constants.Preferences.PREFERENCES_WIFI, 0);
                 editor.commit();
             }
         });
         exitRipple.setOnClickListener(this);
         nightRipple.setOnClickListener(this);
         listAnimRipple.setOnClickListener(this);
+        adjustRipple.setOnClickListener(this);
     }
     @Override
     public void onClick(View view) {
@@ -181,7 +184,16 @@ public class Settings extends Fragment implements View.OnClickListener{
                 };
                 delayRun(listAnimRun, 500);
                 break;
-
+            case R.id.adjustRipple:
+                adjustRipple.setClickable(false);
+                Runnable adjustAnimRun = new Runnable() {
+                    public void run() {
+                        showAdjustDialog();
+                        adjustRipple.setClickable(true);
+                    }
+                };
+                delayRun(adjustAnimRun, 500);
+                break;
             case R.id.exitYesBt:
                 Button exitYesBt = (Button)exitAlert.findViewById(R.id.exitYesBt);
                 exitYesBt.setBackgroundColor(getResources().getColor(R.color.qingse));
@@ -270,7 +282,7 @@ public class Settings extends Fragment implements View.OnClickListener{
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putInt(Constants.Preferences.PREFERENCES_LIST_ANIM, currentListAnimIndex);
                 editor.commit();
-                
+
                 Runnable listNameDismissRun = new Runnable() {
                     public void run() {
                         listAnimAlert.dismiss();
@@ -280,6 +292,38 @@ public class Settings extends Fragment implements View.OnClickListener{
                     }
                 };
                 delayRun(listNameDismissRun, 50);
+                break;
+            case R.id.adjustSureBt:
+                String[] keys = {Constants.Preferences.PREFERENCES_ADJUST_FAVORITE_SONG,
+                    Constants.Preferences.PREFERENCES_ADJUST_FAVORITE_ARTIST,
+                    Constants.Preferences.PREFERENCES_ADJUST_RECENT,
+                    Constants.Preferences.PREFERENCES_ADJUST_AGO};
+                int[] progresses = new int[4];
+                AdjustBar temp = (AdjustBar)adjustAlert.findViewById(R.id.adjustFavoriteSongBar);
+                progresses[0] = temp.getProgress();
+                temp = (AdjustBar)adjustAlert.findViewById(R.id.adjustFavoriteArtistBar);
+                progresses[1] = temp.getProgress();
+                temp = (AdjustBar)adjustAlert.findViewById(R.id.adjustRecentBar);
+                progresses[2] = temp.getProgress();
+                temp = (AdjustBar)adjustAlert.findViewById(R.id.adjustAgoBar);
+                progresses[3] = temp.getProgress();
+                // Save
+                SharedPreferences.Editor editorAdjust = sharedPref.edit();
+                for (int i = 0 ; i < keys.length ; i++) {
+                    editorAdjust.putInt(keys[i], progresses[i]);
+                    editorAdjust.commit();
+                }
+                Button adjustSureBt = (Button)adjustAlert.findViewById(R.id.adjustSureBt);
+                adjustSureBt.setBackgroundColor(getResources().getColor(R.color.qingse));
+                adjustSureBt.setTextColor(getResources().getColor(R.color.baise));
+                Runnable adjustDismissRun = new Runnable() {
+                    public void run() {
+                        adjustAlert.dismiss();
+                        Toast.makeText(getActivity(), "设置成功", Toast.LENGTH_SHORT).show();
+                    }
+                };
+                delayRun(adjustDismissRun, 50);
+                break;
         }
     }
     /*
@@ -334,6 +378,39 @@ public class Settings extends Fragment implements View.OnClickListener{
 
         nightAlert = builder.create();
         nightAlert.show();
+    }
+    /*
+     * Show AdjustDialog
+     */
+    private void showAdjustDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_adjust, null);
+
+        final AdjustBar adjustFavoriteSongBar = (AdjustBar)view.findViewById(R.id.adjustFavoriteSongBar);
+        final AdjustBar adjustFavoriteArtistBar = (AdjustBar)view.findViewById(R.id.adjustFavoriteArtistBar);
+        final AdjustBar adjustRecentBar = (AdjustBar)view.findViewById(R.id.adjustRecentBar);
+        final AdjustBar adjustAgoBar = (AdjustBar)view.findViewById(R.id.adjustAgoBar);
+        final Button adjustSureBt = (Button)view.findViewById(R.id.adjustSureBt);
+
+        adjustSureBt.setOnClickListener(this);
+
+        AdjustBar[] bars = {adjustFavoriteSongBar, adjustFavoriteArtistBar,
+                adjustRecentBar, adjustAgoBar};
+
+        int[] progresses = new int[4];
+        // Get sharedPref's Adjust
+        progresses[0] = sharedPref.getInt(Constants.Preferences.PREFERENCES_ADJUST_FAVORITE_SONG, 50);
+        progresses[1] = sharedPref.getInt(Constants.Preferences.PREFERENCES_ADJUST_FAVORITE_ARTIST, 50);
+        progresses[2] = sharedPref.getInt(Constants.Preferences.PREFERENCES_ADJUST_RECENT, 50);
+        progresses[3] = sharedPref.getInt(Constants.Preferences.PREFERENCES_ADJUST_AGO, 50);
+
+        for (int i = 0 ; i < bars.length ; i++)
+            bars[i].setProgress(progresses[i]);
+
+        adjustAlert = builder.create();
+        adjustAlert.setView(view);
+        adjustAlert.show();
     }
     /*
      * Show ListAnimDialog
