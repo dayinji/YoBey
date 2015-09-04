@@ -1,17 +1,30 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    xmlns:pinyin="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:id="@+id/root"
     android:layout_height="match_parent"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical" tools:context=".Home">
 
-    <com.twotoasters.jazzylistview.JazzyListView
-        android:id="@+id/songList"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="10"
-        android:background="@color/qianhui"/>
+        android:layout_weight="10">
+        <com.twotoasters.jazzylistview.JazzyListView
+            android:id="@+id/songList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/qianhui" />
+        <com.badprinter.yobey.customviews.PinyinBar
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+
+            pinyin:pinyinBackgroundColor="@color/qianhui"
+            pinyin:pinyinselectedColor="@color/qingse"/>
+    </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/bottomLayout"

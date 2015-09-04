@@ -30,6 +30,7 @@ public class PlayerService extends Service {
     private int duration;
     private int current = 0;
     private int currentTime = 0;
+    private Long currentSongId;
     private boolean isPlay = false;
     private String listName;
     /*
@@ -55,6 +56,7 @@ public class PlayerService extends Service {
         listName = Constants.ListName.LIST_ALL;
         songList = new ArrayList<Song>();
         songList = SongProvider.getSongList();
+        currentSongId = songList.get(current).getId();
         player = new MediaPlayer();
         player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -66,7 +68,7 @@ public class PlayerService extends Service {
                 sendIntent.putExtra("isPlay", isPlay);
                 currentTime = player.getCurrentPosition();
                 sendIntent.putExtra("currentTime", currentTime);
-                sendIntent.putExtra("songId", songList.get(current).getId());
+                sendIntent.putExtra("songId", currentSongId);
                 sendIntent.putExtra("mode", mode);
                 sendBroadcast(sendIntent);
             }
@@ -106,14 +108,14 @@ public class PlayerService extends Service {
 
         switch (intent.getExtras().getString("controlMsg")) {
             case Constants.PlayerControl.PRE_SONG_MSG:
-                if (currentTime > 30*1000 && currentTime < duration - 30*1000)
+                if (currentTime > 20*1000 && currentTime < duration - 30*1000)
                     updateDB(false, current);
                 else if (currentTime >= duration-30*1000)
                     updateDB(true, current);
                 playPre();
                 break;
             case Constants.PlayerControl.NEXT_SONG_MSG:
-                if (currentTime > 30 * 1000 && currentTime < duration - 30*1000)
+                if (currentTime > 20 * 1000 && currentTime < duration - 30*1000)
                     updateDB(false, current);
                 else if (currentTime >= duration-30*1000)
                     updateDB(true, current);
@@ -127,6 +129,7 @@ public class PlayerService extends Service {
                 break;
             case Constants.PlayerControl.PLAYING_MSG:
                 current = intent.getExtras().getInt("current");
+                currentSongId = songList.get(current).getId();
                 currentTime = intent.getExtras().getInt("currenTime");
                 play(currentTime);
                 break;
@@ -148,6 +151,7 @@ public class PlayerService extends Service {
             case Constants.PlayerControl.INIT_SERVICE:
                 changeList(intent.getExtras().getString("listName"));
                 current = intent.getExtras().getInt("current");
+                currentSongId = songList.get(current).getId();
                 Log.e(TAG, "listName = " + listName);
                 Log.e(TAG, "file = " + songList.get(current).getFileName());
                 init();
@@ -158,7 +162,7 @@ public class PlayerService extends Service {
         Intent sendIntent = new Intent(Constants.UiControl.UPDATE_UI);
         sendIntent.putExtra("current", current);
         // Return songId
-        sendIntent.putExtra("songId", songList.get(current).getId());
+        sendIntent.putExtra("songId", currentSongId);
         sendIntent.putExtra("isPlay", isPlay);
         sendIntent.putExtra("mode", mode);
         currentTime = player.getCurrentPosition();
@@ -228,11 +232,13 @@ public class PlayerService extends Service {
         if (mode == 0) {
             current--;
             current = current < 0 ? songList.size() - 1 : current;  // current trun to max position if current < 0
+            currentSongId = songList.get(current).getId();
             play(0);
         } else if (mode == 1) {
             play(0);
         } else {
             current = getRandom(current);
+            currentSongId = songList.get(current).getId();
             play(0);
         }
     }
@@ -245,11 +251,13 @@ public class PlayerService extends Service {
         if (mode == 0) {
             current++;
             current = current > (songList.size() - 1) ? 0 : current;  // current trun to 0 position if current > max
+            currentSongId = songList.get(current).getId();
             play(0);
         } else if (mode == 1) {
             play(0);
         } else {
             current = getRandom(current);
+            currentSongId = songList.get(current).getId();
             play(0);
         }
     }
@@ -301,13 +309,15 @@ public class PlayerService extends Service {
         }
     }
     private void updateDB(boolean isCompleted, int current) {
+        Log.e(TAG, "updateDB");
+        Log.e(TAG, "isCompleted = " +  isCompleted);
+        Log.e(TAG, "name = " + songList.get(current).getName());
         Song temp = songList.get(current);
         if (!dbMgr.inSongDetail(temp)) {
             dbMgr.addToSongDetail(temp);
         }
-        if (isCompleted) {
-            dbMgr.updatePlayCount(temp);
-        } else {
+        dbMgr.updatePlayCount(temp);
+        if (!isCompleted) {
             dbMgr.updateSwicthCount(temp);
         }
         dbMgr.updateCommonCountPlay(isCompleted);
@@ -325,6 +335,13 @@ public class PlayerService extends Service {
      * Change the SongList EveryTime the User Click the List Item to Play Music
      */
     private void changeList(String listName) {
+        // Before Change List and Play a New Song
+        // Save the Play Count
+        if (currentTime > 20 * 1000 && currentTime < duration - 30*1000)
+            updateDB(false, current);
+        else if (currentTime >= duration-30*1000)
+            updateDB(true, current);
+
         if (listName.equals(this.listName))
             return;
         else {

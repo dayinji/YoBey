@@ -42,7 +42,7 @@ public class Settings extends Fragment implements View.OnClickListener{
 
     private ImageView[] icons = new ImageView[6];
     private View root;
-    private SlideSwitch colorSwitch;
+    private SlideSwitch wifi34GSwitch;
     private RippleView exitRipple;
     private AlertDialog exitAlert;
     private RippleView nightRipple;
@@ -79,6 +79,12 @@ public class Settings extends Fragment implements View.OnClickListener{
         // Init sharedPref
         sharedPref = getActivity().getSharedPreferences(
                 Constants.Preferences.PREFERENCES_KEY, Context.MODE_PRIVATE);
+        // Init Wifi34G Switch
+        int isOnlyWifi34G = sharedPref.getInt(Constants.Preferences.PREFERENCES_WIFI, Context.MODE_PRIVATE);
+        if (isOnlyWifi34G == 1)
+            wifi34GSwitch.setState(true);
+        else
+            wifi34GSwitch.setState(false);
         // Init Icons for Modifying Their Width
         ViewTreeObserver vto = icons[0].getViewTreeObserver();
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -115,7 +121,7 @@ public class Settings extends Fragment implements View.OnClickListener{
         icons[3] = (ImageView)root.findViewById(R.id.wifiIcon);
         icons[4] = (ImageView)root.findViewById(R.id.aboutIcon);
         icons[5] = (ImageView)root.findViewById(R.id.exitIcon);
-        colorSwitch = (SlideSwitch)root.findViewById(R.id.colorSwith);
+        wifi34GSwitch = (SlideSwitch)root.findViewById(R.id.colorSwith);
         exitRipple = (RippleView)root.findViewById(R.id.exitRipple);
         nightRipple = (RippleView)root.findViewById(R.id.nightRipple);
         countdown = (TextView)root.findViewById(R.id.countdown);
@@ -130,7 +136,7 @@ public class Settings extends Fragment implements View.OnClickListener{
         }
     }
     private void setListeners() {
-        colorSwitch.setSlideListener(new SlideSwitch.SlideListener() {
+        wifi34GSwitch.setSlideListener(new SlideSwitch.SlideListener() {
 
             @Override
             public void open() {

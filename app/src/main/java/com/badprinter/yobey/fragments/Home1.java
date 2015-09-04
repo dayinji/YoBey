@@ -192,8 +192,6 @@ public class Home1 extends Fragment {
                 intent.setAction("com.badprinter.yobey.service.PLAYER_SERVICE");
                 intent.putExtra("controlMsg", Constants.PlayerControl.INIT_GET_CURRENT_INFO);
                 getActivity().startService(intent);
-
-
             }
         });
 
@@ -237,7 +235,7 @@ public class Home1 extends Fragment {
         preBt.setOnClickListener(listener);
         nextBt.setOnClickListener(listener);
         playBt.setOnClickListener(listener);
-        player.setOnClickListener(listener);
+        playingPhoto.setOnClickListener(listener);
     }
     class MyClickListener implements View.OnClickListener {
         @Override
@@ -263,7 +261,7 @@ public class Home1 extends Fragment {
                     getActivity().startService(intent);
                     playDrawableAnim(preBt, 3, animPre);
                     break;
-                case R.id.player:
+                case R.id.playingPhoto:
                     Intent trunToPlayerIntent = new Intent(getActivity(), Player.class);
                     //trunToPlayerIntent.putExtra("current", current);
                     trunToPlayerIntent.putExtra("isPlay", isPlay);

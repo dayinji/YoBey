@@ -207,11 +207,11 @@ public class CountAdapter extends BaseAdapter{
         int allPlayCount = dbMgr.getAllPlayCount();
         allPlay.setText(Integer.toString(allPlayCount));
         float allSwitchCount = dbMgr.getAllSwitchCount();
-        String rate = Float.toString(allSwitchCount * 100 / (allPlayCount + allSwitchCount));
+        String rate = Float.toString(allSwitchCount * 100 / allPlayCount);
         if (allPlayCount == 0 && allSwitchCount == 0) {
             allSwitch.setText("0.0%");
         } else {
-            String p = String.format("%.1f", allSwitchCount*100/(allPlayCount+allSwitchCount));
+            String p = String.format("%.1f", allSwitchCount*100/allPlayCount);
             allSwitch.setText(p + "%");
         }
         int[] temp1 = dbMgr.getDaysCount();

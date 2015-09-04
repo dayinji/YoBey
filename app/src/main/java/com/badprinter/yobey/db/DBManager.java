@@ -209,7 +209,6 @@ public class DBManager {
         return c;
     }
 
-
     /*****************************
      * Common Count Table
      ****************************/
@@ -218,22 +217,18 @@ public class DBManager {
      * Update CommonCount by A Boolean "isCompleted"
      */
     public void updateCommonCountPlay(boolean isCompleted) {
-        if (isCompleted) {
-            Calendar calendar = Calendar.getInstance();
-
-            // Update Day Count
-            String[] days = {"SunPlay", "MonPlay", "TusePlay", "WedPlay", "ThurPlay", "FriPlay", "SatPlay"};
-            String day = days[calendar.get(Calendar.DAY_OF_WEEK) - 1];
-            updateCommonCountByCata(day);
-
-            // Update Hour Count
-            String hour = "clock" + Integer.toString(calendar.get(Calendar.HOUR_OF_DAY)) + "Play";
-            updateCommonCountByCata(hour);
-
-            // Update AllPlay Count
-            String all = "allPlay";
-            updateCommonCountByCata(all);
-        } else {
+        Calendar calendar = Calendar.getInstance();
+        // Update Day Count
+        String[] days = {"SunPlay", "MonPlay", "TusePlay", "WedPlay", "ThurPlay", "FriPlay", "SatPlay"};
+        String day = days[calendar.get(Calendar.DAY_OF_WEEK) - 1];
+        updateCommonCountByCata(day);
+        // Update Hour Count
+        String hour = "clock" + Integer.toString(calendar.get(Calendar.HOUR_OF_DAY)) + "Play";
+        updateCommonCountByCata(hour);
+        // Update AllPlay Count
+        String all = "allPlay";
+        updateCommonCountByCata(all);
+        if (!isCompleted) {
             String mySwitch = "allSwitch";
             updateCommonCountByCata(mySwitch);
         }

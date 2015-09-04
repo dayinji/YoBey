@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -27,9 +28,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by root on 15-8-12.
@@ -42,6 +45,7 @@ public class SongProvider {
      */
     private static List<Song> songList = null;
     private static List<Artist> artistList = null;
+    private static List<Song> recommendList = null;
     private static Map<Long, Song> songIdMap;
     private static Map<String, Artist> artistMap;
     private static DBManager dbMgr;
@@ -144,6 +148,21 @@ public class SongProvider {
         return favoriteSongList;
     }
     /*
+     * Get FavoriteArtist List
+     */
+    public static List<Artist> getFavoriteArtistList() {
+        if (songList == null) {
+            getSongList();
+        }
+        List<Artist> favoriteArtistSongList = new ArrayList<Artist>();
+        for (Artist a : artistList) {
+            if (dbMgr.isFavoriteArtist(a.getName())) {
+                favoriteArtistSongList.add(a);
+            }
+        }
+        return favoriteArtistSongList;
+    }
+    /*
      * Get SongList By SongList Name
      */
     public static List<Song> getSongListByName(String listName) {
@@ -159,11 +178,98 @@ public class SongProvider {
         } else if (listName.equals(Constants.ListName.LIST_AGO)) {
             listOfName = getAgoSongs();
         }  else if (listName.equals(Constants.ListName.LIST_RECOMMEND)) {
-            listOfName = getSongList();
+            listOfName = getRecommedSongs();
         } else {
             listOfName = getSongListByArtist(listName);
         }
         return listOfName;
+    }
+    /*
+     * Get 10 Songs which are Recommed
+     */
+    public static List<Song> getRecommedSongs() {
+        if (recommendList == null)
+            updateRecommedSongs();
+        return recommendList;
+    }
+    /*
+     * Update 10 Songs which are Recommed
+     */
+    public static List<Song> updateRecommedSongs() {
+        if (recommendList == null)
+            recommendList = new ArrayList<>();
+        else
+            recommendList.clear();
+
+        SharedPreferences preferences = AppContext.getInstance().getSharedPreferences(Constants.Preferences.PREFERENCES_KEY, Context.MODE_PRIVATE);
+        int progressFS = preferences.getInt(Constants.Preferences.PREFERENCES_ADJUST_FAVORITE_SONG, 50);
+        int progressFA = preferences.getInt(Constants.Preferences.PREFERENCES_ADJUST_FAVORITE_ARTIST, 50);
+        int progressR = preferences.getInt(Constants.Preferences.PREFERENCES_ADJUST_RECENT, 50);
+        int progressA = preferences.getInt(Constants.Preferences.PREFERENCES_ADJUST_AGO, 50);
+
+        // Prevent Rate = 0
+        float sum = progressA + progressFA + progressFS + progressR + 40;
+        float rateFA = (progressFA + 10) /sum;
+        float rateFS = (progressFS + 10) /sum;
+        float rateR = (progressR + 10) /sum;
+        float rateA = (progressA + 10) /sum;
+
+        Set<Song> set = new HashSet<>();
+
+        List<Song> listFA = new ArrayList<>();
+        List<Song> listFS = getFavoriteList();
+        List<Song> listR = getRecentlySongs();
+        List<Song> listA = getAgoSongs();
+
+        List<Artist>artistList = SongProvider.getFavoriteArtistList();
+        for (Artist a : artistList) {
+            for (Song s : a.getSongListOfArtist()) {
+                listFA.add(s);
+            }
+        }
+
+        // If the Count of All Songs Is Below 10
+        if (listR.size() < 10) {
+            Log.e(TAG, "listR.size = " + listR.size());
+            return listR;
+        }
+        // Prevent Endless Loop
+        int maxLoopCount = 100;
+
+        while (set.size() < 10 && maxLoopCount > 0) {
+            double randNum = Math.random();
+            if (randNum < rateFA && listFA.size() != 0) {
+                //Log.e(TAG, "cata : 喜欢的歌手" + listFA.get((int)(Math.random()*listFA.size())).getName());
+                set.add(listFA.get((int)(Math.random()*listFA.size())));
+            } else if (randNum >= rateFA && randNum < rateFA+rateFS && listFS.size() != 0) {
+                //Log.e(TAG, "cata : 收藏的歌曲" + listFS.get((int)(Math.random()*listFS.size())).getName());
+                set.add(listFS.get((int)(Math.random()*listFS.size())));
+            } else if (randNum >= rateFA+rateFS && randNum < rateFA+rateFS+rateR) {
+                //Log.e(TAG, "cata : 最近听过" + listR.get((int)(Math.random()*listR.size())).getName());
+                set.add(listR.get((int)(Math.random()*listR.size())));
+            } else if (randNum >= rateFA+rateFS+rateR && randNum < 1){
+                //Log.e(TAG, "cata : 很久没听" + listA.get((int)(Math.random()*listA.size())).getName());
+                set.add(listA.get((int)(Math.random()*listA.size())));
+            } else {
+                double randNum1 = Math.random();
+                if (randNum1 < 0.5) {
+                    //Log.e(TAG, "cata : 最近听过2" + listR.get((int)(Math.random()*listR.size())).getName());
+                    set.add(listR.get((int)(Math.random()*listR.size())));
+                } else {
+                    //Log.e(TAG, "cata : 很久没听2" + listA.get((int)(Math.random()*listA.size())).getName());
+                    set.add(listA.get((int)(Math.random()*listA.size())));
+                }
+            }
+            maxLoopCount--;
+            //Log.e(TAG, "maxLoopCount = " + maxLoopCount);
+        }
+
+        for (Song s : set)
+            recommendList.add(s);
+
+        sortSongByPinyin(recommendList);
+
+        return recommendList;
     }
     /*
      * Get 10 Songs which are Listened Least
@@ -196,7 +302,7 @@ public class SongProvider {
         Collections.sort(list);
     }
     /*
-     * Sort a List By Pinyin
+     * Sort a ArtistList By Pinyin
      */
     public static void sortArtistByPinyin(List<Artist> list) {
         Collections.sort(list);

@@ -20,6 +20,11 @@
         <attr name="adjustIndicatorId" format="reference"></attr>
     </declare-styleable>
 
+    <declare-styleable name="PinyinBar">
+        <attr name="pinyinBackgroundColor" format="color"/>
+        <attr name="pinyinselectedColor" format="color"/>
+    </declare-styleable>
+
     <declare-styleable name="DragView">
         <attr name="myBackgroundColor" format="color"></attr>
         <attr name="dragColor" format="color"></attr>

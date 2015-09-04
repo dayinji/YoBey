@@ -111,6 +111,7 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
 
             }
         });
+        songListView.setVerticalScrollBarEnabled(false);
         // Get Anim Preference
         SharedPreferences pre = getSharedPreferences(
                 Constants.Preferences.PREFERENCES_KEY, Context.MODE_PRIVATE);

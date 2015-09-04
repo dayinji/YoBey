@@ -37,6 +37,7 @@ public class Artist extends Fragment {
         findViewsById();
         adapter = new ArtistAdapter(getActivity());
         artistList.setAdapter(adapter);
+        artistList.setVerticalScrollBarEnabled(false);
 
         return root;
     }
