@@ -194,4 +194,49 @@ public class ArtistAdapter extends BaseAdapter {
         });
         holder.zoomOutAnim.start();
     }
+
+    public char getLetterByPosition(int position) {
+        char[] pinyin = artistList.get(position).getPinyin().toCharArray();
+        if (pinyin[0] <= 'Z' &&  pinyin[0] >= 'A')
+            return pinyin[0];
+        else
+            return '#';
+    }
+    public int getPositionByLetter(char letter) {
+
+        int index = findByBinarySearch(0, artistList.size() - 1, letter);
+        // When Find Nothing
+        if (index == -1 && letter != 'A') {
+            return getPositionByLetter((char)(letter-1));
+        }
+        else  if (index == -1 && letter == 'A') {
+            return getPositionByLetter('#');
+        }
+        // When found
+        for (int i = index ; i > 0 ; i --) {
+            char[] pinyin = artistList.get(i-1).getPinyin().toCharArray();
+            if (pinyin[0] != letter) {
+                return i;
+            }
+            if (i == 1) {
+                return 0;
+            }
+        }
+        return 0;
+    }
+    private int findByBinarySearch(int start, int end, char letter) {
+        if (letter == '#')
+            return 0;
+        if (end < start)
+            return -1;
+        int middle = (end + start)/2;
+        char[] pinyin = artistList.get(middle).getPinyin().toCharArray();
+        if (pinyin[0] > letter) {
+            return findByBinarySearch(start, middle - 1, letter);
+        } else if (pinyin[0] < letter) {
+            return findByBinarySearch(middle + 1, end, letter);
+        } else {
+            return middle;
+        }
+    }
 }

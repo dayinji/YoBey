@@ -1,5 +1,6 @@
 package com.badprinter.yobey.activities;
 
+import android.animation.ObjectAnimator;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -7,12 +8,14 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.drawable.AnimationDrawable;
 import android.nfc.Tag;
+import android.renderscript.Long4;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -22,6 +25,7 @@ import android.widget.TextView;
 import com.badprinter.yobey.R;
 import com.badprinter.yobey.adapter.SongListAdapter;
 import com.badprinter.yobey.commom.Constants;
+import com.badprinter.yobey.customviews.PinyinBar;
 import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.models.Song;
 import com.badprinter.yobey.service.PlayerService;
@@ -49,7 +53,7 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
 
     private final String TAG = "SongListActivity";
 
-    private JazzyListView songListView;
+    private ListView songListView;
     private ImageView preBt;
     private ImageView playBt;
     private ImageView nextBt;
@@ -57,6 +61,7 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
     private TextView playingName;
     private TextView playingArtist;
     private RelativeLayout bottomLayout;
+    private TextView selectorText;
 
     private boolean isPlay = false;
     private int current = 0;
@@ -69,6 +74,9 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
     private AnimationDrawable animPlay;
     private AnimationDrawable animNext;
     private AnimationDrawable animPre;
+    private ObjectAnimator fadeSelectorAnim;
+    private PinyinBar pinyinBar;
+    private MyOnScrollListener myScrollListener;
     private int[] animId = new int[] {
             R.drawable.playtopause, R.drawable.pausetoplay, R.drawable.playnext, R.drawable.playpre
     };
@@ -92,6 +100,10 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
         findViewsById();
         setClickListener();
 
+        // Init fadeSelectorAnim
+        fadeSelectorAnim = ObjectAnimator.ofFloat(selectorText, "alpha", 1f, 0f).setDuration(300);
+        fadeSelectorAnim.setStartDelay(300);
+
         listName = getIntent().getStringExtra("cata");
         songList = SongProvider.getSongListByName(listName);
         /*
@@ -113,7 +125,7 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
         });
         songListView.setVerticalScrollBarEnabled(false);
         // Get Anim Preference
-        SharedPreferences pre = getSharedPreferences(
+        /*SharedPreferences pre = getSharedPreferences(
                 Constants.Preferences.PREFERENCES_KEY, Context.MODE_PRIVATE);
         int animMode = pre.getInt(Constants.Preferences.PREFERENCES_LIST_ANIM, 0);
         if (animMode == 0)
@@ -125,13 +137,36 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
         else if (animMode == 3)
             songListView.setTransitionEffect(new FlipEffect());
         else if (animMode == 4)
-            songListView.setTransitionEffect(new FlyEffect());
-        Log.e(TAG, "animMode = " + animMode);
+            songListView.setTransitionEffect(new FlyEffect());*/
+
         listReceiver = new ListReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.UiControl.UPDATE_UI);
         filter.addAction(Constants.UiControl.UPDATE_CURRENT);
         registerReceiver(listReceiver, filter);
+
+        myScrollListener = new MyOnScrollListener();
+        songListView.setOnScrollListener(myScrollListener);
+        // Init pinyinBar
+        pinyinBar.callback = new PinyinBar.PinyinBarCallBack() {
+            @Override
+            public void onBarChange(int current) {
+                char[] letters = {'#', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+                        'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                        'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                        'Y', 'Z'
+                };
+                int position = mySongListAdapter.getPositionByLetter(letters[current]);
+                Log.e(TAG, "position = " + position);
+                songListView.setSelection(position);
+                if (fadeSelectorAnim != null && fadeSelectorAnim.isRunning())
+                    fadeSelectorAnim.cancel();
+                selectorText.setAlpha(1);
+                String name = songList.get(position).getName();
+                selectorText.setText(name.substring(0, 1));
+                fadeSelectorAnim.start();
+            }
+        };
 
         /*
          * Init the Bottom Control Area
@@ -141,6 +176,17 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
         intent.putExtra("controlMsg", Constants.PlayerControl.INIT_GET_CURRENT_INFO);
         startService(intent);
 
+    }
+
+    private class MyOnScrollListener implements AbsListView.OnScrollListener{
+        @Override
+        public void onScrollStateChanged(AbsListView view, int scrollState) {
+        }
+
+        @Override
+        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+        }
     }
 
 
@@ -156,7 +202,7 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
      * Find All Views When Create the Home Activity
      */
     private void findViewsById() {
-        songListView = (JazzyListView)findViewById(R.id.songList);
+        songListView = (ListView)findViewById(R.id.songList);
         preBt = (ImageView)findViewById(R.id.preBt);
         nextBt = (ImageView)findViewById(R.id.nextBt);
         playBt = (ImageView)findViewById(R.id.playBt);
@@ -165,6 +211,8 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
         playingName = (TextView)findViewById(R.id.playingName);
         playingArtist = (TextView)findViewById(R.id.playingArtist);
         bottomLayout = (RelativeLayout)findViewById(R.id.bottomLayout);
+        pinyinBar = (PinyinBar)findViewById(R.id.pinyinBar);
+        selectorText = (TextView)findViewById(R.id.selectorText);
     }
 
     /*

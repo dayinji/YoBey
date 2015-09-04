@@ -49,6 +49,10 @@ public class Song implements Comparable<Song>{
             else if (thisPinyin[i] > otherPinyin[i])
                 return 1;
         }
+        if (thisPinyin.length < otherPinyin.length)
+            return -1;
+        else if (thisPinyin.length > otherPinyin.length)
+            return 1;
         return 0;
     }
 

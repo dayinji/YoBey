@@ -19,6 +19,6 @@
     <color name="havePlayed">#ffffffff</color>
 
     <!--Translucent Color-->
-    <color name="translucent_white">#55ffffff</color>
+    <color name="translucent_white">#aaffffff</color>
     <color name="translucent_black">#bb000000</color>
 </resources>

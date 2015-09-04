@@ -1,5 +1,7 @@
 package com.badprinter.yobey.customviews;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -10,6 +12,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
@@ -26,10 +29,19 @@ public class PinyinBar extends View {
     private int backgroundColor;
     private int selectedColor;
     private float height;
+    private float width;
+    private float cellHeight;
     private float fontSize;
     private float barRadius = 5;
+    private int current = -1;
+    private float selectorY = 0;
+    private float selectorX = 99999;
+    private boolean isTouch = false;
+    private int defaultBackgroundColor = getResources().getColor(R.color.qianbai);
 
-    private ValueAnimator indicatorAnim;
+    public PinyinBarCallBack callback;
+
+    private ValueAnimator seletorAnim;
    // public OnProgressChange onProgressChange;
 
     public PinyinBar(Context context) {
@@ -57,106 +69,117 @@ public class PinyinBar extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        String[] letters = {"#", "A", "B", "C", "D", "E", "F", "G"};
+        String[] letters = {"#", "A", "B", "C", "D", "E", "F", "G",
+                "H", "I", "J", "K", "L", "M", "N", "O",
+                "P", "Q", "R", "S", "T", "U", "V", "W",
+                "X", "Y", "Z"};
         height = getHeight();
-        fontSize = height/27*0.8f;
+        width = getWidth();
+        cellHeight = height/27;
+        fontSize = height/27*0.6f;
+        float yOffset = (height/27 - fontSize)/2;
 
         /**
-         * background, Top = 10 For Train Indicator
+         * background
          */
-        RectF rect = new RectF(0, 0, fontSize/0.8f, height);
+        RectF rect = new RectF(0, 0, width, height);
+
         paint.setColor(backgroundColor);
+
         paint.setStyle(Paint.Style.FILL);
         paint.setAntiAlias(true);  //消除锯齿
         //canvas.drawRect(rect, paint);
-        canvas.drawRoundRect(rect, barRadius, barRadius, paint);
+        canvas.drawRect(rect, paint);
 
 
-        paint.setColor(getResources().getColor(R.color.baise));
+        /*
+         * Selected
+         */
+        RectF rect1 = new RectF(selectorX, selectorY, width, selectorY + cellHeight);
+        paint.setColor(selectedColor);
         paint.setStyle(Paint.Style.FILL);
         paint.setAntiAlias(true);  //消除锯齿
-        for (int i = 0 ; i < 8 ; i++) {
-            //canvas.drawRect(rect, paint);
-            canvas.drawText(letters[i], 0, fontSize*i, paint);
-            canvas.drawRoundRect(rect, barRadius, barRadius, paint);
+        //canvas.drawRect(rect, paint);
+        canvas.drawRect(rect1, paint);
+
+        /*
+         * Letters
+         */
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextSize(fontSize);
+        paint.setAntiAlias(true);  //消除锯齿
+        for (int i = 0 ; i < letters.length ; i++) {
+            if (i != current)
+                paint.setColor(getResources().getColor(R.color.qianhui));
+            else
+                paint.setColor(getResources().getColor(R.color.baise));
+            canvas.drawText(letters[i], (width-fontSize)/2, fontSize*(i+1)/0.6f - yOffset, paint);
         }
-        /**
-         * havePlayed
-         */
-       /* paint.setColor(havePlayedColor);
-        RectF rect1 = new RectF(left, top, width*((float)progress/max)+left, bottom);
-        //canvas.drawRect(rect1, paint);
-        canvas.drawRoundRect(rect1, barRadius, barRadius, paint);*/
 
-        /**
-         * Indicator Bg
-         */
-        /*paint.setColor(havePlayedColor);
-        float r1 = barHeight*indicatorSize/2;
-        RectF rect2 = new RectF(width * ((float) progress / max) + left - r1,
-                0, width*((float)progress/max) + left + r1, 2*r1);
-        //canvas.drawRect(rect1, paint);
-        canvas.drawRoundRect(rect2, barRadius, barRadius, paint);*/
-
-        /**
-         * indicator bitmap
-         */
-        /*Bitmap bmp = BitmapFactory.decodeResource(getResources(), indicatorId);
-        float scale = barHeight*indicatorBitmapSize / bmp.getHeight();
-        float r2 = barHeight*indicatorBitmapSize/2;
-        //float trainLong = bmp.getWidth()*scale;
-        Matrix matrix = new Matrix();
-        matrix.postScale(scale, scale);
-        Bitmap bmp1 = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
-        if (!bmp.isRecycled())
-            bmp.recycle();
-
-        canvas.drawBitmap(bmp1, width * ((float) progress / max) +left - r2, 0, null);*/
     }
 
-    /*@Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), 48);
-    }*/
-
-    /*@Override
+    @Override
     public boolean onTouchEvent(MotionEvent me) {
         if (me.getAction() == MotionEvent.ACTION_MOVE) {
-            float x = me.getX();
-            int toPoint = (int)((x/getWidth())*max);
-            setProgress(toPoint);
-            //onProgressChange.onProgressChangeCall(toPoint);
+            if (seletorAnim != null)
+                seletorAnim.cancel();
+            float y = me.getY();
+            setSelectorY(y);
         }
         else if (me.getAction() == MotionEvent.ACTION_DOWN) {
-            float x = me.getX();
-            int toPoint = (int)((x/getWidth())*max);
-            startIndicatorAnim(toPoint);
-            //onProgressChange.onProgressChangeCall(toPoint);
+            isTouch = true;
+            selectorX = 0;
+            float y = me.getY();
+            setSelectorY(y);
+        } else if (me.getAction() == MotionEvent.ACTION_UP) {
+            isTouch = false;
+            float y = (int)(me.getY()/cellHeight)*cellHeight;
+            setSelectorY(y);
+            startSelectorAnim();
         }
         return true;
     }
 
-    private void startIndicatorAnim(int endValue) {
-        if (indicatorAnim != null)
-            indicatorAnim.cancel();
-        indicatorAnim = ValueAnimator.ofInt(progress, endValue);
-        float duration = 300;
-        indicatorAnim.setDuration((int)duration);
-        indicatorAnim.setInterpolator(new DecelerateInterpolator(1f));
-        indicatorAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+    private void startSelectorAnim() {
+        if (seletorAnim != null)
+            seletorAnim.cancel();
+        seletorAnim = ValueAnimator.ofFloat(0, 1);
+        seletorAnim.setDuration(300);
+        seletorAnim.setInterpolator(new DecelerateInterpolator(1f));
+        seletorAnim.setStartDelay(200);
+        seletorAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                int point = (int)animation.getAnimatedValue();
-                setProgress(point);
-               // onProgressChange.onProgressAnimCall(point);
+                if (!isTouch)
+                    selectorX = animation.getAnimatedFraction()*width;
+                else
+                    selectorX = 0;
+                invalidate();
             }
         });
-        indicatorAnim.start();
-    }*/
+        current = -1;
+        seletorAnim.start();
+    }
 
- /*   public interface OnProgressChange {
-        void onProgressChangeCall(int toPoint);
-        void onProgressAnimCall(int point);
-    }*/
+    private void setSelectorY(float y) {
+        if (y > height)
+            y = height-cellHeight;
+        else if (y < 0)
+            y = 0;
+        selectorY = y;
+        Log.e(TAG, "selectorY/cellHeight = " + selectorY/cellHeight );
+        int c =Math.round(selectorY / cellHeight);
+        c = c >= 27 ? 26 : c;
+        if (c != current) {
+            this.current = c;
+           // Log.e(TAG, "selectorY = " + selectorY + " ; CURRENT = " + c);
+            callback.onBarChange(current);
+        }
+        invalidate();
+    }
+
+    public interface PinyinBarCallBack {
+        void onBarChange(int current);
+    }
 }
 

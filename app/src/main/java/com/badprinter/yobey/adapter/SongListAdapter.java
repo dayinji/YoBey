@@ -134,15 +134,24 @@ public class SongListAdapter extends BaseAdapter {
         return convertView;
     }
 
-    private char getLetterByPosition(int position) {
+    public char getLetterByPosition(int position) {
         char[] pinyin = songList.get(position).getPinyin().toCharArray();
-        return pinyin[0];
+        if (pinyin[0] <= 'Z' &&  pinyin[0] >= 'A')
+            return pinyin[0];
+        else
+            return '#';
     }
-    private int getPositionByLetter(char letter) {
+    public int getPositionByLetter(char letter) {
 
         int index = findByBinarySearch(0, songList.size() - 1, letter);
-        if (index == -1)
-            return -1;
+        // When Find Nothing
+        if (index == -1 && letter != 'A') {
+            return getPositionByLetter((char)(letter-1));
+        }
+        else  if (index == -1 && letter == 'A') {
+            return getPositionByLetter('#');
+        }
+        // When found
         for (int i = index ; i > 0 ; i --) {
             char[] pinyin = songList.get(i-1).getPinyin().toCharArray();
             if (pinyin[0] != letter) {
@@ -152,9 +161,11 @@ public class SongListAdapter extends BaseAdapter {
                 return 0;
             }
         }
-        return -1;
+        return 0;
     }
     private int findByBinarySearch(int start, int end, char letter) {
+        if (letter == '#')
+            return 0;
         if (end < start)
             return -1;
         int middle = (end + start)/2;
@@ -249,5 +260,6 @@ public class SongListAdapter extends BaseAdapter {
             }
         }, 500);
     }
+
 
 }
