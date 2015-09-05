@@ -92,8 +92,10 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.e(TAG, "oncreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_song_list);
+
         /*
          * Find All Views
          */
@@ -261,6 +263,7 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
                 break;
             case R.id.bottomLayout:
                 Intent trunToPlayerIntent = new Intent(SongList.this, Player.class);
+                trunToPlayerIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 //trunToPlayerIntent.putExtra("current", current);
                 trunToPlayerIntent.putExtra("isPlay", isPlay);
                 trunToPlayerIntent.putExtra("isFirstTime", isFirstTime);
@@ -334,4 +337,20 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
         animDrawable.setOneShot(true);
         animDrawable.start();
     }
+    /*@Override
+    protected void onNewIntent(Intent intent) {
+
+        Log.e(TAG, "listName = XXXX");
+        super.onNewIntent(intent);
+
+        setIntent(intent);//must store the new intent unless getIntent() will return the old one
+
+        if (intent.getFlags() == Intent.FLAG_ACTIVITY_CLEAR_TOP) {
+            listName = intent.getStringExtra("cata");
+
+            songList = SongProvider.getSongListByName(listName);
+            mySongListAdapter = new SongListAdapter(songList, currentSongId, listName);
+            songListView.setAdapter(mySongListAdapter);
+        }
+    }*/
 }

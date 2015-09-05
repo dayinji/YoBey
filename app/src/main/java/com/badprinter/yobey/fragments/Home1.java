@@ -103,12 +103,26 @@ public class Home1 extends Fragment {
         findViewsById();
         setClickListener();
 
-        //test
+        // Init Song
         SharedPreferences sharedPref = getActivity().getSharedPreferences(
                 Constants.Preferences.PREFERENCES_KEY, Context.MODE_PRIVATE);
         listName = sharedPref.getString("lastListName", Constants.ListName.LIST_ALL);
         current = sharedPref.getInt("lastCurrent", 0);
         currentTime = sharedPref.getInt("lastCurrentTime", 0);
+
+        // Init Notify
+        int hasNotify = sharedPref.getInt(Constants.Preferences.PREFERENCES_NOTIFY, Context.MODE_PRIVATE);
+        if (hasNotify == 1) {
+            Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+            intent.putExtra("hasNotify", true);
+            intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_NOTIFY);
+            getActivity().startService(intent);
+        } else {
+            Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+            intent.putExtra("hasNotify", false);
+            intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_NOTIFY);
+            getActivity().startService(intent);
+        }
 
         countAdapter = new CountAdapter();
         countList.setAdapter(countAdapter);

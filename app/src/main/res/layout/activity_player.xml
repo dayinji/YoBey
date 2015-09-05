@@ -32,6 +32,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
         </com.badprinter.yobey.customviews.MyScrollView>
+        <ImageView
+            android:id="@+id/listBt"
+            android:alpha="0.5"
+            android:src="@drawable/list_button"
+            android:padding="10dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="right"/>
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"

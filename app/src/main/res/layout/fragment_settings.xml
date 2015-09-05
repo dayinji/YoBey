@@ -52,9 +52,6 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
-        <com.indris.material.RippleView
-            android:id="@+id/listAnimRipple"
-            style="@style/settingRippleStyle" />
         <ImageView
             android:id="@+id/listAnimIcon"
             style="@style/settingIconStyle"
@@ -68,12 +65,24 @@
             android:layout_marginLeft="15dp">
             <TextView
                 android:id="@+id/colorTitle"
-                android:text="列表动效"
+                android:text="通知栏控制"
                 style="@style/settingTiteStyle"/>
             <TextView
-                android:text="不同的动效 / 任你翻牌"
+                android:text="音乐播放 / 一个手势的距离"
                 style="@style/settingDetailStyle"/>
         </LinearLayout>
+
+        <com.leaking.slideswitch.SlideSwitch
+            android:id="@+id/notifySwith"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="20dp"
+            android:layout_width="50dp"
+            android:layout_height="25dp"
+            slideswitch:isOpen="true"
+            slideswitch:shape="rect"
+            slideswitch:themeColor="@color/qingse" >
+        </com.leaking.slideswitch.SlideSwitch>
     </RelativeLayout>
 
     <RelativeLayout

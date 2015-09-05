@@ -43,12 +43,11 @@ public class Settings extends Fragment implements View.OnClickListener{
     private ImageView[] icons = new ImageView[6];
     private View root;
     private SlideSwitch wifi34GSwitch;
+    private SlideSwitch notifySwitch;
     private RippleView exitRipple;
     private AlertDialog exitAlert;
     private RippleView nightRipple;
     private AlertDialog nightAlert;
-    private RippleView listAnimRipple;
-    private AlertDialog listAnimAlert;
     private RippleView adjustRipple;
     private AlertDialog adjustAlert;
     private Timer timer;
@@ -85,6 +84,22 @@ public class Settings extends Fragment implements View.OnClickListener{
             wifi34GSwitch.setState(true);
         else
             wifi34GSwitch.setState(false);
+        // Init Notify Switch;
+        int hasNotify = sharedPref.getInt(Constants.Preferences.PREFERENCES_NOTIFY, Context.MODE_PRIVATE);
+        if (hasNotify == 1) {
+            notifySwitch.setState(true);
+            Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+            intent.putExtra("hasNotify", true);
+            intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_NOTIFY);
+            getActivity().startService(intent);
+        } else {
+            notifySwitch.setState(false);
+            Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+            intent.putExtra("hasNotify", false);
+            intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_NOTIFY);
+            getActivity().startService(intent);
+        }
+
         // Init Icons for Modifying Their Width
         ViewTreeObserver vto = icons[0].getViewTreeObserver();
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -125,8 +140,8 @@ public class Settings extends Fragment implements View.OnClickListener{
         exitRipple = (RippleView)root.findViewById(R.id.exitRipple);
         nightRipple = (RippleView)root.findViewById(R.id.nightRipple);
         countdown = (TextView)root.findViewById(R.id.countdown);
-        listAnimRipple = (RippleView)root.findViewById(R.id.listAnimRipple);
         adjustRipple = (RippleView)root.findViewById(R.id.adjustRipple);
+        notifySwitch = (SlideSwitch)root.findViewById(R.id.notifySwith);
     }
     private void initIcons() {
         for (int i = 0 ; i < icons.length ; i++) {
@@ -152,9 +167,32 @@ public class Settings extends Fragment implements View.OnClickListener{
                 editor.commit();
             }
         });
+        notifySwitch.setSlideListener(new SlideSwitch.SlideListener() {
+
+            @Override
+            public void open() {
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putInt(Constants.Preferences.PREFERENCES_NOTIFY, 1);
+                editor.commit();
+                Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+                intent.putExtra("hasNotify", true);
+                intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_NOTIFY);
+                getActivity().startService(intent);
+            }
+
+            @Override
+            public void close() {
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putInt(Constants.Preferences.PREFERENCES_NOTIFY, 0);
+                editor.commit();
+                Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+                intent.putExtra("hasNotify", false);
+                intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_NOTIFY);
+                getActivity().startService(intent);
+            }
+        });
         exitRipple.setOnClickListener(this);
         nightRipple.setOnClickListener(this);
-        listAnimRipple.setOnClickListener(this);
         adjustRipple.setOnClickListener(this);
     }
     @Override
@@ -179,16 +217,6 @@ public class Settings extends Fragment implements View.OnClickListener{
                     }
                 };
                 delayRun(nightRun, 500);
-                break;
-            case R.id.listAnimRipple:
-                listAnimRipple.setClickable(false);
-                Runnable listAnimRun = new Runnable() {
-                    public void run() {
-                        showlistAnimDialog();
-                        listAnimRipple.setClickable(true);
-                    }
-                };
-                delayRun(listAnimRun, 500);
                 break;
             case R.id.adjustRipple:
                 adjustRipple.setClickable(false);
@@ -263,42 +291,7 @@ public class Settings extends Fragment implements View.OnClickListener{
                 };
                 delayRun(nightDismissRun, 50);
                 break;
-            case R.id.listAnimCardBt:
-            case R.id.listAnimFlipBt:
-            case R.id.listAnimFlyBt:
-            case R.id.listAnimSlideBt:
-            case R.id.listAnimStandardBt:
-                // Get sharedPref's currentListAnimIndex
-                int lastListAnimIndex = sharedPref.getInt(Constants.Preferences.PREFERENCES_LIST_ANIM, 0);
-                ArrayList<Integer>listAnimBtIds = new ArrayList<>();
-                listAnimBtIds.add(R.id.listAnimStandardBt);
-                listAnimBtIds.add(R.id.listAnimCardBt);
-                listAnimBtIds.add(R.id.listAnimSlideBt);
-                listAnimBtIds.add(R.id.listAnimFlipBt);
-                listAnimBtIds.add(R.id.listAnimFlyBt);
-                int currentListAnimIndex = listAnimBtIds.indexOf(view.getId());
-                Button lastListAnimBt = (Button)listAnimAlert.findViewById(listAnimBtIds.get(lastListAnimIndex));
-                final Button currentListAnimBt = (Button)listAnimAlert.findViewById(view.getId());
-                // Change Color
-                lastListAnimBt.setBackgroundColor(getResources().getColor(R.color.baise));
-                lastListAnimBt.setTextColor(getResources().getColor(R.color.qingse));
-                currentListAnimBt.setBackgroundColor(getResources().getColor(R.color.qingse));
-                currentListAnimBt.setTextColor(getResources().getColor(R.color.baise));
-                // Save
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putInt(Constants.Preferences.PREFERENCES_LIST_ANIM, currentListAnimIndex);
-                editor.commit();
 
-                Runnable listNameDismissRun = new Runnable() {
-                    public void run() {
-                        listAnimAlert.dismiss();
-                        String info = currentListAnimBt.getText().toString() + "动效";
-                        Toast.makeText(getActivity(), info, Toast.LENGTH_SHORT).show();
-
-                    }
-                };
-                delayRun(listNameDismissRun, 50);
-                break;
             case R.id.adjustSureBt:
                 String[] keys = {Constants.Preferences.PREFERENCES_ADJUST_FAVORITE_SONG,
                     Constants.Preferences.PREFERENCES_ADJUST_FAVORITE_ARTIST,
@@ -417,39 +410,6 @@ public class Settings extends Fragment implements View.OnClickListener{
         adjustAlert = builder.create();
         adjustAlert.setView(view);
         adjustAlert.show();
-    }
-    /*
-     * Show ListAnimDialog
-     */
-    private void showlistAnimDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-        View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_list_anim, null);
-
-        final Button listAnimStandardBt = (Button)view.findViewById(R.id.listAnimStandardBt);
-        final Button listAnimCardBt = (Button)view.findViewById(R.id.listAnimCardBt);
-        final Button listAnimSlideBt = (Button)view.findViewById(R.id.listAnimSlideBt);
-        final Button listAnimFlipBt = (Button)view.findViewById(R.id.listAnimFlipBt);
-        final Button listAnimFlyBt = (Button)view.findViewById(R.id.listAnimFlyBt);
-
-        listAnimStandardBt.setOnClickListener(this);
-        listAnimCardBt.setOnClickListener(this);
-        listAnimSlideBt.setOnClickListener(this);
-        listAnimFlipBt.setOnClickListener(this);
-        listAnimFlyBt.setOnClickListener(this);
-
-        Button[] bts = {listAnimStandardBt, listAnimCardBt, listAnimSlideBt,
-                listAnimFlipBt, listAnimFlyBt};
-
-        // Get sharedPref's currentListAnimIndex
-        int currentListAnimIndex = sharedPref.getInt(Constants.Preferences.PREFERENCES_LIST_ANIM, 0);
-        bts[currentListAnimIndex].setBackgroundColor(getResources().getColor(R.color.qingse));
-        bts[currentListAnimIndex].setTextColor(getResources().getColor(R.color.baise));
-
-        builder.setView(view);
-
-        listAnimAlert = builder.create();
-        listAnimAlert.show();
     }
     /*
      * Run A Runable after DelayTime

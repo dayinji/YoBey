@@ -57,12 +57,14 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
     private ImageView modeBt;
     private MusicBar bar;
     private ImageView smoke;
+    private ImageView listBt;
 
     //private int current;
     private long currentSongId;
     private boolean isPlay = false;
     private int mode = 0;
     private int currentTime;
+    private String listName;
     //private String listName;
     private AnimationDrawable animPlay;
     private AnimationDrawable animNext;
@@ -204,6 +206,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         smoke = (ImageView)findViewById(R.id.smoke);
         lyricView = (Lyric)findViewById(R.id.lyricView);
         scrollLyric = (MyScrollView)findViewById(R.id.scrollLyric);
+        listBt = (ImageView)findViewById(R.id.listBt);
     }
 
     private void setClickListener() {
@@ -213,6 +216,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         likeBt.setOnClickListener(this);
         modeBt.setOnClickListener(this);
         bar.setOnClickListener(this);
+        listBt.setOnClickListener(this);
     }
 
     @Override
@@ -227,7 +231,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                 break;
             case R.id.playBt:
                 if (isPlay == false) {
-                    intent.putExtra("controlMsg", Constants.PlayerControl.PLAYING_MSG);
+                    //intent.putExtra("controlMsg", Constants.PlayerControl.PLAYING_MSG);
                     intent.putExtra("currenTime", currentTime);
                     intent.putExtra("controlMsg", Constants.PlayerControl.CONTINUE_PLAYING_MSG);
                 } else {
@@ -262,8 +266,15 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                 //mode = mode + 1 >= 3 ? 0 : mode + 1;
                 intent.putExtra("controlMsg", Constants.PlayerControl.CHANGE_MODE);
                 startService(intent);
-
-
+                break;
+            case R.id.listBt:
+                Intent intent1 = new Intent(this, SongList.class);
+                intent1.putExtra("cata", listName);
+                intent1.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent1);
+                break;
+            default:
+                break;
         }
     }
 
@@ -291,6 +302,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                     boolean isPlay = intent.getBooleanExtra("isPlay", false); // Play or Pause
                     //int current = intent.getIntExtra("current", 0); // Current Song Id
                     long currentSongId = intent.getLongExtra("songId", 0);
+                    listName =  intent.getStringExtra("listName");
 
                     if (currentSongId != Player.this.currentSongId) {
                         Player.this.currentSongId = currentSongId;

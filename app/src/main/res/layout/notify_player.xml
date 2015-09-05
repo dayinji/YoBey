@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/all">
+    <ImageView
+        android:id="@+id/playingPhoto"
+        android:layout_alignParentLeft="true"
+        android:layout_width="64dp"
+        android:layout_height="64dp" />
+    <LinearLayout
+        android:layout_toRightOf="@id/playingPhoto"
+        android:layout_marginLeft="10dp"
+        android:orientation="vertical"
+        android:layout_centerVertical="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/playingName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/font_medium"
+            android:textColor="@color/baise"/>
+        <TextView
+            android:id="@+id/playingArtist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/font_small"
+            android:textColor="@color/qianhui"
+            android:layout_marginTop="5dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:padding="10dp"
+            android:id="@+id/playBt"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:background="@drawable/click_bg"/>
+        <ImageView
+            android:src="@drawable/playnext_00000"
+            android:padding="10dp"
+            android:id="@+id/nextBt"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:background="@drawable/click_bg" />
+    </LinearLayout>
+</RelativeLayout>

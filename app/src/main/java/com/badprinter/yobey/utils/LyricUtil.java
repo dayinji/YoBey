@@ -38,6 +38,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -194,7 +195,6 @@ public class LyricUtil {
                     lyricList.set(i, lyricList.get(j));
                     timeList.set(j, temp);
                     lyricList.set(j, str);
-
                 }
             }
         }
@@ -219,11 +219,21 @@ public class LyricUtil {
         try {
             JSONObject jsonObject1 = new JSONObject(body.text());
             JSONArray jsonArray = jsonObject1.getJSONObject("data").getJSONArray("song");
-            JSONObject jsonObject2 = (JSONObject)jsonArray.get(0);
-            String songid = (String)jsonObject2.get("songid");
-            searchDownLoadUrl2 = "http://music.baidu.com/data/music/links?songIds=" +
-                    songid + "&format=json";
-            Log.e(TAG, "searchDownLoadUrl2 = " + searchDownLoadUrl2);
+            for (int i = 0 ; i < jsonArray.length() ; i++) {
+                JSONObject jsonObject2 = (JSONObject)jsonArray.get(i);
+                String songName = (String)jsonObject2.get("songname");
+                String songArtist = (String)jsonObject2.get("artistname");
+                if (URLDecoder.decode(songName, "utf-8").equals(name) &&
+                        URLDecoder.decode(songArtist, "utf-8").equals(artist)) {
+                    String songid = (String)jsonObject2.get("songid");
+                    searchDownLoadUrl2 = "http://music.baidu.com/data/music/links?songIds=" +
+                            songid + "&format=json";
+                    Log.e(TAG, "searchDownLoadUrl2 = " + searchDownLoadUrl2);
+                    break;
+                }
+                Log.e(TAG, "match failed! : songName = " + URLDecoder.decode(songName, "utf-8") +
+                ". songArtist = " + URLDecoder.decode(songArtist, "utf-8"));
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

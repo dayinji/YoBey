@@ -51,6 +51,7 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
     private boolean isPlay = false;
     private int current = 0;
     private int currentTime;
+    private String listName;
     private boolean isFirstTime = true;
     private HomeReceiver homeReceiver;
     private SongListAdapter mySongListAdapter;
@@ -99,18 +100,6 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
         Song temp = songList.get(current);
         playingPhoto.setImageBitmap(SongProvider.getArtwork(Home.this, temp.getId(), temp.getAlbumId(), false, true));
 
-        //bar.setMax(songList.get(current).getDuration());
-        /*
-         * A Callback for Chaneging CurrentTime
-         */
-        /*bar.onProgessChange = new MusicBar.OnProgessChange() {
-            public void OnProgessChangeCall(int toPoint) {
-                Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
-                intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_CURRENTTIME);
-                intent.putExtra("currentTime", toPoint);
-                startService(intent);
-            }
-        };*/
         homeReceiver = new HomeReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.UiControl.UPDATE_UI);
@@ -207,11 +196,13 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                 trunToPlayerIntent.putExtra("isPlay", isPlay);
                 trunToPlayerIntent.putExtra("isFirstTime", isFirstTime);
                 trunToPlayerIntent.putExtra("currentTime", currentTime);
+                trunToPlayerIntent.putExtra("listName", listName);
                 startActivity(trunToPlayerIntent);
                 overridePendingTransition(R.anim.activity_slide_in,R.anim.activity_null);
-
+                break;
+            default:
+                break;
         }
-
     }
 
     /*
@@ -224,9 +215,11 @@ public class Home extends ActionBarActivity implements View.OnClickListener {
                 case Constants.UiControl.UPDATE_UI:
                     boolean isPlay = intent.getBooleanExtra("isPlay", false); // Play or Pause
                     int current = intent.getIntExtra("current", -1); // Current Song Id
+                    String listName = intent.getStringExtra("listName");
                     mySongListAdapter.updateItem((long)current);
                     Home.this.isPlay = isPlay;
                     Home.this.current = current;
+                    Home.this.listName = listName;
                     Song temp = songList.get(current);
                     //bar.setMax(temp.getDuration());
                     /*

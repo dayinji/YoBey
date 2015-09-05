@@ -1,14 +1,25 @@
 package com.badprinter.yobey.service;
 
 import android.app.Application;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.preference.Preference;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
+import android.widget.RemoteViews;
 
+import com.badprinter.yobey.R;
+import com.badprinter.yobey.activities.Player;
+import com.badprinter.yobey.activities.Yobey;
 import com.badprinter.yobey.commom.Constants;
 import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.models.Song;
@@ -25,7 +36,7 @@ import java.util.TimerTask;
 /**
  * Created by root on 15-8-12.
  */
-public class PlayerService extends Service {
+public class PlayerService extends Service{
     private final String TAG = "PlayerService";
     private int duration;
     private int current = 0;
@@ -33,6 +44,8 @@ public class PlayerService extends Service {
     private Long currentSongId;
     private boolean isPlay = false;
     private String listName;
+    private boolean hasNotify = true;
+    private NotificationManager nm;
     /*
      * 0 = LoopPlaying
      * 1 = SingPlaying
@@ -53,6 +66,7 @@ public class PlayerService extends Service {
         super.onCreate();
         dbMgr = new DBManager();
         isPlay = false;
+        nm  = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         listName = Constants.ListName.LIST_ALL;
         songList = new ArrayList<Song>();
         songList = SongProvider.getSongList();
@@ -70,7 +84,10 @@ public class PlayerService extends Service {
                 sendIntent.putExtra("currentTime", currentTime);
                 sendIntent.putExtra("songId", currentSongId);
                 sendIntent.putExtra("mode", mode);
+                sendIntent.putExtra("listName", listName);
                 sendBroadcast(sendIntent);
+                if (hasNotify)
+                    showButtonNotify();
             }
         });
         init();
@@ -155,6 +172,17 @@ public class PlayerService extends Service {
                 Log.e(TAG, "listName = " + listName);
                 Log.e(TAG, "file = " + songList.get(current).getFileName());
                 init();
+                showButtonNotify();
+                return START_STICKY;
+            case Constants.PlayerControl.UPDATE_NOTIFY:
+                boolean b = intent.getExtras().getBoolean("hasNotify");
+                if (b) {
+                    hasNotify = true;
+                    showButtonNotify();
+                } else {
+                    hasNotify = false;
+                    nm.cancel(950520);
+                }
                 return START_STICKY;
             default:
                 break;
@@ -169,6 +197,8 @@ public class PlayerService extends Service {
         sendIntent.putExtra("currentTime", currentTime);
         sendIntent.putExtra("listName", listName);
         sendBroadcast(sendIntent);
+        if (hasNotify)
+            showButtonNotify();
 
         /*
          * THe Big Big Bug had Happened Here! I Return StartId Instead of START_STICKY Before.
@@ -348,5 +378,57 @@ public class PlayerService extends Service {
             songList = SongProvider.getSongListByName(listName);
             this.listName = listName;
         }
+    }
+
+    public void showButtonNotify(){
+        Song song = songList.get(current);
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this);
+        RemoteViews mRemoteViews = new RemoteViews(getPackageName(), R.layout.notify_player);
+
+        mRemoteViews.setTextViewText(R.id.playingArtist, song.getArtist());
+        mRemoteViews.setTextViewText(R.id.playingName, song.getName());
+        mRemoteViews.setImageViewBitmap(R.id.playingPhoto, SongProvider.getArtwork(this,
+                currentSongId, songList.get(current).getAlbumId(), false, false));
+
+        if (isPlay) {
+            mRemoteViews.setImageViewResource(R.id.playBt, R.drawable.pausetoplay_00000);
+        } else {
+            mRemoteViews.setImageViewResource(R.id.playBt, R.drawable.playtopause_00000);
+        }
+
+        // Intents
+        Intent playIntent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+        Intent nextIntent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+        Intent activityIntent = new Intent(this, Yobey.class);
+
+        // Make Sure That Returing App Instead of New A Activity
+        activityIntent.setAction(Intent.ACTION_MAIN);
+        activityIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+        if (isPlay)
+            playIntent.putExtra("controlMsg", Constants.PlayerControl.PAUSE_PLAYING_MSG);
+        else
+            playIntent.putExtra("controlMsg", Constants.PlayerControl.CONTINUE_PLAYING_MSG);
+        nextIntent.putExtra("controlMsg", Constants.PlayerControl.NEXT_SONG_MSG);
+
+        PendingIntent intent_play = PendingIntent.getService(this, 1, playIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent intent_next = PendingIntent.getService(this, 2, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent intent_activity = PendingIntent.getActivity(this, 3, activityIntent, 0);
+
+        mRemoteViews.setOnClickPendingIntent(R.id.playBt, intent_play);
+        mRemoteViews.setOnClickPendingIntent(R.id.nextBt, intent_next);
+        mRemoteViews.setOnClickPendingIntent(R.id.all, intent_activity);
+
+        mBuilder.setTicker("YoBey")
+                .setWhen(System.currentTimeMillis())
+                .setPriority(Notification.PRIORITY_DEFAULT)
+                .setOngoing(true)
+                .setContent(mRemoteViews)
+                .setContentIntent(intent_play)
+                .setContentIntent(intent_next)
+                .setContentIntent(intent_activity)
+                .setSmallIcon(R.drawable.ic_launcher);
+
+        nm.notify(950520, mBuilder.build());
     }
 }
