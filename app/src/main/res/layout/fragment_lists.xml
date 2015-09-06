@@ -4,7 +4,7 @@
     android:layout_height="match_parent" tools:context="com.badprinter.yobey.fragments.Lists"
     android:background="@color/qianbai">
 
-    <com.twotoasters.jazzylistview.JazzyListView
+    <ListView
         android:id="@+id/lists"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>

@@ -58,19 +58,22 @@ public class Artist extends Fragment {
         pinyinBar.callback = new PinyinBar.PinyinBarCallBack() {
             @Override
             public void onBarChange(int current) {
-                char[] letters = {'#', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-                        'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                        'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                        'Y', 'Z'
-                };
-                int position = adapter.getPositionByLetter(letters[current]);
-                artistListView.setSelection(position);
-                if (fadeSelectorAnim != null && fadeSelectorAnim.isRunning())
-                    fadeSelectorAnim.cancel();
-                selectorText.setAlpha(1);
-                String name = artistList.get(position).getName();
-                selectorText.setText(name.substring(0, 1));
-                fadeSelectorAnim.start();
+                if (artistList.size() != 0) {
+
+                    char[] letters = {'#', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+                            'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                            'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                            'Y', 'Z'
+                    };
+                    int position = adapter.getPositionByLetter(letters[current]);
+                    artistListView.setSelection(position);
+                    if (fadeSelectorAnim != null && fadeSelectorAnim.isRunning())
+                        fadeSelectorAnim.cancel();
+                    selectorText.setAlpha(1);
+                    String name = artistList.get(position).getName();
+                    selectorText.setText(name.substring(0, 1));
+                    fadeSelectorAnim.start();
+                }
             }
         };
 

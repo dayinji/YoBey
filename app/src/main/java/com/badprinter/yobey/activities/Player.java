@@ -96,6 +96,8 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
 
         findViewsById();
         setClickListener();
+        //Keep Screen On
+        getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         init(getIntent());
 
@@ -190,6 +192,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
     @Override
     public void onDestroy() {
         unregisterReceiver(playerReceiver);
+        getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         super.onDestroy();
     }
 

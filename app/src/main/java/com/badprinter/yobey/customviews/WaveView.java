@@ -68,6 +68,9 @@ public class WaveView extends LinearLayout {
         this.mProgress = progress > 100 ? 100 : progress;
         computeWaveToTop();
     }
+    public int getProgress() {
+        return mProgress;
+    }
 
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {

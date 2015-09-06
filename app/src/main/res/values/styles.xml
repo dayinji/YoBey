@@ -12,6 +12,12 @@
         <item name="actionBarStyle">@style/MyActionBar</item>
     </style>
 
+    <!--Full Screen-->
+    <style name="AppTheme.NoTitle_FullScreen">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
     <!--Bottom Tabs Style-->
     <style name="tabStyle">
         <item name="android:textSize">@dimen/font_medium</item>

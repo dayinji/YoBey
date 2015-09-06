@@ -1,6 +1,7 @@
 package com.badprinter.yobey.activities;
 
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +16,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ImageView;
@@ -30,23 +32,15 @@ import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.models.Song;
 import com.badprinter.yobey.service.PlayerService;
 import com.badprinter.yobey.utils.SongProvider;
-import com.twotoasters.jazzylistview.JazzyListView;
-import com.twotoasters.jazzylistview.effects.CardsEffect;
-import com.twotoasters.jazzylistview.effects.CurlEffect;
-import com.twotoasters.jazzylistview.effects.FadeEffect;
-import com.twotoasters.jazzylistview.effects.FanEffect;
-import com.twotoasters.jazzylistview.effects.FlipEffect;
-import com.twotoasters.jazzylistview.effects.FlyEffect;
-import com.twotoasters.jazzylistview.effects.GrowEffect;
-import com.twotoasters.jazzylistview.effects.HelixEffect;
-import com.twotoasters.jazzylistview.effects.ReverseFlyEffect;
-import com.twotoasters.jazzylistview.effects.SlideInEffect;
-import com.twotoasters.jazzylistview.effects.StandardEffect;
-import com.yalantis.phoenix.PullToRefreshView;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import in.srain.cube.views.ptr.PtrDefaultHandler;
+import in.srain.cube.views.ptr.PtrFrameLayout;
+import in.srain.cube.views.ptr.PtrHandler;
+import in.srain.cube.views.ptr.PtrUIHandler;
+import in.srain.cube.views.ptr.indicator.PtrIndicator;
 import me.imid.swipebacklayout.lib.app.SwipeBackActivity;
 
 public class SongList extends SwipeBackActivity implements View.OnClickListener{
@@ -126,20 +120,6 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
             }
         });
         songListView.setVerticalScrollBarEnabled(false);
-        // Get Anim Preference
-        /*SharedPreferences pre = getSharedPreferences(
-                Constants.Preferences.PREFERENCES_KEY, Context.MODE_PRIVATE);
-        int animMode = pre.getInt(Constants.Preferences.PREFERENCES_LIST_ANIM, 0);
-        if (animMode == 0)
-            songListView.setTransitionEffect(new StandardEffect());
-        else if (animMode == 1)
-            songListView.setTransitionEffect(new CardsEffect());
-        else if (animMode == 2)
-            songListView.setTransitionEffect(new SlideInEffect());
-        else if (animMode == 3)
-            songListView.setTransitionEffect(new FlipEffect());
-        else if (animMode == 4)
-            songListView.setTransitionEffect(new FlyEffect());*/
 
         listReceiver = new ListReceiver();
         IntentFilter filter = new IntentFilter();
@@ -153,20 +133,22 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
         pinyinBar.callback = new PinyinBar.PinyinBarCallBack() {
             @Override
             public void onBarChange(int current) {
-                char[] letters = {'#', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-                        'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                        'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                        'Y', 'Z'
-                };
-                int position = mySongListAdapter.getPositionByLetter(letters[current]);
-                Log.e(TAG, "position = " + position);
-                songListView.setSelection(position);
-                if (fadeSelectorAnim != null && fadeSelectorAnim.isRunning())
-                    fadeSelectorAnim.cancel();
-                selectorText.setAlpha(1);
-                String name = songList.get(position).getName();
-                selectorText.setText(name.substring(0, 1));
-                fadeSelectorAnim.start();
+                if (songList.size() != 0) {
+                    char[] letters = {'#', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+                            'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                            'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                            'Y', 'Z'
+                    };
+                    int position = mySongListAdapter.getPositionByLetter(letters[current]);
+                    Log.e(TAG, "position = " + position);
+                    songListView.setSelection(position);
+                    if (fadeSelectorAnim != null && fadeSelectorAnim.isRunning())
+                        fadeSelectorAnim.cancel();
+                    selectorText.setAlpha(1);
+                    String name = songList.get(position).getName();
+                    selectorText.setText(name.substring(0, 1));
+                    fadeSelectorAnim.start();
+                }
             }
         };
 
@@ -215,6 +197,7 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
         bottomLayout = (RelativeLayout)findViewById(R.id.bottomLayout);
         pinyinBar = (PinyinBar)findViewById(R.id.pinyinBar);
         selectorText = (TextView)findViewById(R.id.selectorText);
+
     }
 
     /*

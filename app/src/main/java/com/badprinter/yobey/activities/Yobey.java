@@ -17,9 +17,11 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
@@ -35,6 +37,8 @@ import com.badprinter.yobey.service.PlayerService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Yobey extends Base {
     private String TAG = "Yobey";
@@ -88,6 +92,14 @@ public class Yobey extends Base {
         registerReceiver(yobeyReceiver, filter);
 
     }
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            moveTaskToBack(false);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
     private void findViewsById() {
         tabs = (RadioGroup)findViewById(R.id.tabs);
         tab_home = (RadioButton)findViewById(R.id.homeTab);
@@ -96,7 +108,6 @@ public class Yobey extends Base {
         tab_player = (RadioButton)findViewById(R.id.playerTab);
         dragView = (DragView)findViewById(R.id.drag);
         pager = (ViewPager)findViewById(R.id.pager);
-
     }
     private void setOnClickListener() {
         tabs.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {

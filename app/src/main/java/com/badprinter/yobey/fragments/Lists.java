@@ -20,28 +20,13 @@ import com.badprinter.yobey.activities.Home;
 import com.badprinter.yobey.activities.SongList;
 import com.badprinter.yobey.adapter.ListsAdapter;
 import com.badprinter.yobey.commom.Constants;
-import com.twotoasters.jazzylistview.JazzyListView;
-import com.twotoasters.jazzylistview.effects.CardsEffect;
-import com.twotoasters.jazzylistview.effects.CurlEffect;
-import com.twotoasters.jazzylistview.effects.FanEffect;
-import com.twotoasters.jazzylistview.effects.FlipEffect;
-import com.twotoasters.jazzylistview.effects.FlyEffect;
-import com.twotoasters.jazzylistview.effects.GrowEffect;
-import com.twotoasters.jazzylistview.effects.HelixEffect;
-import com.twotoasters.jazzylistview.effects.ReverseFlyEffect;
-import com.twotoasters.jazzylistview.effects.SlideInEffect;
-import com.twotoasters.jazzylistview.effects.StandardEffect;
-import com.twotoasters.jazzylistview.effects.TiltEffect;
-import com.twotoasters.jazzylistview.effects.TwirlEffect;
-import com.twotoasters.jazzylistview.effects.WaveEffect;
-import com.twotoasters.jazzylistview.effects.ZipperEffect;
 
 import java.lang.ref.PhantomReference;
 
 
 public class Lists extends Fragment {
     private String TAG = "Lists";
-    private JazzyListView lists;
+    private ListView lists;
     private View root;
     private final String[] listNames = {
             Constants.ListName.LIST_ALL,
@@ -70,7 +55,6 @@ public class Lists extends Fragment {
         View view =  inflater.inflate(R.layout.fragment_lists, container, false);
         root = view;
         findViewsById();
-        lists.setTransitionEffect(new SlideInEffect());
         lists.setAdapter(new ListsAdapter());
         lists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -80,12 +64,11 @@ public class Lists extends Fragment {
         });
         return view;
     }
-    private void findViewsById() {
-        lists = (JazzyListView)root.findViewById(R.id.lists);
-    }
-    private void newCata() {
 
+    private void findViewsById() {
+        lists = (ListView)root.findViewById(R.id.lists);
     }
+
     private void startList(int position) {
         Intent intent = new Intent(getActivity(), SongList.class);
         intent.putExtra("cata", listNames[position]);

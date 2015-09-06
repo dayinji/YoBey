@@ -34,9 +34,10 @@
         </com.badprinter.yobey.customviews.MyScrollView>
         <ImageView
             android:id="@+id/listBt"
-            android:alpha="0.5"
+            android:alpha="0.8"
+            android:background="@drawable/click_bg"
             android:src="@drawable/list_button"
-            android:padding="10dp"
+            android:padding="3dp"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_gravity="right"/>

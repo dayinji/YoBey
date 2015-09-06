@@ -29,7 +29,9 @@ import com.db.chart.view.animation.Animation;
 import com.db.chart.view.animation.easing.BounceEase;
 import com.db.chart.view.animation.style.DashAnimation;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -41,20 +43,9 @@ public class CountAdapter extends BaseAdapter{
     private TextView allPlay;
     private TextView allSwitch;
     private LineChartView daysChart;
-    private LineChartView hoursChart;
-    private ViewPager pager;
-    private ImageView dayHourBt;
-    private String[] days = {"Mon", "Tuse", "Wed", "Thur", "Fri", "Sat", "Sun"};
-    private String[] hours = {"00", "01", "02", "03", "04", "05", "06", "07", "08", "09",
-            "10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
-            "20", "21", "22", "23"};
+    private String[] days = new String[7];
     DBManager dbMgr;
-    private AnimationDrawable dayHourAnim;
     private float[] daysCount = new float[7];
-    private float[] hoursCount = new float[24];
-    private final String HOURS_CHART = "CountAdapter_hours_chart";
-    private final String DAYS_CHART = "CountAdapter_days_chart";
-    private String currentChart;
     // An Action for Updating DaysChart
     private Runnable updateDaysAction =  new Runnable() {
         @Override
@@ -67,22 +58,6 @@ public class CountAdapter extends BaseAdapter{
                     styleSet(set1);
                     daysChart.addData(set1);
                     daysChart.show(new Animation().setStartPoint(1, .5f));
-                }
-            }, 500);
-        }
-    };
-    // An Action for Updating HoursChart
-    private Runnable updateHoursAction =  new Runnable() {
-        @Override
-        public void run() {
-            new Handler().postDelayed(new Runnable() {
-                public void run() {
-                    int[] temp1 = dbMgr.getHoursCount();
-                    intToFloat(temp1, hoursCount);
-                    LineSet set1 = new LineSet(hours, hoursCount);
-                    styleSet(set1);
-                    hoursChart.addData(set1);
-                    hoursChart.show(new Animation().setStartPoint(1, .5f));
                 }
             }, 500);
         }
@@ -116,96 +91,55 @@ public class CountAdapter extends BaseAdapter{
         }}
         allPlay = (TextView)convertView.findViewById(R.id.allPlay);
         allSwitch = (TextView)convertView.findViewById(R.id.allSwicth);
-        pager = (ViewPager)convertView.findViewById(R.id.chartPager);
-        dayHourBt = (ImageView)convertView.findViewById(R.id.dayHourBt);
-        dayHourBt.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (currentChart.equals(HOURS_CHART)) {
-                    if (dayHourAnim != null && dayHourAnim.isRunning())
-                        dayHourAnim.stop();
-                    dayHourBt.setBackgroundResource(R.drawable.hour_to_day);
-                    dayHourAnim = (AnimationDrawable) dayHourBt.getBackground();
-                    dayHourAnim.setOneShot(true);
-                    dayHourAnim.start();
-                    pager.setCurrentItem(0, true);
-                } else if (currentChart.equals(DAYS_CHART)) {
-                    if (dayHourAnim != null && dayHourAnim.isRunning())
-                        dayHourAnim.stop();
-                    dayHourBt.setBackgroundResource(R.drawable.day_to_hour);
-                    dayHourAnim = (AnimationDrawable) dayHourBt.getBackground();
-                    dayHourAnim.setOneShot(true);
-                    dayHourAnim.start();
-                    pager.setCurrentItem(1, true);
-                }
-            }
-        });
+        daysChart = (LineChartView)convertView.findViewById(R.id.chart);
+
+        //Get Dates
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat format1 = new SimpleDateFormat("MM-dd");
+        for (int i = 0 ; i < 7 ; i++) {
+            String formattedDate = format1.format(calendar.getTime());
+            days[6-i] = formattedDate;
+            calendar.add(Calendar.DATE, -1);
+        }
+
         initCharts();
         initCount();
-        initPager();
-
 
         return convertView;
     }
     // Init Charts
     private void initCharts() {
-        daysChart = new LineChartView(context);
-        daysChart.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 100));
-        daysChart.setPadding(10, 10, 10, 10);
-        hoursChart = new LineChartView(context);
-        hoursChart.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 100));
-        hoursChart.setPadding(10, 10, 10, 10);
-
         styleChart(daysChart);
-        styleChart(hoursChart);
-        currentChart = DAYS_CHART;
     }
-    // Init Pager
-    private void initPager() {
-        List<View> list = new ArrayList<>();
-        list.add(daysChart);
-        list.add(hoursChart);
-        pager.setAdapter(new MyPagerAdapter(list));
-        pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                if (position == 0)
-                    currentChart = DAYS_CHART;
-                else
-                    currentChart = HOURS_CHART;
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        });
-        pager.setHorizontalFadingEdgeEnabled(false);
-
-    }
     // Update Current Chart's Count
     public void updateCount() {
         int allPlayCount = dbMgr.getAllPlayCount();
-        allPlay.setText(Integer.toString(allPlayCount));
+        if (allPlayCount < 1000) {
+            allPlay.setText(Integer.toString(allPlayCount));
+        } else {
+            float largeAllPlayCount = allPlayCount/1000.0f;
+            allPlay.setText(String.format("%.1f", largeAllPlayCount) + "k");
+        }
         float allSwitchCount = dbMgr.getAllSwitchCount();
         if (allPlayCount == 0 && allSwitchCount == 0) {
             allSwitch.setText("0.0%");
             return;
         }
-        String p = String.format("%.1f", allSwitchCount*100/(allPlayCount+allSwitchCount));
+        String p = String.format("%.1f", allSwitchCount*100 / allPlayCount);
         allSwitch.setText(p + "%");
-        hoursChart.dismiss(new Animation().setStartPoint(0f, 0f).setEndAction(updateHoursAction));
+        daysChart.dismissAllTooltips();
         daysChart.dismiss(new Animation().setStartPoint(0f, 0f).setEndAction(updateDaysAction));
     }
     // Init Count
     private void initCount() {
         int allPlayCount = dbMgr.getAllPlayCount();
-        allPlay.setText(Integer.toString(allPlayCount));
+        if (allPlayCount < 1000) {
+            allPlay.setText(Integer.toString(allPlayCount));
+        } else {
+            float largeAllPlayCount = allPlayCount/1000.0f;
+            allPlay.setText(String.format("%.1f", largeAllPlayCount) + "k");
+        }
         float allSwitchCount = dbMgr.getAllSwitchCount();
         String rate = Float.toString(allSwitchCount * 100 / allPlayCount);
         if (allPlayCount == 0 && allSwitchCount == 0) {
@@ -215,17 +149,11 @@ public class CountAdapter extends BaseAdapter{
             allSwitch.setText(p + "%");
         }
         int[] temp1 = dbMgr.getDaysCount();
-        int[] temp2 = dbMgr.getHoursCount();
         intToFloat(temp1, daysCount);
-        intToFloat(temp2, hoursCount);
         LineSet set1 = new LineSet(days, daysCount);
-        LineSet set2 = new LineSet(hours, hoursCount);
         styleSet(set1);
-        styleSet(set2);
         daysChart.addData(set1);
         daysChart.show();
-        hoursChart.addData(set2);
-        hoursChart.show();
     }
     // Turn Int[] to Float[]
     private void intToFloat(int[] ints, float[] floats) {
@@ -254,15 +182,10 @@ public class CountAdapter extends BaseAdapter{
         Tooltip tip = new Tooltip(context, R.layout.msg_tooltip, R.id.msg);
         tip.setEnterAnimation(PropertyValuesHolder.ofFloat(View.ALPHA, 1));
         tip.setExitAnimation(PropertyValuesHolder.ofFloat(View.ALPHA, 0));
-        if (currentChart.equals(DAYS_CHART)) {
-            daysChart.dismissAllTooltips();
-            tip.prepare(entryRect, daysCount[entryIndex]);
-            daysChart.showTooltip(tip, true);
-        } else if (currentChart.equals(HOURS_CHART)) {
-            hoursChart.dismissAllTooltips();
-            tip.prepare(entryRect, hoursCount[entryIndex]);
-            hoursChart.showTooltip(tip, true);
-        }
+        daysChart.dismissAllTooltips();
+        tip.prepare(entryRect, daysCount[entryIndex]);
+        daysChart.showTooltip(tip, true);
+
     }
     // Style the Set
     private void styleSet(LineSet set) {

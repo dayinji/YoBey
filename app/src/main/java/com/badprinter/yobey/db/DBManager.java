@@ -125,7 +125,13 @@ public class DBManager {
     public void deleteFromSongDetail(Song song) {
         if (!inSongDetail(song))
             return;
-        db.delete("songdetail", "song_id=?", new String[]{Long.toString(song.getId())});
+        deleteFromSongDetailById(song.getId());
+    }
+    /*
+     * Delete a Song from songdetail Table by Id
+     */
+    public void deleteFromSongDetailById(Long songId) {
+        db.delete("songdetail", "song_id=?", new String[]{Long.toString(songId)});
     }
     /*
      * Query A Cursor from songdetail Table
@@ -210,62 +216,75 @@ public class DBManager {
     }
 
     /*****************************
-     * Common Count Table
+     * Date & Common Count Table
      ****************************/
 
     /*
-     * Update CommonCount by A Boolean "isCompleted"
+     * Update DateCount by A Boolean "isCompleted"
      */
-    public void updateCommonCountPlay(boolean isCompleted) {
+    public void updateDateCountPlay(boolean isCompleted) {
         Calendar calendar = Calendar.getInstance();
-        // Update Day Count
-        String[] days = {"SunPlay", "MonPlay", "TusePlay", "WedPlay", "ThurPlay", "FriPlay", "SatPlay"};
-        String day = days[calendar.get(Calendar.DAY_OF_WEEK) - 1];
-        updateCommonCountByCata(day);
-        // Update Hour Count
-        String hour = "clock" + Integer.toString(calendar.get(Calendar.HOUR_OF_DAY)) + "Play";
-        updateCommonCountByCata(hour);
+        // Update Date Count
+        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+        String formattedDate = format1.format(calendar.getTime());
+        updateDateCountByDate(formattedDate);
         // Update AllPlay Count
         String all = "allPlay";
-        updateCommonCountByCata(all);
+        updateDateCountByDate(all);
         if (!isCompleted) {
             String mySwitch = "allSwitch";
-            updateCommonCountByCata(mySwitch);
+            updateDateCountByDate(mySwitch);
         }
     }
 
-    private  void updateCommonCountByCata(String cata) {
-        Cursor c = db.query("commoncount", new String[]{"count"},
-                "cata=?", new String[]{cata}, null, null, null);
+    private  void updateDateCountByDate(String date) {
+        Cursor c = db.query("datecount", new String[]{"count"},
+                "date=?", new String[]{date}, null, null, null);
         int count = 0;
-        while(c.moveToNext()) {
-            count = c.getInt(c.getColumnIndex("count"));
-        }
+        if (c.getCount() == 0)
+            addToDateCount(date);
+        else
+            while(c.moveToNext()) {
+                count = c.getInt(c.getColumnIndex("count"));
+            }
         c.close();
         ContentValues values = new ContentValues();
         values.put("count", count+1);
-        db.update("commoncount", values, "cata=?", new String[]{cata});
+        db.update("datecount", values, "date=?", new String[]{date});
         logCursor();
     }
 
+    private void addToDateCount(String date) {
+        db.beginTransaction();
+        try {
+            db.execSQL("INSERT INTO datecount VALUES(null, ?, ?)",
+                    new Object[]{date, 1});
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
     /*
-     * Get 7 Integer Which recode the Count of Everyday's Play
+     * Get 7 Integer Which recode the Count of 7day's Play
      */
     public int[] getDaysCount() {
-        int[] count = new int[7];
-        String[] days = new String[] {
-                "MonPlay", "TusePlay", "WedPlay", "ThurPlay", "FriPlay", "SatPlay", "SunPlay"
-        };
-        Cursor c = db.rawQuery("SELECT * FROM commoncount", null);
-        while(c.moveToNext()) {
-            String cata = c.getString(c.getColumnIndex("cata"));
-            int position = getMeetPosition(days, cata);
-            if (position != -1) {
-                count[position] = c.getInt(c.getColumnIndex("count"));
+        int[] results = new int[7];
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd");
+        for (int i = 0 ; i < 7 ; i++) {
+            String formattedDate = format1.format(calendar.getTime());
+            Cursor c = db.query("datecount", new String[]{"count"},
+                    "date=?", new String[]{formattedDate}, null, null, null);
+            int count = 0;
+            while(c.moveToNext()) {
+                count = c.getInt(c.getColumnIndex("count"));
             }
+            c.close();
+            results[6-i] = count;
+            calendar.add(Calendar.DATE, -1);
         }
-        c.close();
-        return count;
+        return results;
     }
 
     /*
@@ -273,8 +292,8 @@ public class DBManager {
      */
     public int getAllPlayCount() {
         int count = 0;
-        Cursor c = db.query("commoncount", new String[]{"count"},
-                "cata=?", new String[]{"allPlay"}, null, null, null);
+        Cursor c = db.query("datecount", new String[]{"count"},
+                "date=?", new String[]{"allPlay"}, null, null, null);
         while(c.moveToNext()) {
             count = c.getInt(c.getColumnIndex("count"));
         }
@@ -287,47 +306,14 @@ public class DBManager {
      */
     public int getAllSwitchCount() {
         int count = 0;
-        Cursor c = db.query("commoncount", new String[]{"count"},
-                "cata=?", new String[]{"allSwitch"}, null, null, null);
+        Cursor c = db.query("datecount", new String[]{"count"},
+                "date=?", new String[]{"allSwitch"}, null, null, null);
         while(c.moveToNext()) {
             count = c.getInt(c.getColumnIndex("count"));
         }
         c.close();
         return count;
     }
-
-
-    /*
-     * Get 24 Integer Which recode the Count of Everyhour's Play
-     */
-    public int[] getHoursCount() {
-        int[] count = new int[24];
-        String[] hours = new String[] {
-                "clock0Play", "clock1Play", "clock2Play", "clock3Play", "clock4Play",
-                "clock5Play", "clock6Play", "clock7Play", "clock8Play", "clock9Play",
-                "clock10Play", "clock11Play", "clock12Play", "clock13Play", "clock14Play",
-                "clock15Play", "clock16Play", "clock17Play", "clock18Play", "clock19Play",
-                "clock20Play", "clock21Play", "clock22Play", "clock23Play"
-        };
-        Cursor c = db.rawQuery("SELECT * FROM commoncount", null);
-        while(c.moveToNext()) {
-            String cata = c.getString(c.getColumnIndex("cata"));
-            int position = getMeetPosition(hours, cata);
-            if (position != -1) {
-                count[position] = c.getInt(c.getColumnIndex("count"));
-            }
-        }
-        c.close();
-        return count;
-    }
-    private int getMeetPosition(String[] strs, String str) {
-        for (int i = 0 ; i < strs.length ; i++) {
-            if (strs[i].equals(str))
-                return i;
-        }
-        return -1;
-    }
-
 
     /*****************************
      * Favorite Artist Table

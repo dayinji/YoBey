@@ -121,7 +121,7 @@ public class PinyinBar extends View {
     @Override
     public boolean onTouchEvent(MotionEvent me) {
         if (me.getAction() == MotionEvent.ACTION_MOVE) {
-            if (seletorAnim != null)
+            if (seletorAnim != null && seletorAnim.isRunning())
                 seletorAnim.cancel();
             float y = me.getY();
             setSelectorY(y);

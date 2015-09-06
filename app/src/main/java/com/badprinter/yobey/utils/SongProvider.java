@@ -48,70 +48,69 @@ public class SongProvider {
     private static List<Song> recommendList = null;
     private static Map<Long, Song> songIdMap;
     private static Map<String, Artist> artistMap;
-    private static DBManager dbMgr;
+    private static DBManager dbMgr = new DBManager();
     private static Context context = AppContext.getInstance();
 
-    public static void init(Context context) {
-        dbMgr = new DBManager();
-    }
-
     public static List<Song> getSongList() {
-        init(context);
         if (songList == null) {
-            songList = new ArrayList<>();
-            artistList = new ArrayList<>();
-            songIdMap = new HashMap<>();
-            artistMap = new HashMap<>();
-            MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-            Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    null, null, null, null);
-            while (cursor.moveToNext()) {
-                long id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
-                byte[] data = cursor.getBlob(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-                String fileName = new String(data, 0, data.length-1);
-                mmr.setDataSource(fileName);
-                String name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
-                // test
-                String pinyin = PinYinUtil.getPinYinFromHanYu(name, PinYinUtil.UPPER_CASE,
-                        PinYinUtil.WITH_TONE_NUMBER, PinYinUtil.WITH_V);
-                String artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-                if (artist == null)
-                    artist = "(无名)";
-                String album = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
-                int duration = Integer.parseInt(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
-                int size = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
-                long albumId = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
-                String url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-                String year = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.YEAR));
-                String genre = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE);
-
-                // Store the Song Info
-                Song newSong = new Song(id, name, fileName, size, album, artist,
-                        duration, albumId, url, pinyin, year, genre);
-                songIdMap.put(id, newSong);
-                songList.add(newSong);
-
-                //Init the DB
-                if (!dbMgr.inSongDetail(newSong)) {
-                    dbMgr.addToSongDetail(newSong);
-                }
-
-                // Store the Artist Info
-                if (!artistMap.containsKey(artist)) {
-                    Artist artistItem = new Artist(artist);
-                    artistItem.addSong(newSong);
-                    artistList.add(artistItem);
-                    artistMap.put(artist, artistItem);
-                } else {
-                    artistMap.get(artist).addSong(newSong);
-                }
-            }
-            cursor.close();
-            sortSongByPinyin(songList);
-            sortArtistByPinyin(artistList);
+            updateSongList();
         }
         return songList;
     }
+    static private void updateSongList() {
+        songList = new ArrayList<>();
+        artistList = new ArrayList<>();
+        songIdMap = new HashMap<>();
+        artistMap = new HashMap<>();
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                null, null, null, null);
+        while (cursor.moveToNext()) {
+            long id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
+            byte[] data = cursor.getBlob(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+            String fileName = new String(data, 0, data.length-1);
+            mmr.setDataSource(fileName);
+            String name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+            // test
+            String pinyin = PinYinUtil.getPinYinFromHanYu(name, PinYinUtil.UPPER_CASE,
+                    PinYinUtil.WITH_TONE_NUMBER, PinYinUtil.WITH_V);
+            String artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+            if (artist == null)
+                artist = "(无名)";
+            String album = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
+            int duration = Integer.parseInt(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
+            int size = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
+            long albumId = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
+            String url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+            String year = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.YEAR));
+            String genre = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE);
+
+            // Store the Song Info
+            Song newSong = new Song(id, name, fileName, size, album, artist,
+                    duration, albumId, url, pinyin, year, genre);
+            songIdMap.put(id, newSong);
+            songList.add(newSong);
+
+            //Init the DB
+            if (!dbMgr.inSongDetail(newSong)) {
+                dbMgr.addToSongDetail(newSong);
+            }
+
+            // Store the Artist Info
+            if (!artistMap.containsKey(artist)) {
+                Artist artistItem = new Artist(artist);
+                artistItem.addSong(newSong);
+                artistList.add(artistItem);
+                artistMap.put(artist, artistItem);
+            } else {
+                artistMap.get(artist).addSong(newSong);
+            }
+        }
+        cursor.close();
+        sortSongByPinyin(songList);
+        sortArtistByPinyin(artistList);
+    }
+
     /*
      * Get SongList by Artist Name.
      */
@@ -121,6 +120,7 @@ public class SongProvider {
         }
         //List<Song> songListOfArtist = new ArrayList<Song>();
         Artist temp = artistMap.get(artist);
+        sortSongByPinyin(temp.getSongListOfArtist());
         return temp.getSongListOfArtist();
     }
     /*
@@ -278,9 +278,16 @@ public class SongProvider {
         List<Song> list = new ArrayList<>();
         Cursor c = dbMgr.getAgoSongs();
         while(c.moveToNext()) {
-            list.add(getSongById(c.getLong(c.getColumnIndex("song_id"))));
+            long songId = c.getLong(c.getColumnIndex("song_id"));
+            Song temp = getSongById(songId);
+            if (temp != null) {
+                list.add(temp);
+            } else {
+                dbMgr.deleteFromSongDetailById(songId);
+            }
         }
         c.close();
+        sortSongByPinyin(list);
         return list;
     }
     /*
@@ -290,9 +297,16 @@ public class SongProvider {
         List<Song> list = new ArrayList<>();
         Cursor c = dbMgr.getRecentlySongs();
         while(c.moveToNext()) {
-            list.add(getSongById(c.getLong(c.getColumnIndex("song_id"))));
+            long songId = c.getLong(c.getColumnIndex("song_id"));
+            Song temp = getSongById(songId);
+            if (temp != null) {
+                list.add(temp);
+            } else {
+                dbMgr.deleteFromSongDetailById(songId);
+            }
         }
         c.close();
+        sortSongByPinyin(list);
         return list;
     }
     /*

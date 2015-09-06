@@ -18,6 +18,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -27,6 +29,7 @@ import android.widget.Toast;
 import com.badprinter.yobey.R;
 import com.badprinter.yobey.activities.Player;
 import com.badprinter.yobey.adapter.CountAdapter;
+import com.badprinter.yobey.commom.AppContext;
 import com.badprinter.yobey.commom.Constants;
 import com.badprinter.yobey.customviews.WaveView;
 import com.badprinter.yobey.db.DBManager;
@@ -40,7 +43,6 @@ import com.db.chart.view.Tooltip;
 import com.db.chart.view.animation.Animation;
 import com.db.chart.view.animation.easing.BounceEase;
 import com.db.chart.view.animation.easing.CircEase;
-import com.yalantis.phoenix.PullToRefreshView;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import in.srain.cube.views.ptr.PtrClassicFrameLayout;
@@ -65,6 +67,8 @@ public class Home1 extends Fragment {
     private ListView countList;
     private PtrFrameLayout ptrFrame;
     private ImageView cd;
+    private ImageView bear;
+    private TextView msg;
 
 
     private DBManager dbMgr;
@@ -82,6 +86,8 @@ public class Home1 extends Fragment {
     private String listName = Constants.ListName.LIST_ALL;
     private int current = 0;
     private int currentTime = 0;
+    private ValueAnimator waveAnim;
+    private ValueAnimator cdAnim;
 
 
     public Home1() {
@@ -110,31 +116,22 @@ public class Home1 extends Fragment {
         current = sharedPref.getInt("lastCurrent", 0);
         currentTime = sharedPref.getInt("lastCurrentTime", 0);
 
-        // Init Notify
-        int hasNotify = sharedPref.getInt(Constants.Preferences.PREFERENCES_NOTIFY, Context.MODE_PRIVATE);
-        if (hasNotify == 1) {
-            Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
-            intent.putExtra("hasNotify", true);
-            intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_NOTIFY);
-            getActivity().startService(intent);
-        } else {
-            Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
-            intent.putExtra("hasNotify", false);
-            intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_NOTIFY);
-            getActivity().startService(intent);
-        }
+
 
         countAdapter = new CountAdapter();
         countList.setAdapter(countAdapter);
+
+
         ptrFrame.setPtrHandler(new PtrHandler() {
             @Override
             public void onRefreshBegin(PtrFrameLayout frame) {
+                countAdapter.updateCount();
                 frame.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         ptrFrame.refreshComplete();
                     }
-                }, 1200);
+                }, 1000);
             }
 
             @Override
@@ -142,39 +139,65 @@ public class Home1 extends Fragment {
                 return PtrDefaultHandler.checkContentCanBePulledDown(frame, content, header);
             }
         });
-        //ptrFrame.setOffsetToRefresh(1000);
         ptrFrame.addPtrUIHandler(new PtrUIHandler() {
             @Override
             public void onUIReset(PtrFrameLayout ptrFrameLayout) {
-                cd.setRotationY(0);
-                cd.setY(300);
+                msg.setText("下拉刷新");
+                Log.e(TAG, "onUIReset");
             }
 
             @Override
             public void onUIRefreshPrepare(PtrFrameLayout ptrFrameLayout) {
+                Log.e(TAG, "onUIRefreshPrepare");
             }
 
             @Override
             public void onUIRefreshBegin(PtrFrameLayout ptrFrameLayout) {
-
-                ValueAnimator anim = new ValueAnimator().ofInt(0, 360);
-                anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                msg.setText("正在刷新...");
+                cdAnim = ValueAnimator.ofFloat(0, 1);
+                cdAnim.setDuration(700);
+                cdAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                     @Override
                     public void onAnimationUpdate(ValueAnimator animation) {
-                        cd.setRotationY((int)animation.getAnimatedValue());
+                        cd.setRotation((float) animation.getAnimatedValue() * 360);
                     }
                 });
-                anim.start();
+                cdAnim.setRepeatMode(ValueAnimator.RESTART);
+                cdAnim.setRepeatCount(-1);
+                cdAnim.setInterpolator(new LinearInterpolator());
+                cdAnim.start();
+                Log.e(TAG, "onUIRefreshBegin");
             }
 
             @Override
             public void onUIRefreshComplete(PtrFrameLayout ptrFrameLayout) {
-
+                msg.setText("刷新成功");
+                if (cdAnim != null && cdAnim.isRunning())
+                    cdAnim.cancel();
+                Log.e(TAG, "onUIRefreshComplete");
             }
 
             @Override
             public void onUIPositionChange(PtrFrameLayout ptrFrameLayout, boolean b, byte b1, PtrIndicator ptrIndicator) {
 
+                int curY = ptrIndicator.getCurrentPosY();
+                int offsetY = ptrIndicator.getOffsetToRefresh();
+                int height = ptrIndicator.getHeaderHeight();
+
+                cd.setRotation(curY * 10);
+                cd.setScaleX(1 - (float) curY / height / 3);
+                cd.setScaleY(1 - (float) curY / height / 3);
+                bear.setScaleX((float) curY / height / 3 + 1);
+                bear.setScaleY((float) curY / height / 3 + 1);
+                float k = -(50+offsetY)/(float)offsetY;
+                if (ptrIndicator.getCurrentPosY() <= ptrIndicator.getOffsetToRefresh()) {
+                    cd.setY(curY * k + height + 50);
+                    if (b)
+                        msg.setText("下拉刷新");
+                } else {
+                    if (b)
+                        msg.setText("松开刷新");
+                }
             }
         });
 
@@ -206,6 +229,23 @@ public class Home1 extends Fragment {
                 intent.setAction("com.badprinter.yobey.service.PLAYER_SERVICE");
                 intent.putExtra("controlMsg", Constants.PlayerControl.INIT_GET_CURRENT_INFO);
                 getActivity().startService(intent);
+
+                // Init Notify
+                SharedPreferences sharedPref = getActivity().getSharedPreferences(
+                            Constants.Preferences.PREFERENCES_KEY, Context.MODE_PRIVATE);
+                int hasNotify = sharedPref.getInt(Constants.Preferences.PREFERENCES_NOTIFY, Context.MODE_PRIVATE);
+                if (hasNotify == 1) {
+                    Intent intent1 = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+                    intent1.putExtra("hasNotify", true);
+                    intent1.putExtra("controlMsg", Constants.PlayerControl.UPDATE_NOTIFY);
+                    getActivity().startService(intent1);
+                } else {
+                    Intent intent1 = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+                    intent1.putExtra("hasNotify", false);
+                    intent1.putExtra("controlMsg", Constants.PlayerControl.UPDATE_NOTIFY);
+                    getActivity().startService(intent1);
+                }
+
             }
         });
 
@@ -240,6 +280,8 @@ public class Home1 extends Fragment {
         countList = (ListView)root.findViewById(R.id.countList);
         ptrFrame = (PtrFrameLayout)root.findViewById(R.id.ptrFrame);
         cd = (ImageView)root.findViewById(R.id.cd);
+        bear = (ImageView)root.findViewById(R.id.bear);
+        msg = (TextView)root.findViewById(R.id.msg);
     }
 
     /*
@@ -342,9 +384,21 @@ public class Home1 extends Fragment {
     private void updateWaveBar(int currentTime) {
         Song temp = SongProvider.getSongById(currentSongId);
         if (temp != null) {
+            if (waveAnim != null && waveAnim.isRunning())
+                waveAnim.cancel();
+            waveAnim = ValueAnimator.ofFloat(0, 1);
+            waveAnim.setDuration(400);
             int duration = temp.getDuration();
-            int progress = currentTime*100/duration;
-            waveBar.setProgress(progress);
+            final int currentProgress = waveBar.getProgress();
+            final int progress = currentTime*100/duration;
+            waveAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    int offset = (int)((progress - currentProgress)*(float)animation.getAnimatedValue());
+                    waveBar.setProgress(currentProgress + offset);
+                }
+            });
+            waveAnim.start();
         }
     }
 

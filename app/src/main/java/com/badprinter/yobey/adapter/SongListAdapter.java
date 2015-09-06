@@ -96,7 +96,10 @@ public class SongListAdapter extends BaseAdapter {
             holder = (ListItemViewHolder) convertView.getTag();
         }
 
+        Log.e(TAG, "bug position = " + position + ", songlist'size = " + songList.size());
         final Song temp = songList.get(position);
+        Log.e(TAG, "bug temp == null : " + (temp == null));
+        Log.e(TAG, "bug songName = " + temp.getName());
         holder.songName.setText(temp.getName());
         holder.songArtist.setText(temp.getArtist());
         if (dbMgr.isFavorite(temp)) {

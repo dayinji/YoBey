@@ -7,13 +7,18 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.RemoteException;
 import android.preference.Preference;
 import android.support.v7.app.NotificationCompat;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
@@ -52,18 +57,48 @@ public class PlayerService extends Service{
      * 2 = RandomPlaying
      */
     private int mode = 0;
+    private List<Integer> randIndex;
     private MediaPlayer player;
     private List<Song> songList;
     private Handler handler;
     private Timer timer;
 
-
     private DBManager dbMgr;
 
+    // When Calling Phone, Stop Playing Music
+    private boolean mResumeAfterCall = false;
+    private PhoneStateListener phoneStateListener = new PhoneStateListener(){
+        @Override
+        public void onCallStateChanged(int state, String incomingNumber) {
+            if (state == TelephonyManager.CALL_STATE_RINGING) {
+                if (isPlay && !mResumeAfterCall) {
+                    pause();
+                    mResumeAfterCall = true;
+                }
+            } else if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
+                if (isPlay && !mResumeAfterCall) {
+                    pause();
+                    mResumeAfterCall = true;
+                }
+            } else if (state == TelephonyManager.CALL_STATE_IDLE) {
+                // start playing again
+                if (mResumeAfterCall) {
+                    resum();
+                    mResumeAfterCall = false;
+                }
+            }
+            boardCurrentState();
+        }
+    };
 
     @Override
     public void onCreate() {
         super.onCreate();
+
+        // When Calling Phone, Stop Playing Music
+        TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        tmgr.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+
         dbMgr = new DBManager();
         isPlay = false;
         nm  = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -77,17 +112,7 @@ public class PlayerService extends Service{
             public void onCompletion(MediaPlayer mp) {
                 updateDB(true, current);
                 playNext();
-                Intent sendIntent = new Intent(Constants.UiControl.UPDATE_UI);
-                sendIntent.putExtra("current", current);
-                sendIntent.putExtra("isPlay", isPlay);
-                currentTime = player.getCurrentPosition();
-                sendIntent.putExtra("currentTime", currentTime);
-                sendIntent.putExtra("songId", currentSongId);
-                sendIntent.putExtra("mode", mode);
-                sendIntent.putExtra("listName", listName);
-                sendBroadcast(sendIntent);
-                if (hasNotify)
-                    showButtonNotify();
+                boardCurrentState();
             }
         });
         init();
@@ -123,6 +148,7 @@ public class PlayerService extends Service{
     @Override
     public int onStartCommand(Intent intent, int flags,  int startId) {
 
+        int id = 0;
         switch (intent.getExtras().getString("controlMsg")) {
             case Constants.PlayerControl.PRE_SONG_MSG:
                 if (currentTime > 20*1000 && currentTime < duration - 30*1000)
@@ -130,6 +156,7 @@ public class PlayerService extends Service{
                 else if (currentTime >= duration-30*1000)
                     updateDB(true, current);
                 playPre();
+                id = 1;
                 break;
             case Constants.PlayerControl.NEXT_SONG_MSG:
                 if (currentTime > 20 * 1000 && currentTime < duration - 30*1000)
@@ -137,30 +164,38 @@ public class PlayerService extends Service{
                 else if (currentTime >= duration-30*1000)
                     updateDB(true, current);
                 playNext();
+                id = 2;
                 break;
             case Constants.PlayerControl.PAUSE_PLAYING_MSG:
                 pause();
+                id = 3;
                 break;
             case Constants.PlayerControl.CONTINUE_PLAYING_MSG:
                 resum();
+                id = 4;
                 break;
             case Constants.PlayerControl.PLAYING_MSG:
                 current = intent.getExtras().getInt("current");
                 currentSongId = songList.get(current).getId();
                 currentTime = intent.getExtras().getInt("currenTime");
                 play(currentTime);
+                id = 5;
                 break;
             case Constants.PlayerControl.UPDATE_CURRENTTIME:
                 updateCurrentTime(intent.getExtras().getInt("currentTime"));
+                id = 6;
                 break;
             case Constants.PlayerControl.INIT_GET_CURRENT_INFO:
+                id = 7;
+                Log.e(TAG, "INIT_GET_CURRENT_INFO");
                 // Only for Get Current SongId And Other Info
                 break;
             case Constants.PlayerControl.CHANGE_MODE:
+                id = 8;
                 mode = mode + 1 >= 3 ? 0 : mode + 1;
                 break;
             case Constants.PlayerControl.UPDATE_LIST:
-                updateList(intent.getExtras().getString("listName"));
+                //updateList(intent.getExtras().getString("listName"));
                 return START_STICKY;
             case Constants.PlayerControl.CHANGE_LIST:
                 changeList(intent.getExtras().getString("listName"));
@@ -168,11 +203,27 @@ public class PlayerService extends Service{
             case Constants.PlayerControl.INIT_SERVICE:
                 changeList(intent.getExtras().getString("listName"));
                 current = intent.getExtras().getInt("current");
-                currentSongId = songList.get(current).getId();
-                Log.e(TAG, "listName = " + listName);
-                Log.e(TAG, "file = " + songList.get(current).getFileName());
-                init();
-                showButtonNotify();
+                try {
+                    if (songList.size() > current) {
+                        Log.e(TAG, "case 0");
+                        currentSongId = songList.get(current).getId();
+                    } else if (songList.size() != 0) {
+                        Log.e(TAG, "case 1");
+                        current = 0;
+                        currentSongId = songList.get(current).getId();
+                    } else {
+                        Log.e(TAG, "case 2");
+                        changeList(Constants.ListName.LIST_ALL);
+                        current = 0;
+                        currentSongId = songList.get(current).getId();
+                    }
+                    init();
+                    showButtonNotify();
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception");
+                    e.printStackTrace();
+                }
+                Log.e(TAG, "INIT_SERVICE");
                 return START_STICKY;
             case Constants.PlayerControl.UPDATE_NOTIFY:
                 boolean b = intent.getExtras().getBoolean("hasNotify");
@@ -187,18 +238,8 @@ public class PlayerService extends Service{
             default:
                 break;
         }
-        Intent sendIntent = new Intent(Constants.UiControl.UPDATE_UI);
-        sendIntent.putExtra("current", current);
-        // Return songId
-        sendIntent.putExtra("songId", currentSongId);
-        sendIntent.putExtra("isPlay", isPlay);
-        sendIntent.putExtra("mode", mode);
-        currentTime = player.getCurrentPosition();
-        sendIntent.putExtra("currentTime", currentTime);
-        sendIntent.putExtra("listName", listName);
-        sendBroadcast(sendIntent);
-        if (hasNotify)
-            showButtonNotify();
+        Log.e(TAG, "debug id = " + id);
+        boardCurrentState();
 
         /*
          * THe Big Big Bug had Happened Here! I Return StartId Instead of START_STICKY Before.
@@ -214,6 +255,8 @@ public class PlayerService extends Service{
             player = null;
         }
         timer.cancel();
+        hasNotify = false;
+        nm.cancel(950520);
     }
 
     private void init() {
@@ -350,7 +393,7 @@ public class PlayerService extends Service{
         if (!isCompleted) {
             dbMgr.updateSwicthCount(temp);
         }
-        dbMgr.updateCommonCountPlay(isCompleted);
+        dbMgr.updateDateCountPlay(isCompleted);
     }
     /*
      * Update the SongList EveryTime the User Open the List
@@ -378,6 +421,22 @@ public class PlayerService extends Service{
             songList = SongProvider.getSongListByName(listName);
             this.listName = listName;
         }
+    }
+    /*
+     * Boardcast Current State
+     */
+    private void boardCurrentState() {
+        Intent sendIntent = new Intent(Constants.UiControl.UPDATE_UI);
+        sendIntent.putExtra("current", current);
+        sendIntent.putExtra("isPlay", isPlay);
+        currentTime = player.getCurrentPosition();
+        sendIntent.putExtra("currentTime", currentTime);
+        sendIntent.putExtra("songId", currentSongId);
+        sendIntent.putExtra("mode", mode);
+        sendIntent.putExtra("listName", listName);
+        sendBroadcast(sendIntent);
+        if (hasNotify)
+            showButtonNotify();
     }
 
     public void showButtonNotify(){

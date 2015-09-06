@@ -111,28 +111,42 @@
         android:layout_height="0dp"
         android:layout_weight="2"
 
-        cube_ptr:ptr_resistance="1.7"
-        cube_ptr:ptr_ratio_of_header_height_to_refresh="0.8"
+        cube_ptr:ptr_resistance="2.5"
+        cube_ptr:ptr_ratio_of_header_height_to_refresh="0.6"
         cube_ptr:ptr_duration_to_close="300"
-        cube_ptr:ptr_duration_to_close_header="700"
+        cube_ptr:ptr_duration_to_close_header="500"
         cube_ptr:ptr_keep_header_when_refresh="true"
         cube_ptr:ptr_pull_to_fresh="false" >
 
         <RelativeLayout
+            android:background="@color/qingse"
             android:layout_width="match_parent"
-            android:layout_height="200dp">
+            android:layout_height="100dp">
             <ImageView
-                android:id="@+id/bg"
-                android:layout_width="match_parent"
+                android:id="@+id/bear"
+                android:src="@drawable/bear"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentBottom="true"
+                android:layout_width="55dp"
+                android:layout_height="55dp"/>
+            <TextView
+                android:id="@+id/msg"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/bg"
-                android:scaleType="centerCrop"/>
+                android:text="下拉刷新"
+                android:textSize="@dimen/font_medium"
+                android:textColor="@color/qianbai"
+                android:layout_toRightOf="@id/bear"
+                android:paddingTop="20dp"
+                android:layout_alignTop="@id/bear"
+                android:layout_marginLeft="10dp"/>
             <ImageView
                 android:id="@+id/cd"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
-                android:layout_alignParentBottom="true"
-                android:src="@drawable/cd"/>
+                android:src="@drawable/cd"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_toLeftOf="@id/bear"
+                android:layout_marginRight="10dp"/>
         </RelativeLayout>
 
         <ListView

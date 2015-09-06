@@ -159,6 +159,8 @@ public class MusicBar extends View {
     @Override
     public boolean onTouchEvent(MotionEvent me) {
         if (me.getAction() == MotionEvent.ACTION_MOVE) {
+            if (indicatorAnim != null && indicatorAnim.isRunning())
+                indicatorAnim.cancel();
             float x = me.getX();
             int toPoint = (int)((x/getWidth())*max);
             setProgress(toPoint);
