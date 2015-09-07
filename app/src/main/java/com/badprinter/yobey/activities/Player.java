@@ -373,7 +373,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
          */
         Bitmap before = ((BitmapDrawable) blurBg.getDrawable()).getBitmap();
         blurBg.setAlpha(0f);
-        blurBg.setImageBitmap(SongProvider.getArtwork(Player.this, songId, albumId, false, true));
+        blurBg.setImageBitmap(SongProvider.getArtwork(Player.this, songId, albumId, true, true));
         Blurry.with(Player.this)
                 .radius(20)
                 .sampling(5)

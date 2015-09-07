@@ -24,6 +24,7 @@ import android.widget.RemoteViews;
 
 import com.badprinter.yobey.R;
 import com.badprinter.yobey.activities.Player;
+import com.badprinter.yobey.activities.Welcome;
 import com.badprinter.yobey.activities.Yobey;
 import com.badprinter.yobey.commom.Constants;
 import com.badprinter.yobey.db.DBManager;
@@ -458,7 +459,7 @@ public class PlayerService extends Service{
         // Intents
         Intent playIntent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
         Intent nextIntent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
-        Intent activityIntent = new Intent(this, Yobey.class);
+        Intent activityIntent = new Intent(this, Welcome.class);
 
         // Make Sure That Returing App Instead of New A Activity
         activityIntent.setAction(Intent.ACTION_MAIN);

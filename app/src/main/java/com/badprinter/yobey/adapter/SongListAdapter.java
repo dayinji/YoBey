@@ -89,6 +89,7 @@ public class SongListAdapter extends BaseAdapter {
             holder.songArtist = (TextView) convertView.findViewById(R.id.songArtist);
             holder.songCata = (ImageView)convertView.findViewById(R.id.songCata);
             holder.ripple = (RippleView)convertView.findViewById(R.id.rippleView);
+            holder.detail = (TextView)convertView.findViewById(R.id.detail);
 
             convertView.setTag(holder);
 
@@ -96,10 +97,7 @@ public class SongListAdapter extends BaseAdapter {
             holder = (ListItemViewHolder) convertView.getTag();
         }
 
-        Log.e(TAG, "bug position = " + position + ", songlist'size = " + songList.size());
         final Song temp = songList.get(position);
-        Log.e(TAG, "bug temp == null : " + (temp == null));
-        Log.e(TAG, "bug songName = " + temp.getName());
         holder.songName.setText(temp.getName());
         holder.songArtist.setText(temp.getArtist());
         if (dbMgr.isFavorite(temp)) {
@@ -127,6 +125,10 @@ public class SongListAdapter extends BaseAdapter {
                 startPlayMusic(position);
             }
         });
+        if (listName.equals(Constants.ListName.LIST_AGO) || listName.equals(Constants.ListName.LIST_RECENTLY)) {
+            holder.detail.setText(temp.getDate());
+            Log.e(TAG, "date = " + temp.getDate());
+        }
 
         if (songList.get(position).getId() == currentSongId) {
             // do something
@@ -193,6 +195,7 @@ public class SongListAdapter extends BaseAdapter {
         private RippleView ripple;
         public ValueAnimator zoomOutAnim;
         public ValueAnimator zoomInAnim;
+        public TextView detail;
     }
 
     public void updateItem(Long currentSongId) {

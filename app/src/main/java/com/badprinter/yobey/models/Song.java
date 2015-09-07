@@ -19,12 +19,11 @@ public class Song implements Comparable<Song>{
     private long albumId;
     private String url;
     private String pinyin;
-    private String year;
-    private String genre;
+    private String date;
 
     public Song(long id, String name, String fileName, int size, String album,
                 String artist, int duration, long albumId, String url,
-                String pinyin, String year, String genre) {
+                String pinyin) {
         this.name = name;
         this.fileName = fileName;
         this.size = size;
@@ -35,8 +34,6 @@ public class Song implements Comparable<Song>{
         this.albumId = albumId;
         this.url = url;
         this.pinyin = pinyin;
-        this.year = year;
-        this.genre = genre;
     }
 
     public int compareTo(Song other) {
@@ -86,10 +83,7 @@ public class Song implements Comparable<Song>{
     public String getPinyin() { return pinyin; }
     public void setPinyin(String pinyin) { this.pinyin = pinyin; }
 
-    public String getYear() { return year; }
-    public void setYear(String year) { this.year = year; }
-
-    public String getGenre() { return genre; }
-    public void setGenre(String genre) { this.genre = genre; }
+    public String getDate() { return date; }
+    public void setDate(String date) { this.date = date; }
 
 }

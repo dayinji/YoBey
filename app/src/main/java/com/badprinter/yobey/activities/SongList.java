@@ -284,7 +284,7 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
                      * Recycle the Bitmap before
                      */
                     //((BitmapDrawable)playingPhoto.getDrawable()).getBitmap().recycle();
-                    playingPhoto.setImageBitmap(SongProvider.getArtwork(SongList.this, temp.getId(), temp.getAlbumId(), false, true));
+                    playingPhoto.setImageBitmap(SongProvider.getArtwork(SongList.this, temp.getId(), temp.getAlbumId(), true, true));
                     playingArtist.setText(temp.getArtist());
                     playingName.setText(temp.getName());
                     if (isPlay) {

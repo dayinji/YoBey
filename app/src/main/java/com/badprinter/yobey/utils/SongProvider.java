@@ -82,12 +82,10 @@ public class SongProvider {
             int size = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
             long albumId = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
             String url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-            String year = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.YEAR));
-            String genre = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE);
 
             // Store the Song Info
             Song newSong = new Song(id, name, fileName, size, album, artist,
-                    duration, albumId, url, pinyin, year, genre);
+                    duration, albumId, url, pinyin);
             songIdMap.put(id, newSong);
             songList.add(newSong);
 
@@ -140,9 +138,9 @@ public class SongProvider {
             getSongList();
         }
         List<Song> favoriteSongList = new ArrayList<Song>();
-        for (Song song : songList) {
-            if (dbMgr.isFavorite(song)) {
-                favoriteSongList.add(song);
+        for (int i = 0 ; i < songList.size() ; i++) {
+            if (dbMgr.isFavorite(songList.get(i))) {
+                favoriteSongList.add(songList.get(i));
             }
         }
         return favoriteSongList;
@@ -155,9 +153,9 @@ public class SongProvider {
             getSongList();
         }
         List<Artist> favoriteArtistSongList = new ArrayList<Artist>();
-        for (Artist a : artistList) {
-            if (dbMgr.isFavoriteArtist(a.getName())) {
-                favoriteArtistSongList.add(a);
+        for (int i = 0 ; i < artistList.size() ; i++) {
+            if (dbMgr.isFavoriteArtist(artistList.get(i).getName())) {
+                favoriteArtistSongList.add(artistList.get(i));
             }
         }
         return favoriteArtistSongList;
@@ -222,9 +220,9 @@ public class SongProvider {
         List<Song> listA = getAgoSongs();
 
         List<Artist>artistList = SongProvider.getFavoriteArtistList();
-        for (Artist a : artistList) {
-            for (Song s : a.getSongListOfArtist()) {
-                listFA.add(s);
+        for (int i = 0 ; i < artistList.size() ; i++) {
+            for (int j = 0 ; j < artistList.get(i).getSongListOfArtist().size() ; j++) {
+                listFA.add(artistList.get(i).getSongListOfArtist().get(j));
             }
         }
 
@@ -264,8 +262,8 @@ public class SongProvider {
             //Log.e(TAG, "maxLoopCount = " + maxLoopCount);
         }
 
-        for (Song s : set)
-            recommendList.add(s);
+        for (int i = 0 ; i < set.size() ; i++)
+            recommendList.add(songList.get(i));
 
         sortSongByPinyin(recommendList);
 
@@ -282,6 +280,8 @@ public class SongProvider {
             Song temp = getSongById(songId);
             if (temp != null) {
                 list.add(temp);
+                // Set Date
+                temp.setDate(c.getString(c.getColumnIndex("time_string")));
             } else {
                 dbMgr.deleteFromSongDetailById(songId);
             }
@@ -301,6 +301,8 @@ public class SongProvider {
             Song temp = getSongById(songId);
             if (temp != null) {
                 list.add(temp);
+                // Set Date
+                temp.setDate(c.getString(c.getColumnIndex("time_string")));
             } else {
                 dbMgr.deleteFromSongDetailById(songId);
             }
@@ -322,15 +324,6 @@ public class SongProvider {
         Collections.sort(list);
     }
 
-    public static Bitmap getDefaultArtwork(Context context,boolean small) {
-        BitmapFactory.Options opts = new BitmapFactory.Options();
-        opts.inPreferredConfig = Bitmap.Config.RGB_565;
-        if(small){
-            return BitmapFactory.decodeResource(context.getResources(), R.drawable.playnext_00000);
-        }
-        return BitmapFactory.decodeResource(context.getResources(), R.drawable.playnext_00000);
-    }
-
     /*
      * Get the Song with Id
      */
@@ -338,6 +331,15 @@ public class SongProvider {
         if (songList == null)
             getSongList();
         return songIdMap.get(id);
+    }
+
+    public static Bitmap getDefaultArtwork(Context context,boolean small) {
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inPreferredConfig = Bitmap.Config.RGB_565;
+        if(small){
+            return BitmapFactory.decodeResource(context.getResources(), R.drawable.default_album_small);
+        }
+        return BitmapFactory.decodeResource(context.getResources(), R.drawable.default_album);
     }
 
     /**

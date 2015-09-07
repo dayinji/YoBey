@@ -13,7 +13,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private final String TAG = "DBHelper";
 
     private static final String DATABASE_NAME = "yobey.db";
-    private static final int DATABASE_VERSION = 9;
+    private static final int DATABASE_VERSION = 10;
 
     /*
      * My Favorite List Table
@@ -37,8 +37,6 @@ public class DBHelper extends SQLiteOpenHelper {
             "song_id varchar(100), " +
             "name varchar(100), " +
             "artist varchar(100), " +
-            "year integer, " +
-            "genre String, " +
             "play_count integer, " +
             "switch_count integer, " +
             "time_string varchar(50), " +
@@ -80,7 +78,7 @@ public class DBHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
             values.put("date", catas[i]);
             values.put("count", 0);
-            db.insert("commoncount", null, values);
+            db.insert("datecount", null, values);
         }
 
     }

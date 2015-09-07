@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
@@ -43,6 +44,7 @@ public class CountAdapter extends BaseAdapter{
     private TextView allPlay;
     private TextView allSwitch;
     private LineChartView daysChart;
+    private LinearLayout chartLayout;
     private String[] days = new String[7];
     DBManager dbMgr;
     private float[] daysCount = new float[7];
@@ -52,12 +54,18 @@ public class CountAdapter extends BaseAdapter{
         public void run() {
             new Handler().postDelayed(new Runnable() {
                 public void run() {
-                    int[] temp1 = dbMgr.getDaysCount();
+                    chartLayout.removeView(daysChart);
+                    daysChart = new LineChartView(context);
+                    initCharts();
+                    initCount();
+                    chartLayout.addView(daysChart);
+                    daysChart.show(new Animation().setStartPoint(1, .5f));
+                    /*int[] temp1 = dbMgr.getDaysCount();
                     intToFloat(temp1, daysCount);
                     LineSet set1 = new LineSet(days, daysCount);
                     styleSet(set1);
                     daysChart.addData(set1);
-                    daysChart.show(new Animation().setStartPoint(1, .5f));
+                    daysChart.show(new Animation().setStartPoint(1, .5f));*/
                 }
             }, 500);
         }
@@ -91,7 +99,9 @@ public class CountAdapter extends BaseAdapter{
         }}
         allPlay = (TextView)convertView.findViewById(R.id.allPlay);
         allSwitch = (TextView)convertView.findViewById(R.id.allSwicth);
-        daysChart = (LineChartView)convertView.findViewById(R.id.chart);
+        //daysChart = (LineChartView)convertView.findViewById(R.id.chart);
+        chartLayout = (LinearLayout)convertView.findViewById(R.id.chartLayout);
+        daysChart = new LineChartView(context);
 
         //Get Dates
         Calendar calendar = Calendar.getInstance();
@@ -104,6 +114,7 @@ public class CountAdapter extends BaseAdapter{
 
         initCharts();
         initCount();
+        chartLayout.addView(daysChart);
 
         return convertView;
     }
@@ -165,6 +176,13 @@ public class CountAdapter extends BaseAdapter{
     }
     // Style the Chart
     private void styleChart(LineChartView chart) {
+        // Get Density
+        float d = context.getResources().getDisplayMetrics().density;
+        // Set Height And Width
+        int height = (int)(100*d);
+        chart.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height));
+        // Set Padding
+        chart.setPadding((int)(15*d), 0, (int)(5*d), 0);
         chart.setYAxis(false);
         chart.setAxisThickness(1);
         chart.setAxisColor(context.getResources().getColor(R.color.qianhui));

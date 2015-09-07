@@ -1,5 +1,7 @@
 package com.badprinter.yobey.fragments;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
@@ -10,6 +12,8 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -34,6 +38,7 @@ import com.badprinter.yobey.commom.Constants;
 import com.badprinter.yobey.customviews.WaveView;
 import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.models.Song;
+import com.badprinter.yobey.utils.MyEvalucatorUtil;
 import com.badprinter.yobey.utils.SongProvider;
 import com.db.chart.listener.OnEntryClickListener;
 import com.db.chart.model.LineSet;
@@ -75,11 +80,12 @@ public class Home1 extends Fragment {
     private MyClickListener listener = new MyClickListener();
     private boolean isPlay = false;
     private long currentSongId = 0;
-    private AnimationDrawable animPlay;
+    /*private AnimationDrawable animPlay;
     private AnimationDrawable animNext;
-    private AnimationDrawable animPre;
+    private AnimationDrawable animPre;*/
     private int[] animId = new int[] {
-            R.drawable.playtopause, R.drawable.pausetoplay, R.drawable.playnext, R.drawable.playpre
+            R.drawable.playtopause_00000, R.drawable.pausetoplay_00000,
+            R.drawable.playnext_00000, R.drawable.playpre_00000
     };
     private HomeReceiver homeReceiver;
     private CountAdapter countAdapter;
@@ -120,6 +126,7 @@ public class Home1 extends Fragment {
 
         countAdapter = new CountAdapter();
         countList.setAdapter(countAdapter);
+        countList.setEnabled(false);
 
 
         ptrFrame.setPtrHandler(new PtrHandler() {
@@ -310,12 +317,14 @@ public class Home1 extends Fragment {
                 case R.id.nextBt:
                     intent.putExtra("controlMsg", Constants.PlayerControl.NEXT_SONG_MSG);
                     getActivity().startService(intent);
-                    playDrawableAnim(nextBt, 2, animNext);
+                    //playDrawableAnim(nextBt, 2, animNext);
+                 //   playAnim(nextBt, animId[2]);
                     break;
                 case R.id.preBt:
                     intent.putExtra("controlMsg", Constants.PlayerControl.PRE_SONG_MSG);
                     getActivity().startService(intent);
-                    playDrawableAnim(preBt, 3, animPre);
+                    //playDrawableAnim(preBt, 3, animPre);
+                   // playAnim(preBt, animId[3]);
                     break;
                 case R.id.playingPhoto:
                     Intent trunToPlayerIntent = new Intent(getActivity(), Player.class);
@@ -330,7 +339,7 @@ public class Home1 extends Fragment {
             }
         }
     }
-    private void playDrawableAnim(ImageView view, int id, AnimationDrawable animDrawable) {
+    /*private void playDrawableAnim(ImageView view, int id, AnimationDrawable animDrawable) {
         if (animDrawable != null && animDrawable.isRunning())
             animDrawable.stop();
         if (id == 2)
@@ -341,6 +350,41 @@ public class Home1 extends Fragment {
         animDrawable = (AnimationDrawable) view.getBackground();
         animDrawable.setOneShot(true);
         animDrawable.start();
+    }*/
+    private void playAnim(final ImageView img, final int id) {
+        ValueAnimator zoomOut = ValueAnimator.ofFloat(1, 0);
+        final ValueAnimator zoomIn = ValueAnimator.ofFloat(0, 1);
+        zoomOut.setDuration(100);
+        zoomOut.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float f = (float) animation.getAnimatedValue();
+                img.setScaleX(f);
+                img.setScaleY(f);
+            }
+        });
+        zoomIn.setDuration(2000);
+        MyEvalucatorUtil.JellyFloatAnim jelly = new MyEvalucatorUtil.JellyFloatAnim();
+        jelly.setDuration(2000);
+        jelly.setFirstTime(100);
+        jelly.setAmp(0.03);
+        zoomIn.setEvaluator(jelly);
+        zoomIn.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float f = (float) animation.getAnimatedValue();
+                img.setScaleX(f);
+                img.setScaleY(f);
+            }
+        });
+        zoomOut.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                img.setImageDrawable(getResources().getDrawable(id));
+                zoomIn.start();
+            }
+        });
+        zoomOut.start();
     }
     /*
  * Receive the Broad from Sevice for Updating UI
@@ -353,18 +397,20 @@ public class Home1 extends Fragment {
                     boolean isPlayFromSevice = intent.getBooleanExtra("isPlay", false); // Play or Pause
 
                     currentSongId = intent.getLongExtra("songId", 0); // Current Song Id
+                    if (isPlayFromSevice && isPlay != isPlayFromSevice) {
+                        //playDrawableAnim(playBt, 0, animPlay);
+                        playAnim(playBt, animId[1]);
+                    } else if (!isPlayFromSevice && isPlay != isPlayFromSevice) {
+                        // playDrawableAnim(playBt, 1, animPlay);
+                        playAnim(playBt, animId[0]);
+                    }
                     isPlay = isPlayFromSevice;
 
                     Song temp = SongProvider.getSongById(currentSongId);
-                    playingPhoto.setImageBitmap(SongProvider.getArtwork(getActivity(), temp.getId(), temp.getAlbumId(), false, false));
+                    playingPhoto.setImageBitmap(SongProvider.getArtwork(getActivity(), temp.getId(), temp.getAlbumId(), true, false));
                     playingArtist.setText(temp.getArtist());
                     playingName.setText(temp.getName());
 
-                    if (isPlay) {
-                        playDrawableAnim(playBt, 0, animPlay);
-                    } else {
-                        playDrawableAnim(playBt, 1, animPlay);
-                    }
                     //test
                     listName = intent.getStringExtra("listName");
                     current = intent.getIntExtra("current", 0);

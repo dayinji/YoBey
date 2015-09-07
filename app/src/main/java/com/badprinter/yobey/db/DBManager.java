@@ -93,10 +93,9 @@ public class DBManager {
             return;
         db.beginTransaction();
         try {
-            db.execSQL("INSERT INTO songdetail VALUES(null, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            db.execSQL("INSERT INTO songdetail VALUES(null, ?, ?, ?, ?, ?, ?, ?)",
                     new Object[]{song.getId(), song.getName(), song.getArtist(),
-                            song.getYear(), song.getGenre(), 0, 0,
-                            getCurrentTimeString(), getCurrentTimeLong()});
+                            0, 0, getCurrentTimeString(), getCurrentTimeLong()});
 
             db.setTransactionSuccessful();
         } finally {
@@ -168,6 +167,7 @@ public class DBManager {
         while(c.moveToNext()) {
             count = Integer.parseInt(c.getString(c.getColumnIndex("switch_count")));
         }
+        c.close();
         return count;
     }
     /*
@@ -360,7 +360,8 @@ public class DBManager {
     public void logCursor() {
         Cursor c = db.rawQuery("SELECT * FROM songdetail", null);
         Log.e(TAG, "logCursor0");
-        if (c == null) {
+        if (c.getCount() == 0) {
+            c.close();
             return;
         }
         for (int i = 0 ; i < c.getColumnCount(); i++)
@@ -373,6 +374,7 @@ public class DBManager {
             }
             System.out.println();
         }
+        c.close();
     }
     private long getCurrentTimeLong() {
         return System.currentTimeMillis();

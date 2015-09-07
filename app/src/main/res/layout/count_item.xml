@@ -46,11 +46,9 @@
             android:layout_below="@id/allSwicth"
             android:text="切歌" />
     </RelativeLayout>
-    <com.db.chart.view.LineChartView
-        android:id="@+id/chart"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:paddingLeft="15dp"
+    <LinearLayout
+        android:id="@+id/chartLayout"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="100dp"/>
 
