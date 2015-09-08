@@ -1,5 +1,7 @@
 package com.badprinter.yobey.activities;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.BroadcastReceiver;
@@ -9,6 +11,7 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.BoringLayout;
@@ -31,6 +34,7 @@ import com.badprinter.yobey.customviews.MusicBar;
 import com.badprinter.yobey.customviews.MyScrollView;
 import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.models.Song;
+import com.badprinter.yobey.utils.MyEvalucatorUtil;
 import com.badprinter.yobey.utils.SongProvider;
 
 import org.w3c.dom.Text;
@@ -66,10 +70,10 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
     private int currentTime;
     private String listName;
     //private String listName;
-    private AnimationDrawable animPlay;
+   /* private AnimationDrawable animPlay;
     private AnimationDrawable animNext;
     private AnimationDrawable animPre;
-    private AnimationDrawable animlike;
+    private AnimationDrawable animlike;*/
     private AnimationDrawable smokeAnimDrawable;
     private Lyric lyricView;
     private MyScrollView scrollLyric;
@@ -83,9 +87,9 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
 
     private ValueAnimator changeBlurBg = null;
     private int[] animId = new int[] {
-            R.drawable.playtopause, R.drawable.pausetoplay,
-            R.drawable.playnext, R.drawable.playpre,
-            R.drawable.like, R.drawable.unlike
+            R.drawable.pausetoplay_00000, R.drawable.playtopause_00000,
+            R.drawable.playnext_00000, R.drawable.playpre_00000,
+            R.drawable.like_00029, R.drawable.like_00000
     };
 
     @Override
@@ -149,12 +153,34 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
                 intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_CURRENTTIME);
                 intent.putExtra("currentTime", toPoint);
                 startService(intent);
+                smoke.setVisibility(View.INVISIBLE);
             }
             public void onProgressAnimCall(int point) {
-                smoke.setX(((float)bar.getProgress()/SongProvider.getSongById(currentSongId).getDuration())*bar.getMeasuredWidth()
+                smoke.setX(((float) bar.getProgress() / SongProvider.getSongById(currentSongId).getDuration()) * bar.getMeasuredWidth()
                         - smoke.getMeasuredWidth() - 4);
             }
+            public void onActionUp() {
+                smoke.setPivotX(smoke.getMeasuredWidth());
+                smoke.setPivotY(smoke.getMeasuredHeight());
+                ValueAnimator anim = ValueAnimator.ofFloat(0, 1);
+                anim.setDuration(1000).setStartDelay(300);
+                anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        smoke.setScaleX((float)animation.getAnimatedValue());
+                        smoke.setScaleY((float)animation.getAnimatedValue());
+                    }
+                });
+                anim.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        smoke.setVisibility(View.VISIBLE);
+                    }
+                });
+                anim.start();
+            }
         };
+
         ViewTreeObserver vto1 = smoke.getViewTreeObserver();
         vto1.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -230,7 +256,8 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
             case R.id.preBt:
                 intent.putExtra("controlMsg", Constants.PlayerControl.PRE_SONG_MSG);
                 startService(intent);
-                playDrawableAnim(preBt, 3, animPre);
+               // playDrawableAnim(preBt, 3, animPre);
+               // playAnim(preBt, animId[3], 0.8f, false);
                 break;
             case R.id.playBt:
                 if (isPlay == false) {
@@ -245,20 +272,23 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
             case R.id.nextBt:
                 intent.putExtra("controlMsg", Constants.PlayerControl.NEXT_SONG_MSG);
                 startService(intent);
-                playDrawableAnim(nextBt, 2, animNext);
+               // playDrawableAnim(nextBt, 2, animNext);
+               // playAnim(nextBt, animId[2], 0.8f, false);
                 break;
             case R.id.likeBt:
                 Song currentSong = SongProvider.getSongById(currentSongId);
                 if (dbMgr.isFavorite(currentSong)) {
                     dbMgr.deleteFromFavorite(currentSong);
-                    playDrawableAnim(likeBt, 5, animlike);
+                  //  playDrawableAnim(likeBt, 5, animlike);
+                    playAnim(likeBt, animId[5], 0f, true);
                     if (likeToast != null)
                         likeToast.cancel();
                     likeToast = Toast.makeText(Player.this, "取消收藏", Toast.LENGTH_SHORT);
                     likeToast.show();
                 } else {
                     dbMgr.addToFavorite(currentSong);
-                    playDrawableAnim(likeBt, 4, animlike);
+                 //   playDrawableAnim(likeBt, 4, animlike);
+                    playAnim(likeBt, animId[4], 0f, true);
                     if (likeToast != null)
                         likeToast.cancel();
                     likeToast = Toast.makeText(Player.this, "收藏成功", Toast.LENGTH_SHORT);
@@ -281,7 +311,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         }
     }
 
-    private void playDrawableAnim(ImageView view, int id, AnimationDrawable animDrawable) {
+    /*private void playDrawableAnim(ImageView view, int id, AnimationDrawable animDrawable) {
         if (animDrawable != null && animDrawable.isRunning())
             animDrawable.stop();
         if (id == 2)
@@ -292,6 +322,45 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
         animDrawable = (AnimationDrawable) view.getBackground();
         animDrawable.setOneShot(true);
         animDrawable.start();
+    }*/
+    private void playAnim(final ImageView view, final int id, float middlePoint, boolean isZoomOut) {
+        ValueAnimator zoomOut = ValueAnimator.ofFloat(1, middlePoint);
+        final ValueAnimator zoomIn = ValueAnimator.ofFloat(middlePoint, 1);
+        zoomOut.setDuration(100);
+        zoomOut.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float f = (float) animation.getAnimatedValue();
+                view.setScaleX(f);
+                view.setScaleY(f);
+            }
+        });
+        zoomIn.setDuration(2000);
+        MyEvalucatorUtil.JellyFloatAnim jelly = new MyEvalucatorUtil.JellyFloatAnim();
+        jelly.setDuration(2000);
+        jelly.setFirstTime(100);
+        jelly.setAmp(0.03);
+        zoomIn.setEvaluator(jelly);
+        zoomIn.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float f = (float) animation.getAnimatedValue();
+                view.setScaleX(f);
+                view.setScaleY(f);
+            }
+        });
+        zoomOut.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                view.setImageDrawable(getResources().getDrawable(id));
+                zoomIn.start();
+            }
+        });
+        if (isZoomOut) {
+            zoomOut.start();
+        } else {
+            zoomIn.start();
+        }
     }
 
     /*
@@ -325,8 +394,9 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
 
                     }
                     if (Player.this.isPlay != isPlay) {
-                        int animId = isPlay ? 0 : 1;
-                        playDrawableAnim(playBt, animId, animPlay);
+                        int id = isPlay ? 0 : 1;
+                      //  playDrawableAnim(playBt, animId, animPlay);
+                        playAnim(playBt, animId[id], 0f, true);
                     }
                     if (intent.getIntExtra("mode", 0) != mode) {
                         mode = intent.getIntExtra("mode", 0);
@@ -355,7 +425,7 @@ public class Player extends SwipeBackActivity implements View.OnClickListener {
     }
 
     private void updateBar(int currentTime) {
-        bar.setProgress(currentTime);
+        bar.setProgress(currentTime, true);
         smoke.setX(((float) currentTime / SongProvider.getSongById(currentSongId).getDuration()) * bar.getMeasuredWidth()
                 - smoke.getMeasuredWidth() - 4);
 

@@ -94,7 +94,10 @@ public class LyricUtil {
                     endPos = m.end();
                 }
                 for (int i = 0 ; i < count ; i++) {
-                    lyricList.add(s.substring(endPos, s.length()));
+                    if (s.substring(endPos, s.length()).equals(""))
+                        timeList.remove(timeList.size() - 1);
+                    else
+                        lyricList.add(s.substring(endPos, s.length()));
                 }
             }
 

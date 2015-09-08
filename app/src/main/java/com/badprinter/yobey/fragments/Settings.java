@@ -40,10 +40,11 @@ import jp.wasabeef.blurry.Blurry;
 public class Settings extends Fragment implements View.OnClickListener{
     private final String TAG="Settings";
 
-    private ImageView[] icons = new ImageView[6];
+    private ImageView[] icons = new ImageView[7];
     private View root;
     private SlideSwitch wifi34GSwitch;
     private SlideSwitch notifySwitch;
+    private SlideSwitch wlSwitch;
     private RippleView exitRipple;
     private AlertDialog exitAlert;
     private RippleView nightRipple;
@@ -79,13 +80,19 @@ public class Settings extends Fragment implements View.OnClickListener{
         sharedPref = getActivity().getSharedPreferences(
                 Constants.Preferences.PREFERENCES_KEY, Context.MODE_PRIVATE);
         // Init Wifi34G Switch
-        int isOnlyWifi34G = sharedPref.getInt(Constants.Preferences.PREFERENCES_WIFI, Context.MODE_PRIVATE);
+        int isOnlyWifi34G = sharedPref.getInt(Constants.Preferences.PREFERENCES_WIFI, 1);
         if (isOnlyWifi34G == 1)
             wifi34GSwitch.setState(true);
         else
             wifi34GSwitch.setState(false);
+        // Init WindowLyric Switch
+        int isWl = sharedPref.getInt(Constants.Preferences.PREFERENCES_WINDOWLYRIC_SHOW, 1);
+        if (isWl == 1)
+            wlSwitch.setState(true);
+        else
+            wlSwitch.setState(false);
         // Init Notify Switch;
-        int hasNotify = sharedPref.getInt(Constants.Preferences.PREFERENCES_NOTIFY, Context.MODE_PRIVATE);
+        int hasNotify = sharedPref.getInt(Constants.Preferences.PREFERENCES_NOTIFY, 1);
         if (hasNotify == 1) {
             notifySwitch.setState(true);
             Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
@@ -136,7 +143,9 @@ public class Settings extends Fragment implements View.OnClickListener{
         icons[3] = (ImageView)root.findViewById(R.id.wifiIcon);
         icons[4] = (ImageView)root.findViewById(R.id.aboutIcon);
         icons[5] = (ImageView)root.findViewById(R.id.exitIcon);
+        icons[6] = (ImageView)root.findViewById(R.id.windowLyricIcon);
         wifi34GSwitch = (SlideSwitch)root.findViewById(R.id.colorSwith);
+        wlSwitch = (SlideSwitch)root.findViewById(R.id.wlSwith);
         exitRipple = (RippleView)root.findViewById(R.id.exitRipple);
         nightRipple = (RippleView)root.findViewById(R.id.nightRipple);
         countdown = (TextView)root.findViewById(R.id.countdown);
@@ -165,6 +174,30 @@ public class Settings extends Fragment implements View.OnClickListener{
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putInt(Constants.Preferences.PREFERENCES_WIFI, 0);
                 editor.commit();
+            }
+        });
+        wlSwitch.setSlideListener(new SlideSwitch.SlideListener() {
+
+            @Override
+            public void open() {
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putInt(Constants.Preferences.PREFERENCES_WINDOWLYRIC_SHOW, 1);
+                editor.commit();
+                Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+                intent.putExtra("isShow", true);
+                intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_WINDOWLYRIC);
+                getActivity().startService(intent);
+            }
+
+            @Override
+            public void close() {
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putInt(Constants.Preferences.PREFERENCES_WINDOWLYRIC_SHOW, 0);
+                editor.commit();
+                Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+                intent.putExtra("isShow", false);
+                intent.putExtra("controlMsg", Constants.PlayerControl.UPDATE_WINDOWLYRIC);
+                getActivity().startService(intent);
             }
         });
         notifySwitch.setSlideListener(new SlideSwitch.SlideListener() {

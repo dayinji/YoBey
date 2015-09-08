@@ -17,6 +17,9 @@ public class Constants {
         public static final String CHANGE_MODE = "com.badprinter.yobey.CHANGE_MODE";
         public static final String INIT_SERVICE = "com.badprinter.yobey.INIT_SERVICE";
         public static final String UPDATE_NOTIFY = "com.badprinter.yobey.UPDATE_NOTIFY";
+        public static final String LOCK_LYRIC = "com.badprinter.yobey.LOCK_LYRIC";
+        public static final String UNLOCK_LYRIC = "com.badprinter.yobey.UNLOCK_LYRIC";
+        public static final String UPDATE_WINDOWLYRIC = "com.badprinter.yobey.UPDATE_WINDOWLYRIC";
 
     }
     public class UiControl {
@@ -39,7 +42,8 @@ public class Constants {
         public static final String PREFERENCES_ADJUST_FAVORITE_ARTIST = "com.badprinter.yobey.PREFERENCES_ADJUST_FAVORITE_ARTIST";
         public static final String PREFERENCES_ADJUST_RECENT = "com.badprinter.yobey.PREFERENCES_ADJUST_RECENT";
         public static final String PREFERENCES_ADJUST_AGO = "com.badprinter.yobey.PREFERENCES_ADJUST_AGO";
-
-
+        public static final String PREFERENCES_WINDOWLYRIC_Y = "com.badprinter.yobey.PREFERENCES_WINDOWLYRIC_Y";
+        public static final String PREFERENCES_WINDOWLYRIC_LOCK = "com.badprinter.yobey.PREFERENCES_WINDOWLYRIC_LOCK";
+        public static final String PREFERENCES_WINDOWLYRIC_SHOW = "com.badprinter.yobey.PREFERENCES_WINDOWLYRIC_SHOW";
     }
 }

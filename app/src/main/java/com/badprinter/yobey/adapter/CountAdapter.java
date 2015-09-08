@@ -182,7 +182,7 @@ public class CountAdapter extends BaseAdapter{
         int height = (int)(100*d);
         chart.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height));
         // Set Padding
-        chart.setPadding((int)(15*d), 0, (int)(5*d), 0);
+        chart.setPadding((int)(15*d), (int)(10*d), (int)(5*d), 0);
         chart.setYAxis(false);
         chart.setAxisThickness(1);
         chart.setAxisColor(context.getResources().getColor(R.color.qianhui));

@@ -9,6 +9,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.PixelFormat;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Handler;
@@ -20,13 +23,17 @@ import android.support.v7.app.NotificationCompat;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.WindowManager;
 import android.widget.RemoteViews;
+import android.widget.TextView;
 
 import com.badprinter.yobey.R;
 import com.badprinter.yobey.activities.Player;
 import com.badprinter.yobey.activities.Welcome;
 import com.badprinter.yobey.activities.Yobey;
 import com.badprinter.yobey.commom.Constants;
+import com.badprinter.yobey.customviews.WindowLyric;
 import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.models.Song;
 import com.badprinter.yobey.utils.SongProvider;
@@ -52,6 +59,8 @@ public class PlayerService extends Service{
     private String listName;
     private boolean hasNotify = true;
     private NotificationManager nm;
+    private WindowLyric wl;
+    private WindowManager wm;
     /*
      * 0 = LoopPlaying
      * 1 = SingPlaying
@@ -63,6 +72,9 @@ public class PlayerService extends Service{
     private List<Song> songList;
     private Handler handler;
     private Timer timer;
+    private boolean isShowWl = true;
+    private boolean isLockWL = false;
+    private SharedPreferences sharedPref;
 
     private DBManager dbMgr;
 
@@ -96,9 +108,16 @@ public class PlayerService extends Service{
     public void onCreate() {
         super.onCreate();
 
+        // Init sharedPref
+        sharedPref = getSharedPreferences(
+                Constants.Preferences.PREFERENCES_KEY, Context.MODE_PRIVATE);
+
         // When Calling Phone, Stop Playing Music
         TelephonyManager tmgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         tmgr.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+
+        wm = (WindowManager) getApplicationContext().getSystemService(
+                WINDOW_SERVICE);
 
         dbMgr = new DBManager();
         isPlay = false;
@@ -114,6 +133,7 @@ public class PlayerService extends Service{
                 updateDB(true, current);
                 playNext();
                 boardCurrentState();
+                changeWl();
             }
         });
         init();
@@ -140,6 +160,9 @@ public class PlayerService extends Service{
                 handler.sendEmptyMessage(1);
             }
         }, 0, 500);
+
+        // Init WindowLyric
+        initWindowLyric();
     }
     @Override
     public IBinder onBind(Intent arg0) {
@@ -149,7 +172,6 @@ public class PlayerService extends Service{
     @Override
     public int onStartCommand(Intent intent, int flags,  int startId) {
 
-        int id = 0;
         switch (intent.getExtras().getString("controlMsg")) {
             case Constants.PlayerControl.PRE_SONG_MSG:
                 if (currentTime > 20*1000 && currentTime < duration - 30*1000)
@@ -157,7 +179,7 @@ public class PlayerService extends Service{
                 else if (currentTime >= duration-30*1000)
                     updateDB(true, current);
                 playPre();
-                id = 1;
+                changeWl();
                 break;
             case Constants.PlayerControl.NEXT_SONG_MSG:
                 if (currentTime > 20 * 1000 && currentTime < duration - 30*1000)
@@ -165,34 +187,29 @@ public class PlayerService extends Service{
                 else if (currentTime >= duration-30*1000)
                     updateDB(true, current);
                 playNext();
-                id = 2;
+                changeWl();
                 break;
             case Constants.PlayerControl.PAUSE_PLAYING_MSG:
                 pause();
-                id = 3;
                 break;
             case Constants.PlayerControl.CONTINUE_PLAYING_MSG:
                 resum();
-                id = 4;
                 break;
             case Constants.PlayerControl.PLAYING_MSG:
                 current = intent.getExtras().getInt("current");
                 currentSongId = songList.get(current).getId();
                 currentTime = intent.getExtras().getInt("currenTime");
                 play(currentTime);
-                id = 5;
+                changeWl();
                 break;
             case Constants.PlayerControl.UPDATE_CURRENTTIME:
                 updateCurrentTime(intent.getExtras().getInt("currentTime"));
-                id = 6;
                 break;
             case Constants.PlayerControl.INIT_GET_CURRENT_INFO:
-                id = 7;
                 Log.e(TAG, "INIT_GET_CURRENT_INFO");
                 // Only for Get Current SongId And Other Info
                 break;
             case Constants.PlayerControl.CHANGE_MODE:
-                id = 8;
                 mode = mode + 1 >= 3 ? 0 : mode + 1;
                 break;
             case Constants.PlayerControl.UPDATE_LIST:
@@ -206,25 +223,25 @@ public class PlayerService extends Service{
                 current = intent.getExtras().getInt("current");
                 try {
                     if (songList.size() > current) {
-                        Log.e(TAG, "case 0");
                         currentSongId = songList.get(current).getId();
                     } else if (songList.size() != 0) {
-                        Log.e(TAG, "case 1");
                         current = 0;
                         currentSongId = songList.get(current).getId();
                     } else {
-                        Log.e(TAG, "case 2");
                         changeList(Constants.ListName.LIST_ALL);
                         current = 0;
                         currentSongId = songList.get(current).getId();
                     }
                     init();
                     showButtonNotify();
+                    if (isShowWl)
+                        showLyricNotify();
                 } catch (Exception e) {
                     Log.e(TAG, "Exception");
                     e.printStackTrace();
                 }
-                Log.e(TAG, "INIT_SERVICE");
+                // Update WindowLyric
+                changeWl();
                 return START_STICKY;
             case Constants.PlayerControl.UPDATE_NOTIFY:
                 boolean b = intent.getExtras().getBoolean("hasNotify");
@@ -236,12 +253,37 @@ public class PlayerService extends Service{
                     nm.cancel(950520);
                 }
                 return START_STICKY;
+            case Constants.PlayerControl.UPDATE_WINDOWLYRIC:
+                boolean isShow = intent.getExtras().getBoolean("isShow");
+                if (isShow) {
+                    showWl();
+                } else {
+                    hideWl();
+                }
+                return START_STICKY;
+            case  Constants.PlayerControl.LOCK_LYRIC:
+                WindowManager.LayoutParams params = wl.params;
+                params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        |WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+                wm.updateViewLayout(wl, params);
+                isLockWL = true;
+                showLyricNotify();
+                Log.e(TAG, "lock");
+                return START_STICKY;
+            case  Constants.PlayerControl.UNLOCK_LYRIC:
+                WindowManager.LayoutParams params1 = wl.params;
+                params1.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+                wm.updateViewLayout(wl, params1);
+                isLockWL = false;
+                showLyricNotify();
+                Log.e(TAG, "unlock");
+                return START_STICKY;
             default:
                 break;
         }
-        Log.e(TAG, "debug id = " + id);
         boardCurrentState();
-
         /*
          * THe Big Big Bug had Happened Here! I Return StartId Instead of START_STICKY Before.
          */
@@ -258,6 +300,26 @@ public class PlayerService extends Service{
         timer.cancel();
         hasNotify = false;
         nm.cancel(950520);
+        nm.cancel(950521);
+
+
+        //Save the Preferences of WindowLyric
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(Constants.Preferences.PREFERENCES_WINDOWLYRIC_Y, wl.params.y);
+        Log.e(TAG, "Y = " +  wl.params.y);
+        int isLock = isLockWL ? 1 : 0;
+        editor.putInt(Constants.Preferences.PREFERENCES_WINDOWLYRIC_LOCK, isLock);
+        Log.e(TAG, "isLock = " + isLock);
+
+        int isShow = isShowWl ? 1 : 0;
+        editor.putInt(Constants.Preferences.PREFERENCES_WINDOWLYRIC_SHOW, isShow);
+        Log.e(TAG, "isShow = " + isShow);
+        editor.commit();
+
+        if (wl != null && wl.isShown()) {
+            wm.removeView(wl);
+        }
+        super.onDestroy();
     }
 
     private void init() {
@@ -490,5 +552,90 @@ public class PlayerService extends Service{
                 .setSmallIcon(R.drawable.ic_launcher);
 
         nm.notify(950520, mBuilder.build());
+    }
+    private void showLyricNotify() {
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this);
+        RemoteViews mRemoteViews = new RemoteViews(getPackageName(), R.layout.notify_lyric);
+
+        if (!isShowWl) {
+            return;
+        }
+        if (isLockWL) {
+            mRemoteViews.setTextViewText(R.id.lockText, "点击此处解锁歌词");
+        } else {
+            mRemoteViews.setTextViewText(R.id.lockText, "点击此处锁定歌词");
+        }
+
+        // Intent
+        Intent intent = new Intent("com.badprinter.yobey.service.PLAYER_SERVICE");
+
+        if (isLockWL)
+            intent.putExtra("controlMsg", Constants.PlayerControl.UNLOCK_LYRIC);
+        else
+            intent.putExtra("controlMsg", Constants.PlayerControl.LOCK_LYRIC);
+
+        PendingIntent intent_lock = PendingIntent.getService(this, 4, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mRemoteViews.setOnClickPendingIntent(R.id.lyricNotify, intent_lock);
+
+        mBuilder.setTicker("YoBey")
+                .setWhen(System.currentTimeMillis())
+                .setPriority(Notification.PRIORITY_DEFAULT)
+                .setOngoing(true)
+                .setContent(mRemoteViews)
+                .setContentIntent(intent_lock)
+                .setSmallIcon(R.drawable.ic_launcher);
+
+        nm.notify(950521, mBuilder.build());
+    }
+    private void initWindowLyric() {
+        Song song = songList.get(current);
+        wl = new WindowLyric(this, song.getUrl(), song.getName(), song.getArtist());
+        wl.callBack = new WindowLyric.CallBack() {
+            @Override
+            public int getCurrentTime() {
+                return player.getCurrentPosition();
+            }
+        };
+        // Init isLock
+        int isLock = sharedPref.getInt(Constants.Preferences.PREFERENCES_WINDOWLYRIC_LOCK, 0);
+        if (isLock == 1) {
+            isLockWL = true;
+            WindowManager.LayoutParams params = wl.params;
+            params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                    | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    |WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+        } else {
+            isLockWL = false;
+        }
+        Log.e(TAG, "isLock: "+ isLock);
+        // Init Y
+        int y = sharedPref.getInt(Constants.Preferences.PREFERENCES_WINDOWLYRIC_Y, 100);
+        wl.params.y = y;
+        Log.e(TAG, "y: "+ y);
+        // Init isShow
+        int isShow = sharedPref.getInt(Constants.Preferences.PREFERENCES_WINDOWLYRIC_SHOW, 1);
+        Log.e(TAG, "isShow: "+ isShow);
+        if (isShow == 1) {
+            showWl();
+            showLyricNotify();
+        } else {
+            hideWl();
+            nm.cancel(950521);
+        }
+    }
+    private void changeWl() {
+        Song song = songList.get(current);
+        wl.initLyric(song.getUrl(), song.getName(), song.getArtist());
+    }
+    private void hideWl() {
+        if (wl.isShown())
+            wm.removeView(wl);
+        isShowWl = false;
+        nm.cancel(950521);
+    }
+    private void showWl() {
+        wm.addView(wl, wl.params);
+        isShowWl = true;
     }
 }

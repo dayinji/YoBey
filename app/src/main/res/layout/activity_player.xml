@@ -115,25 +115,25 @@
                 android:id="@+id/preBt"
                 android:layout_width="@dimen/music_control_large"
                 android:layout_height="@dimen/music_control_large"
-                android:background="@drawable/playpre_00000"
+                android:src="@drawable/playpre_00000"
                 android:clickable="true"/>
             <ImageView
                 android:id="@+id/playBt"
                 android:layout_width="@dimen/music_control_large"
                 android:layout_height="@dimen/music_control_large"
-                android:background="@drawable/playtopause_00000"
+                android:src="@drawable/playtopause_00000"
                 android:clickable="true"/>
             <ImageView
                 android:id="@+id/nextBt"
                 android:layout_width="@dimen/music_control_large"
                 android:layout_height="@dimen/music_control_large"
-                android:background="@drawable/playnext_00000"
+                android:src="@drawable/playnext_00000"
                 android:clickable="true" />
             <ImageView
                 android:id="@+id/likeBt"
                 android:layout_width="@dimen/music_control_large"
                 android:layout_height="@dimen/music_control_large"
-                android:background="@drawable/like_00000"
+                android:src="@drawable/like_00000"
                 android:clickable="true" />
         </LinearLayout>
     </LinearLayout>

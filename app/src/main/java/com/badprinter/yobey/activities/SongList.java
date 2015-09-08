@@ -1,5 +1,7 @@
 package com.badprinter.yobey.activities;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.BroadcastReceiver;
@@ -31,6 +33,7 @@ import com.badprinter.yobey.customviews.PinyinBar;
 import com.badprinter.yobey.db.DBManager;
 import com.badprinter.yobey.models.Song;
 import com.badprinter.yobey.service.PlayerService;
+import com.badprinter.yobey.utils.MyEvalucatorUtil;
 import com.badprinter.yobey.utils.SongProvider;
 
 import java.util.ArrayList;
@@ -65,14 +68,14 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
     private String listName;
     private ListReceiver listReceiver;
     private SongListAdapter mySongListAdapter;
-    private AnimationDrawable animPlay;
+   /* private AnimationDrawable animPlay;
     private AnimationDrawable animNext;
-    private AnimationDrawable animPre;
+    private AnimationDrawable animPre;*/
     private ObjectAnimator fadeSelectorAnim;
     private PinyinBar pinyinBar;
     private MyOnScrollListener myScrollListener;
     private int[] animId = new int[] {
-            R.drawable.playtopause, R.drawable.pausetoplay, R.drawable.playnext, R.drawable.playpre
+            R.drawable.pausetoplay_00000, R.drawable.playtopause_00000, R.drawable.playnext_00000, R.drawable.playpre_00000
     };
     /*
      * 0 = LoopPlaying
@@ -220,7 +223,7 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
             case R.id.preBt:
                 intent.putExtra("controlMsg", Constants.PlayerControl.PRE_SONG_MSG);
                 startService(intent);
-                playDrawableAnim(preBt, 3, animPre);
+                //playDrawableAnim(preBt, 3, animPre);
                 isFirstTime = false;
                 break;
             case R.id.playBt:
@@ -241,7 +244,7 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
             case R.id.nextBt:
                 intent.putExtra("controlMsg", Constants.PlayerControl.NEXT_SONG_MSG);
                 startService(intent);
-                playDrawableAnim(nextBt, 2, animNext);
+                //playDrawableAnim(nextBt, 2, animNext);
                 isFirstTime = false;
                 break;
             case R.id.bottomLayout:
@@ -275,6 +278,14 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
                     int current = intent.getIntExtra("current", 0);
                     SongList.this.currentSongId = intent.getLongExtra("songId", 0); // Current Song Id
                     mySongListAdapter.updateItem(currentSongId);
+                    // Play Animation
+                    if (isPlay && SongList.this.isPlay != isPlay) {
+                        // playDrawableAnim(playBt, 0, animPlay);
+                        playAnim(playBt, animId[0], 0f, true);
+                    } else if (!isPlay && SongList.this.isPlay){
+                        // playDrawableAnim(playBt, 1, animPlay);
+                        playAnim(playBt, animId[1], 0f, true);
+                    }
                     SongList.this.isPlay = isPlay;
                     SongList.this.current = current;
                     //Song temp = songList.get(current);
@@ -287,11 +298,6 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
                     playingPhoto.setImageBitmap(SongProvider.getArtwork(SongList.this, temp.getId(), temp.getAlbumId(), true, true));
                     playingArtist.setText(temp.getArtist());
                     playingName.setText(temp.getName());
-                    if (isPlay) {
-                        playDrawableAnim(playBt, 0, animPlay);
-                    } else {
-                        playDrawableAnim(playBt, 1, animPlay);
-                    }
                     break;
                 case Constants.UiControl.UPDATE_CURRENT:
                     updateBar(intent.getExtras().getInt("currentTime"));
@@ -320,20 +326,45 @@ public class SongList extends SwipeBackActivity implements View.OnClickListener{
         animDrawable.setOneShot(true);
         animDrawable.start();
     }
-    /*@Override
-    protected void onNewIntent(Intent intent) {
 
-        Log.e(TAG, "listName = XXXX");
-        super.onNewIntent(intent);
-
-        setIntent(intent);//must store the new intent unless getIntent() will return the old one
-
-        if (intent.getFlags() == Intent.FLAG_ACTIVITY_CLEAR_TOP) {
-            listName = intent.getStringExtra("cata");
-
-            songList = SongProvider.getSongListByName(listName);
-            mySongListAdapter = new SongListAdapter(songList, currentSongId, listName);
-            songListView.setAdapter(mySongListAdapter);
+    private void playAnim(final ImageView view, final int id, float middlePoint, boolean isZoomOut) {
+        ValueAnimator zoomOut = ValueAnimator.ofFloat(1, middlePoint);
+        final ValueAnimator zoomIn = ValueAnimator.ofFloat(middlePoint, 1);
+        zoomOut.setDuration(100);
+        zoomOut.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float f = (float) animation.getAnimatedValue();
+                view.setScaleX(f);
+                view.setScaleY(f);
+            }
+        });
+        zoomIn.setDuration(2000);
+        MyEvalucatorUtil.JellyFloatAnim jelly = new MyEvalucatorUtil.JellyFloatAnim();
+        jelly.setDuration(2000);
+        jelly.setFirstTime(100);
+        jelly.setAmp(0.03);
+        zoomIn.setEvaluator(jelly);
+        zoomIn.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float f = (float) animation.getAnimatedValue();
+                view.setScaleX(f);
+                view.setScaleY(f);
+            }
+        });
+        zoomOut.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                view.setImageDrawable(getResources().getDrawable(id));
+                zoomIn.start();
+            }
+        });
+        if (isZoomOut) {
+            zoomOut.start();
+        } else {
+            zoomIn.start();
         }
-    }*/
+    }
+
 }

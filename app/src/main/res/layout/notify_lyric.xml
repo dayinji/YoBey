@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:id="@+id/lyricNotify"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_centerVertical="true"
+    android:layout_height="64dp"
+    android:background="@drawable/click_bg">
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_alignParentLeft="true"
+        android:src="@drawable/default_album"
+        android:layout_width="64dp"
+        android:layout_height="64dp" />
+    <ImageView
+        android:id="@+id/lockIcon"
+        android:layout_toRightOf="@id/logo"
+        android:layout_centerVertical="true"
+        android:src="@drawable/lock"
+        android:layout_marginLeft="5dp"
+        android:layout_width="15dp"
+        android:layout_height="15dp" />
+    <TextView
+        android:id="@+id/lockText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/lockIcon"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="5dp"
+        android:textColor="@color/qianhui"
+        android:textSize="@dimen/font_medium"/>
+</RelativeLayout>

@@ -103,10 +103,6 @@ public class MusicBar extends View {
         if (!bmp.isRecycled())
             bmp.recycle();
         canvas.drawBitmap(bmp1, barWidth * ((float) progress / max) - trainLong, 0, null);
-        /*paint.setColor(indicatorColor);
-        paint.setStyle(Paint.Style.FILL_AND_STROKE);
-        float indicatorCentre = barWidth*((float)progress/max);
-        canvas.drawCircle(indicatorCentre, indicatorRadis, indicatorRadis, paint);*/
     }
 
     @Override
@@ -125,7 +121,9 @@ public class MusicBar extends View {
     }
 
     public synchronized int getProgress() { return progress; }
-    public synchronized void setProgress(int progress) {
+    public synchronized void setProgress(int progress, boolean fromService) {
+        if (indicatorAnim != null && indicatorAnim.isRunning() && fromService)
+            return;
         if (progress > max) {
             this.progress = max;
         } else if (progress < 0) {
@@ -163,7 +161,7 @@ public class MusicBar extends View {
                 indicatorAnim.cancel();
             float x = me.getX();
             int toPoint = (int)((x/getWidth())*max);
-            setProgress(toPoint);
+            setProgress(toPoint, false);
             onProgressChange.onProgressChangeCall(toPoint);
         }
         else if (me.getAction() == MotionEvent.ACTION_DOWN) {
@@ -172,22 +170,28 @@ public class MusicBar extends View {
             startIndicatorAnim(toPoint);
             onProgressChange.onProgressChangeCall(toPoint);
         }
+        else if (me.getAction() == MotionEvent.ACTION_UP) {
+            onProgressChange.onActionUp();
+        }
         return true;
     }
 
     private void startIndicatorAnim(int endValue) {
-        if (indicatorAnim != null)
+        if (indicatorAnim != null && indicatorAnim.isRunning())
             indicatorAnim.cancel();
-        indicatorAnim = ValueAnimator.ofInt(progress, endValue);
-        float duration = Math.abs((float)progress - (float)endValue)/max*1000 + 300;
-        indicatorAnim.setDuration((int)duration);
-        indicatorAnim.setInterpolator(new DecelerateInterpolator(4f));
+        final int start = progress;
+        indicatorAnim = ValueAnimator.ofInt(start, endValue);
+        //float duration = Math.abs((float)progress - (float)endValue)/max*1000 + 300;
+        int duration = 500;
+        indicatorAnim.setDuration(duration);
+        indicatorAnim.setInterpolator(new DecelerateInterpolator(1f));
         indicatorAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 int point = (int)animation.getAnimatedValue();
-                setProgress(point);
+                setProgress(point, false);
                 onProgressChange.onProgressAnimCall(point);
+                Log.e(TAG, "point = " + point);
             }
         });
         indicatorAnim.start();
@@ -196,6 +200,7 @@ public class MusicBar extends View {
     public interface OnProgressChange {
         void onProgressChangeCall(int toPoint);
         void onProgressAnimCall(int point);
+        void onActionUp();
     }
 }
 
